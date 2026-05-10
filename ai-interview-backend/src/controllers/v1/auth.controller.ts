@@ -71,6 +71,23 @@ class AuthController {
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
     return sendResponse(res, 200, 'Token refreshed successfully');
   });
+
+  /**
+   * Đăng xuất
+   */
+  logout = asyncHandler(async (req: Request, res: Response) => {
+    // Gọi service nếu cần xử lý nghiệp vụ (như blacklist token, tracking...)
+    // await this.authService.logout(req.user?.id);
+
+    // Xóa cookie chứa refreshToken
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return sendResponse(res, 200, 'User logged out successfully');
+  });
 }
 
 // Khởi tạo và tiêm (Inject) instance vào Controller

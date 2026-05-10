@@ -61,6 +61,12 @@ export class AuthService {
     return user;
   }
 
+  async logout(userId?: string) {
+    // Hiện tại ứng dụng sử dụng stateless JWT, không lưu token trong database.
+    // Nếu sau này có cơ chế blacklist token hoặc lưu session, ta sẽ xử lý ở đây.
+    return true;
+  }
+
   async sendOtp(email: string) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
