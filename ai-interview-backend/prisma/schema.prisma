@@ -11,7 +11,7 @@ datasource db {
 
 enum Role {
   CANDIDATE 
-  HR        
+  MODERATOR     
   ADMIN     
 }
 
@@ -34,6 +34,28 @@ enum PaymentStatus {
   FAILED    // Giao dịch lỗi / hủy
 }
 
+enum ExperienceLevel {
+  INTERN
+  FRESHER
+  JUNIOR
+  MIDDLE
+  SENIOR
+  MANAGER
+  DIRECTOR
+}
+
+enum Provider {
+  GOOGLE
+  LOCAL
+}
+
+enum CategoryType {
+  GROUP      // Nhóm nghề (Cấp 1)
+  INDUSTRY   // Nghề (Cấp 2)
+  POSITION   // Vị trí chuyên môn (Cấp 3)
+}
+
+
 // ================= THỰC THỂ CỐT LÕI (CORE ENTITIES) =================
 
 // 1. BẢNG NGƯỜI DÙNG
@@ -43,6 +65,9 @@ model User {
   fullName         String
   avatarUrl        String?          
   role             Role             @default(CANDIDATE)
+  password         String?
+  provider         Provider         @default(LOCAL)
+  googleId         String?          @unique
   
   creditsBalance   Int              @default(3) // Tặng 3 lượt test free ban đầu
 
@@ -73,7 +98,23 @@ model UserCv {
   analyses         CvAnalysis[]
 }
 
-// 3. BẢNG JOB TEMPLATE (Đã tách 3 phần tối ưu)
+// 3. BẢNG DANH MỤC PHÂN CẤP (Nhóm nghề -> Nghề -> Vị trí)
+model JobCategory {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  type        CategoryType
+  
+  parentId    String?        @db.ObjectId
+  parent      JobCategory?   @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    JobCategory[]  @relation("CategoryHierarchy")
+
+  jobTemplates JobTemplate[]
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+// 4. BẢNG JOB TEMPLATE (Đã tách 3 phần tối ưu)
 model JobTemplate {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   title              String
@@ -84,6 +125,12 @@ model JobTemplate {
   location           String?  
   salaryRange        String?  
   employmentType     String?  
+  experienceLevel    ExperienceLevel @default(JUNIOR)
+  isRemote           Boolean         @default(false)
+  
+  // Phân loại
+  categoryId         String?         @db.ObjectId
+  category           JobCategory?    @relation(fields: [categoryId], references: [id])
   
   // Thông tin chi tiết để render UI
   responsibilities   String   
@@ -101,6 +148,7 @@ model JobTemplate {
   sessions           InterviewSession[]
   cvAnalyses         CvAnalysis[]
 }
+
 
 // ================= THỰC THỂ AI INTERVIEW & GIAO DỊCH =================
 
@@ -160,10 +208,17 @@ model InterviewResult {
   session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
+enum TransactionType {
+  DEPOSIT       // Nạp tiền từ cổng thanh toán
+  COMPENSATION  // Đền bù từ hệ thống
+  PROMOTION     // Khuyến mãi, quà tặng
+}
+
 // 7. BẢNG LỊCH SỬ NẠP TIỀN (Pay-as-you-go)
 model Transaction {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String        @db.ObjectId
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String          @db.ObjectId
+  type          TransactionType @default(DEPOSIT)
   
   amount        Int           // Số tiền nạp
   creditsAdded  Int           // Số credit tương ứng
