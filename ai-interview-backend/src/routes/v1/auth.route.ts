@@ -5,6 +5,7 @@ import { registerSchema, loginSchema } from '../../validations/user.validation';
 
 const router: Router = express.Router();
 router.post('/login', validate(loginSchema), authController.login);
+router.post('/logout', authController.logout);
 router.post('/refresh', authController.refreshToken);
 router.post('/register', validate(registerSchema), authController.register);
 
