@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../shared/utils/cn';
+import { logoutAccount } from '../../shared/services/auth.service';
 
 const NAV_ITEMS = [
   { icon: 'dashboard', label: 'Trang chủ', href: '/', active: true },
@@ -82,6 +83,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
             settings
           </span>
         </a>
+        <button 
+          onClick={logoutAccount}
+          className="w-full mt-2 flex items-center justify-center gap-2 p-2 rounded-lg text-text-secondary hover:bg-red-50 hover:text-red-500 transition-colors"
+          title={isCollapsed ? "Đăng xuất" : ""}
+        >
+          <span className="material-symbols-outlined text-[18px]">logout</span>
+          {!isCollapsed && <span className="text-[13px] font-semibold">Đăng xuất</span>}
+        </button>
       </div>
     </aside>
   );
