@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx --no -- commitlint --edit ${1}
+ROOT_DIR=$(pwd)
+cd ai-interview-backend
+npx --no -- commitlint --edit "$ROOT_DIR/$1"
