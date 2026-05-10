@@ -54,6 +54,10 @@ enum CategoryType {
   INDUSTRY   // Nghề (Cấp 2)
   POSITION   // Vị trí chuyên môn (Cấp 3)
 }
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
 
 
 // ================= THỰC THỂ CỐT LÕI (CORE ENTITIES) =================
@@ -68,7 +72,8 @@ model User {
   password         String?
   provider         Provider         @default(LOCAL)
   googleId         String?          @unique
-  
+  status           UserStatus       @default(ACTIVE)
+  emailVerifiedAt   DateTime?
   creditsBalance   Int              @default(3) // Tặng 3 lượt test free ban đầu
 
   createdAt        DateTime         @default(now())
@@ -266,4 +271,14 @@ model RecruiterRoom {
 
   hr               User               @relation(fields: [hrId], references: [id], onDelete: Cascade)
   sessions         InterviewSession[] 
+}
+// 10. BẢNG MÃ XÁC THỰC (OTP)
+model VerificationCode {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }

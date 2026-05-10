@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { JobCategoryModal } from './JobCategoryModal';
 
 const FILTER_ITEMS = [

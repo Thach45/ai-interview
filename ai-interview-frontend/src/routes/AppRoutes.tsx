@@ -11,6 +11,10 @@ import { AdminJobsPage } from '../pages/admin/AdminJobsPage';
 import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
 import { AdminCategoriesPage } from '../pages/admin/AdminCategoriesPage';
 import { AdminTransactionsPage } from '../pages/admin/AdminTransactionsPage';
+import { LoginPage } from '../pages/auth/LoginPage';
+import { RegisterPage } from '../pages/auth/RegisterPage';
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
+import { VerifyOTPPage } from '../pages/auth/VerifyOTPPage';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -22,6 +26,12 @@ export const AppRoutes: React.FC = () => {
         <Route path="/interviews/setup" element={<InterviewSetupPage />} />
         <Route path="/interviews/practice" element={<InterviewPracticePage />} />
         <Route path="/interviews/result" element={<InterviewResultPage />} />
+        
+        {/* Auth Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-otp" element={<VerifyOTPPage />} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<Navigate to="/admin/jobs" replace />} />

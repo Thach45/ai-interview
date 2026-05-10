@@ -6,3 +6,12 @@ export type ShowUser = {
   role: string;
   password: string;
 };
+
+export type UserResponseDTO = {
+  id: string;
+  email: string;
+  fullName: string;
+  role: string;
+  avatarUrl?: string | null;
+  createdAt: Date;
+};
