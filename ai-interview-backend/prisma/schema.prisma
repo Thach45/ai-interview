@@ -71,7 +71,7 @@ model User {
   role             Role             @default(CANDIDATE)
   password         String?
   provider         Provider         @default(LOCAL)
-  googleId         String?          @unique
+  googleId         String?          
   status           UserStatus       @default(ACTIVE)
   emailVerifiedAt   DateTime?
   creditsBalance   Int              @default(3) // Tặng 3 lượt test free ban đầu

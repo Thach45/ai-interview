@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { BadRequestException, UnauthorizedException } from '../exceptions';
 
 import { mailService as _mailService, MailService } from '../shared/services/mail.service';
+import { UserStatus } from '@prisma/client';
 
 export class AuthService {
   constructor(private readonly mailService: MailService) {}
@@ -29,13 +30,18 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    return await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
         fullName: fullName,
         password: hashedPassword,
       },
     });
+
+    // Tự động gửi OTP ngay sau khi tạo tài khoản thành công
+    await this.sendOtp(email);
+
+    return user;
   }
 
   async login(credentials: any) {
@@ -45,12 +51,18 @@ export class AuthService {
     if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid email or password');
     }
+    if (!user.emailVerifiedAt) {
+      throw new BadRequestException('Email not verified');
+    }
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new BadRequestException('User is not active');
+    }
 
     return user;
   }
 
   async sendOtp(email: string) {
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     await prisma.verificationCode.create({
@@ -79,7 +91,18 @@ export class AuthService {
       throw new BadRequestException('Expired OTP');
     }
 
-    return verificationCode;
+    // Cập nhật trạng thái xác thực của người dùng
+    await prisma.user.update({
+      where: { email },
+      data: { emailVerifiedAt: new Date() },
+    });
+
+    // Xóa mã OTP đã sử dụng
+    await prisma.verificationCode.delete({
+      where: { id: verificationCode.id },
+    });
+
+    return true;
   }
 }
 

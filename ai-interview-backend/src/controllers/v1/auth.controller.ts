@@ -5,6 +5,7 @@ import { AuthService, authService } from '../../services/auth.service';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { sendResponse } from '../../utils/apiResponse';
 import { toUserResponseDTO } from '../../mappers/user.mapper';
+import { TokenPayload } from '../../types/jwt.type';
 
 dotenv.config();
 
@@ -28,6 +29,12 @@ class AuthController {
     await this.authService.verifyOtp(req.body.email, req.body.otp);
     return sendResponse(res, 200, 'OTP verified successfully');
   });
+
+  resendOtp = asyncHandler(async (req: Request, res: Response) => {
+    const { email } = req.body;
+    await this.authService.sendOtp(email);
+    return sendResponse(res, 200, 'Mã OTP mới đã được gửi');
+  });
   /**
    * Đăng nhập
    */
@@ -38,7 +45,9 @@ class AuthController {
       id: user.id,
       email: user.email,
       role: user.role,
-    };
+      emailVerifyAt: user.emailVerifiedAt,
+      status: user.status,
+    } as TokenPayload;
 
     const accessToken = generateAccessToken(payload);
     const refreshToken = generateRefreshToken(payload);

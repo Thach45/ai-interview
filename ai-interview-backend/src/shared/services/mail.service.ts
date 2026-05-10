@@ -1,7 +1,9 @@
 import { generateOtpTemplate } from '../../utils/generate-template';
+import dotenv from 'dotenv';
+dotenv.config();
 
 class MailService {
-  private readonly emailApiUrl = process.env.URL_EMAIL || 'https://api.emailservice.com';
+  private readonly emailApiUrl = process.env.URL_EMAIL;
 
   /**
    * Gửi mã OTP về email người dùng thông qua API bên ngoài
@@ -10,7 +12,7 @@ class MailService {
     try {
       const url = `${this.emailApiUrl}/api/email/send`;
       const content = generateOtpTemplate(otp);
-
+      console.log(this.emailApiUrl);
       console.log(`📧 Đang gửi OTP tới ${email}...`);
 
       const response = await fetch(url, {

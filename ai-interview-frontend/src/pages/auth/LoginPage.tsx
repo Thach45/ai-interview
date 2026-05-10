@@ -1,8 +1,30 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { AuthLayout } from '../../layouts/AuthLayout';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { AuthLayout } from "../../layouts/AuthLayout";
+
+import { loginSchema, type LoginFormValues } from "../../features/auth/validations/auth.validation";
+import { useAuth } from "../../features/auth/hooks/useAuth";
+
+
 
 export const LoginPage: React.FC = () => {
+  const { login, isLoggingIn } = useAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = (data: LoginFormValues) => {
+    login(data);
+  };
+
   return (
     <AuthLayout 
       image="/auth-hero.png"
@@ -15,15 +37,16 @@ export const LoginPage: React.FC = () => {
           <p className="text-text-secondary text-[14px]">Đăng nhập để tiếp tục hành trình chinh phục sự nghiệp.</p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-1">
             <label className="text-[12px] font-bold text-text-secondary uppercase tracking-wider ml-1">Email</label>
             <input 
+              {...register('email')}
               type="email" 
               placeholder="name@company.com"
-              className="w-full px-4 py-3 bg-bg-surface border border-border-hairline rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]"
-              required
+              className={`w-full px-4 py-3 bg-bg-surface border ${errors.email ? 'border-red-500' : 'border-border-hairline'} rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]`}
             />
+            {errors.email && <p className="text-red-500 text-[12px] ml-1">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-1">
@@ -32,15 +55,27 @@ export const LoginPage: React.FC = () => {
               <Link to="/forgot-password" className="text-[11px] font-bold text-primary">Quên?</Link>
             </div>
             <input 
+              {...register('password')}
               type="password" 
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-bg-surface border border-border-hairline rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]"
-              required
+              className={`w-full px-4 py-3 bg-bg-surface border ${errors.password ? 'border-red-500' : 'border-border-hairline'} rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]`}
             />
+            {errors.password && <p className="text-red-500 text-[12px] ml-1">{errors.password.message}</p>}
           </div>
 
-          <button className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-[15px] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
-            Đăng nhập
+          <button 
+            type="submit"
+            disabled={isLoggingIn}
+            className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-[15px] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+          >
+            {isLoggingIn ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Đang đăng nhập...
+              </>
+            ) : (
+              'Đăng nhập'
+            )}
           </button>
         </form>
 

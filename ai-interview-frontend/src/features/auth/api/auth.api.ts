@@ -1,0 +1,49 @@
+import apiClient from "../../../shared/services/apiClient";
+import type {
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    RegisterResponse,
+    SendOtpRequest,
+    VerifyOtpRequest,
+} from "../types";
+
+export const authApi = {
+  /**
+   * Đăng nhập người dùng
+   */
+  login: (data: LoginRequest) =>
+    apiClient.post<any, LoginResponse>("/auth/login", data),
+
+  /**
+   * Đăng ký tài khoản mới
+   */
+  register: (data: RegisterRequest) =>
+    apiClient.post<any, RegisterResponse>("/auth/register", data),
+
+  /**
+   * Gửi mã OTP xác thực email
+   */
+  sendOtp: (data: SendOtpRequest) =>
+    apiClient.post<any, { success: boolean; message: string; data: string }>(
+      "/auth/send-otp",
+      data,
+    ),
+
+  /**
+   * Xác thực mã OTP
+   */
+  verifyOtp: (data: VerifyOtpRequest) =>
+    apiClient.post<any, { success: boolean; message: string }>(
+      "/auth/verify-otp",
+      data,
+    ),
+
+  /**
+   * Gửi lại mã OTP
+   */
+  resendOtp: (data: { email: string }) =>
+    apiClient.post<any, { success: boolean; message: string }>("/auth/resend-otp", data),
+};
+
+export default authApi;
