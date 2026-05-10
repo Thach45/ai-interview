@@ -14,3 +14,11 @@ export const loginSchema = z.object({
     password: z.string().min(1, 'Password is required'),
   }),
 });
+
+export const updateProfileSchema = z.object({
+  body: z.object({
+    fullName: z.string().min(1, 'Full name is required').max(100, 'Full name is too long').optional(),
+    avatarUrl: z.string().url('Invalid avatar URL').optional(),
+    password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  }),
+});
