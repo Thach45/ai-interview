@@ -8,13 +8,13 @@ export const jobTemplateSchema = z.object({
   salaryRange: z.string().optional(),
   employmentType: z.string().min(1, 'Hình thức làm việc không được để trống'),
   experienceLevel: z.enum(['INTERN', 'FRESHER', 'JUNIOR', 'MIDDLE', 'SENIOR', 'MANAGER', 'DIRECTOR']),
-  isRemote: z.boolean().default(false),
+  isRemote: z.boolean(),
   categoryId: z.string().optional(),
   responsibilities: z.string().min(1, 'Trách nhiệm không được để trống'),
   requirements: z.string().min(1, 'Yêu cầu không được để trống'),
   benefits: z.string().min(1, 'Quyền lợi không được để trống'),
   aiExtractedContext: z.string().min(1, 'Tri thức AI không được để trống'),
-  isHotJob: z.boolean().default(false),
+  isHotJob: z.boolean(),
 });
 
 export type JobTemplateFormData = z.infer<typeof jobTemplateSchema>;

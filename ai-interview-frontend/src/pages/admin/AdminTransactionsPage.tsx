@@ -43,33 +43,47 @@ export const AdminTransactionsPage: React.FC = () => {
     return filteredTransactions.slice(start, start + pageSize);
   }, [filteredTransactions, currentPage]);
 
+  // Hành động chính cho Header
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <button className="bg-white border border-border-hairline text-text-secondary px-4 py-2 rounded-lg font-bold text-[12px] hover:bg-bg-surface transition-all flex items-center gap-2">
+        <span className="material-symbols-outlined text-[18px]">download</span>
+        Xuất báo cáo
+      </button>
+      <button className="bg-primary text-white px-5 py-2 rounded-lg font-bold text-[12px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+        <span className="material-symbols-outlined text-[18px]">add_card</span>
+        Tạo giao dịch mới
+      </button>
+    </div>
+  );
+
   return (
-    <AdminLayout title="Quản lý Giao dịch & Credit">
+    <AdminLayout title="Quản lý Giao dịch & Credit" rightAction={headerActions}>
       <div className="flex flex-col gap-6">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            <div className="bg-white border border-border-hairline p-5 rounded-xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase  mb-1">Tổng doanh thu</div>
+              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Tổng doanh thu</div>
               <div className="text-2xl font-bold text-text-primary">15,250,000đ</div>
            </div>
            <div className="bg-white border border-border-hairline p-5 rounded-xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase  mb-1">Credit đã nạp</div>
+              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Credit đã nạp</div>
               <div className="text-2xl font-bold text-primary">12,450 CR</div>
            </div>
            <div className="bg-white border border-border-hairline p-5 rounded-xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase  mb-1">Đền bù/Khuyến mãi</div>
+              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Đền bù/Khuyến mãi</div>
               <div className="text-2xl font-bold text-orange-600">850 CR</div>
            </div>
            <div className="bg-white border border-border-hairline p-5 rounded-xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase  mb-1">Chờ xử lý</div>
+              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Chờ xử lý</div>
               <div className="text-2xl font-bold text-amber-500">3 GD</div>
            </div>
         </div>
 
-        {/* Action Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="relative w-full md:w-[400px]">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary">search</span>
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="relative flex-1 group">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary group-focus-within:text-primary transition-colors">search</span>
             <input 
               type="text" 
               placeholder="Tìm theo tên, email, mã GD..."
@@ -78,42 +92,38 @@ export const AdminTransactionsPage: React.FC = () => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-bg-surface border border-border-hairline rounded-lg outline-none focus:bg-white focus:border-primary/30 transition-all text-[14px]"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-border-hairline rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[14px] shadow-sm"
             />
           </div>
-          <div className="flex gap-3 w-full md:w-auto">
+          <div className="w-full md:w-64">
              <select 
                value={typeFilter}
                onChange={(e) => {
                 setTypeFilter(e.target.value);
                 setCurrentPage(1);
                }}
-               className="px-4 py-2 bg-bg-surface border border-border-hairline rounded-lg outline-none focus:bg-white focus:border-primary/30 transition-all text-[13px] font-semibold text-text-secondary"
+               className="w-full px-4 py-3 bg-white border border-border-hairline rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[13px] font-bold text-text-secondary shadow-sm"
              >
                 <option value="ALL">Tất cả loại</option>
                 <option value="DEPOSIT">Nạp tiền (Deposit)</option>
                 <option value="COMPENSATION">Đền bù (Compensation)</option>
                 <option value="PROMOTION">Khuyến mãi (Promotion)</option>
              </select>
-             <button className="bg-primary text-white px-6 py-2 rounded-lg font-semibold text-[13px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">add_card</span>
-                Tạo giao dịch mới
-             </button>
           </div>
         </div>
 
         {/* Transactions Table */}
-        <div className="bg-bg-canvas rounded-xl border border-border-hairline shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-border-hairline shadow-sm overflow-hidden">
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="bg-bg-surface-soft border-b border-border-hairline">
-                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase ">Khách hàng</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase ">Loại</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase ">Số lượng</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase ">Số tiền</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase ">Trạng thái</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase ">Thời gian</th>
-                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase  text-right">Thao tác</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Khách hàng</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Loại</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Số lượng</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Số tiền</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Trạng thái</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Thời gian</th>
+                <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px] text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-hairline">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AdminLayout } from '../../layouts/AdminLayout';
+import { JobSearch } from '../../features/jobs/components/JobSearch';
 import { JobFilters } from '../../features/jobs/components/JobFilters';
 import { JobTemplateTable } from '../../features/jobs/components/JobTemplateTable';
 import { JobTemplateModal } from '../../features/jobs/components/JobTemplateModal';
@@ -8,10 +9,14 @@ import { useJobTemplates } from '../../features/jobs/hooks/useJobTemplates';
 
 export const AdminJobsPage: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<JobTemplate | null>(null);
 
-  const { templates, isLoading, deleteTemplate } = useJobTemplates({ search });
+  const { templates, isLoading, deleteTemplate } = useJobTemplates({ 
+    search, 
+    categoryIds 
+  });
 
   const handleOpenModal = (template: JobTemplate | null = null) => {
     setEditingTemplate(template);
@@ -28,33 +33,35 @@ export const AdminJobsPage: React.FC = () => {
     }
   };
 
+  // Định nghĩa nút bấm để đưa lên Header của AdminLayout
+  const renderHeaderAction = (
+    <button 
+      onClick={() => handleOpenModal()}
+      className="bg-primary text-white px-5 py-2 rounded-lg font-bold text-[12px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+    >
+      <span className="material-symbols-outlined text-[18px]">add</span>
+      Thiết kế mẫu JD mới
+    </button>
+  );
+
   return (
-    <AdminLayout title="Quản lý Job Templates">
-      {/* Action Bar & Filters */}
+    <AdminLayout 
+      title="Quản lý Job Templates" 
+      rightAction={renderHeaderAction}
+    >
       <div className="flex flex-col gap-6 mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="relative w-full md:w-[400px] group">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary group-focus-within:text-primary transition-colors">search</span>
-            <input 
-              type="text" 
-              placeholder="Tìm mẫu JD theo tiêu đề, công ty..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-bg-surface border border-border-hairline rounded-lg outline-none focus:bg-white focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all text-[14px]"
-            />
-          </div>
-          <button 
-            onClick={() => handleOpenModal()}
-            className="w-full md:w-auto bg-primary text-white px-6 py-2.5 rounded-lg font-semibold text-[13px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 shrink-0"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Thiết kế mẫu JD mới
-          </button>
+        {/* Search Bar chiếm trọn chiều ngang */}
+        <div className="w-full">
+          <JobSearch onSearch={(val) => setSearch(val)} />
         </div>
 
+        {/* Filter Section */}
         <div className="bg-bg-surface/30 p-4 rounded-xl border border-border-hairline">
            <div className="text-[11px] font-bold text-text-tertiary uppercase mb-3 px-1">Lọc theo ngành nghề & kỹ năng</div>
-           <JobFilters />
+           <JobFilters 
+             selectedCategoryIds={categoryIds}
+             onFilterChange={(filters) => setCategoryIds(filters.categoryIds)} 
+           />
         </div>
       </div>
 
@@ -72,7 +79,6 @@ export const AdminJobsPage: React.FC = () => {
         />
       )}
 
-      {/* CRUD Modal Studio */}
       <JobTemplateModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

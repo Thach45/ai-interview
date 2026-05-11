@@ -13,8 +13,9 @@ class JobTemplateController {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const search = req.query.search as string;
+    const categoryIds = req.query.categoryIds as string[];
 
-    const result = await this.jobTemplateService.getAll(page, limit, search);
+    const result = await this.jobTemplateService.getAll(page, limit, search, categoryIds);
     return sendResponse(res, 200, 'Lấy danh sách mẫu JD thành công', result);
   });
 

@@ -54,14 +54,22 @@ export const AdminUsersPage: React.FC = () => {
     setIsUserModalOpen(true);
   };
 
+  const headerAction = (
+    <button 
+      onClick={handleAddUser}
+      className="bg-primary text-white px-5 py-2 rounded-lg font-bold text-[12px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+    >
+      <span className="material-symbols-outlined text-[18px]">person_add</span>
+      Thêm người dùng mới
+    </button>
+  );
+
   return (
-    <AdminLayout title="Quản lý Người dùng">
+    <AdminLayout title="Quản lý Người dùng" rightAction={headerAction}>
       <div className="flex flex-col gap-6">
-        {/* Quick Summary Bar for User Focus */}
-       
-        {/* Action Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="relative w-full md:w-[400px] group">
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="relative flex-1 group">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary group-focus-within:text-primary transition-colors">search</span>
             <input 
               type="text" 
@@ -71,35 +79,28 @@ export const AdminUsersPage: React.FC = () => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-bg-surface border border-border-hairline rounded-lg outline-none focus:bg-white focus:border-primary/30 transition-all text-[14px]"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-border-hairline rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[14px] shadow-sm"
             />
           </div>
-          <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <div className="w-full md:w-64">
              <select 
                value={roleFilter}
                onChange={(e) => {
                 setRoleFilter(e.target.value);
                 setCurrentPage(1);
                }}
-               className="px-4 py-2 bg-bg-surface border border-border-hairline rounded-lg outline-none focus:bg-white focus:border-primary/30 transition-all text-[13px] font-semibold text-text-secondary"
+               className="w-full px-4 py-3 bg-white border border-border-hairline rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[13px] font-bold text-text-secondary shadow-sm"
              >
                 <option value="ALL">Tất cả vai trò</option>
                 <option value="ADMIN">ADMIN</option>
                 <option value="MODERATOR">MODERATOR</option>
                 <option value="CANDIDATE">CANDIDATE</option>
              </select>
-             <button 
-              onClick={handleAddUser}
-              className="flex-1 md:flex-none bg-primary text-white px-6 py-2 rounded-lg font-semibold text-[13px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-             >
-                <span className="material-symbols-outlined text-[18px]">person_add</span>
-                Thêm người dùng
-             </button>
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="bg-bg-canvas rounded-xl border border-border-hairline shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-border-hairline shadow-sm overflow-hidden">
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="bg-bg-surface-soft border-b border-border-hairline">

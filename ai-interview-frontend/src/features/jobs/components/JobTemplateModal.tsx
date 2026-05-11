@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { JobTemplate } from '../types/types';
 import { jobTemplateSchema, type JobTemplateFormData } from '../validations/jobTemplate.validation';
 import { useJobTemplates } from '../hooks/useJobTemplates';
 import { JobCategoryModal } from './JobCategoryModal';
+import { useJobCategories } from '../hooks/useJobCategoriesAdmin';
 
 interface JobTemplateModalProps {
   isOpen: boolean;
@@ -17,6 +18,26 @@ export const JobTemplateModal: React.FC<JobTemplateModalProps> = ({ isOpen, onCl
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const { createTemplate, updateTemplate, isCreating, isUpdating } = useJobTemplates();
 
+  const form = useForm<JobTemplateFormData>({
+    resolver: zodResolver(jobTemplateSchema),
+    defaultValues: {
+      title: '',
+      companyName: '',
+      companyLogo: '',
+      location: '',
+      salaryRange: '',
+      employmentType: 'Full-time',
+      experienceLevel: 'JUNIOR',
+      isRemote: false,
+      categoryId: '',
+      responsibilities: '',
+      requirements: '',
+      benefits: '',
+      aiExtractedContext: '',
+      isHotJob: false,
+    },
+  });
+
   const {
     register,
     handleSubmit,
@@ -24,15 +45,7 @@ export const JobTemplateModal: React.FC<JobTemplateModalProps> = ({ isOpen, onCl
     formState: { errors },
     setValue,
     watch,
-  } = useForm<JobTemplateFormData>({
-    resolver: zodResolver(jobTemplateSchema),
-    defaultValues: {
-      employmentType: 'Full-time',
-      experienceLevel: 'JUNIOR',
-      isRemote: false,
-      isHotJob: false,
-    },
-  });
+  } = form;
 
   useEffect(() => {
     if (template) {
@@ -72,7 +85,7 @@ export const JobTemplateModal: React.FC<JobTemplateModalProps> = ({ isOpen, onCl
     }
   }, [template, reset]);
 
-  const onSubmit = async (data: JobTemplateFormData) => {
+  const onSubmit: SubmitHandler<JobTemplateFormData> = async (data) => {
     try {
       if (template) {
         await updateTemplate({ id: template.id, data });
@@ -83,6 +96,19 @@ export const JobTemplateModal: React.FC<JobTemplateModalProps> = ({ isOpen, onCl
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const { useFlatCategories } = useJobCategories();
+  const { data: flatCategoriesData } = useFlatCategories({ limit: 1000 });
+  const flatCategories = flatCategoriesData?.data.data || [];
+
+  const getCategoryNames = (idsString: string) => {
+    if (!idsString) return [];
+    const ids = idsString.split(',').map(id => id.trim());
+    return ids.map(id => {
+      const cat = flatCategories.find(c => c.id === id);
+      return cat ? cat.name : id;
+    });
   };
 
   if (!isOpen) return null;
@@ -217,10 +243,10 @@ export const JobTemplateModal: React.FC<JobTemplateModalProps> = ({ isOpen, onCl
                   className="w-full px-4 py-2 bg-bg-surface border border-border-hairline rounded-lg cursor-pointer hover:border-primary/30 transition-all flex flex-wrap items-center gap-2 min-h-[44px]"
                 >
                   {watch('categoryId') ? (
-                    watch('categoryId')?.split(', ').map((cat: string) => (
-                      <span key={cat} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary text-[11px] font-bold rounded-md border border-primary/20">
+                    getCategoryNames(watch('categoryId')).map((name, idx) => (
+                      <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary text-[11px] font-bold rounded-md border border-primary/20">
                         <span className="material-symbols-outlined text-[14px]">work</span>
-                        {cat}
+                        {name}
                       </span>
                     ))
                   ) : (
@@ -310,10 +336,10 @@ export const JobTemplateModal: React.FC<JobTemplateModalProps> = ({ isOpen, onCl
       <JobCategoryModal 
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
+        initialSelectedIds={watch('categoryId')?.split(',').map(id => id.trim()).filter(Boolean) || []}
         onApply={(ids) => {
-          // Temporarily join IDs if multiple, or just take the first one
-          // Since categoryId is a string in the schema
-          setValue('categoryId', ids.join(', '));
+          // Store as comma-separated IDs
+          setValue('categoryId', ids.join(','));
           setIsCategoryModalOpen(false);
         }}
       />

@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { useJobCategories } from '../hooks/useJobCategoriesAdmin';
-import type { JobCategory } from '../api/jobCategoryAdmin.api';
 
 interface JobCategoryModalProps {
   isOpen: boolean;

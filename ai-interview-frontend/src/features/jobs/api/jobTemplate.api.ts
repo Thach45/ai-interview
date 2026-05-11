@@ -3,7 +3,7 @@ import type { JobTemplate } from "../types/types";
 
 export const jobTemplateApi = {
   /** Lấy danh sách job templates */
-  getAll: (params?: { page?: number; limit?: number; search?: string }) =>
+  getAll: (params?: { page?: number; limit?: number; search?: string; categoryIds?: string[] }) =>
     apiClient.get<any, { success: boolean; data: { data: JobTemplate[]; meta: any } }>(
       "/admin/job-templates",
       { params }

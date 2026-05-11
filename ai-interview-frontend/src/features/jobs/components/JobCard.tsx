@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface JobCardProps {
+  id: string;
   title: string;
   company: string;
   location: string;
@@ -11,7 +12,7 @@ interface JobCardProps {
   onClick?: () => void;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ title, company, location, salary, type, postedAt, isSelected, onClick }) => {
+export const JobCard: React.FC<JobCardProps> = ({ id, title, company, location, salary, type, postedAt, isSelected, onClick }) => {
   return (
     <div 
       onClick={onClick}

@@ -57,9 +57,20 @@ export const AdminCategoriesPage: React.FC = () => {
     }
   };
 
+  // Nút hành động chính cho Header
+  const headerAction = (
+    <button 
+      onClick={handleAddGroup}
+      className="bg-primary text-white px-5 py-2 rounded-lg font-bold text-[12px] hover:brightness-110 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
+    >
+      <span className="material-symbols-outlined text-[18px]">add</span>
+      Thêm nhóm mới
+    </button>
+  );
+
   if (isTreeLoading) {
     return (
-      <AdminLayout title="Quản lý Danh mục Ngành nghề">
+      <AdminLayout title="Quản lý Danh mục Ngành nghề" rightAction={headerAction}>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -68,17 +79,13 @@ export const AdminCategoriesPage: React.FC = () => {
   }
 
   return (
-    <AdminLayout title="Quản lý Danh mục Ngành nghề">
+    <AdminLayout title="Quản lý Danh mục Ngành nghề" rightAction={headerAction}>
       <div className="flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <p className="text-[14px] text-text-secondary">Quản lý cấu trúc phân cấp: Nhóm nghề &gt; Ngành nghề &gt; Vị trí chuyên môn</p>
-          <button 
-            onClick={handleAddGroup}
-            className="bg-primary text-white px-6 py-2 rounded-lg font-semibold text-[13px] hover:brightness-110 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Thêm nhóm mới
-          </button>
+        <div className="bg-primary/5 border border-primary/10 px-6 py-4 rounded-xl">
+          <p className="text-[13px] text-primary font-medium flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">info</span>
+            Quản lý cấu trúc phân cấp: Nhóm nghề &gt; Ngành nghề &gt; Vị trí chuyên môn
+          </p>
         </div>
 
         <div className="space-y-4 pb-20">

@@ -4,9 +4,10 @@ import { AdminSidebar } from '../components/layout/AdminSidebar';
 interface AdminLayoutProps {
   children: React.ReactNode;
   title?: string;
+  rightAction?: React.ReactNode;
 }
 
-export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => {
+export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, rightAction }) => {
   return (
     <div className="flex h-screen bg-bg-canvas text-text-primary overflow-hidden">
       {/* Sidebar cố định */}
@@ -19,7 +20,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
           <div className="flex items-center gap-4">
             <h2 className="text-[16px] font-semibold text-text-primary">{title || 'Admin Dashboard'}</h2>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            {rightAction && <div className="mr-2">{rightAction}</div>}
             <button className="material-symbols-outlined text-text-secondary hover:text-primary transition-colors">notifications</button>
             <div className="size-8 bg-primary/10 rounded-full border border-primary/20 flex items-center justify-center text-[12px] font-bold text-primary">
               AD

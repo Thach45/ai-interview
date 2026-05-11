@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import jobTemplateApi from "../api/jobTemplate.api";
 import type { JobTemplate } from "../types/types";
 
-export const useJobTemplates = (params?: { page?: number; limit?: number; search?: string }) => {
+export const useJobTemplates = (params?: { page?: number; limit?: number; search?: string; categoryIds?: string[] }) => {
   const queryClient = useQueryClient();
 
   /**

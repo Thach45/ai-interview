@@ -6,17 +6,30 @@ export class JobTemplateService {
   /**
    * Lấy toàn bộ danh sách Job Templates
    */
-  async getAll(page: number = 1, limit: number = 10, search?: string) {
+  async getAll(page: number = 1, limit: number = 10, search?: string, categoryIds?: string[]) {
     const skip = (page - 1) * limit;
 
-    const where = search
-      ? {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' as any } },
-            { companyName: { contains: search, mode: 'insensitive' as any } },
-          ],
-        }
-      : {};
+    const where: any = {
+      AND: [],
+    };
+
+    if (search) {
+      where.AND.push({
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { companyName: { contains: search, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    if (categoryIds && categoryIds.length > 0) {
+      where.AND.push({
+        categoryId: { in: categoryIds },
+      });
+    }
+
+    // Nếu không có filter nào thì xóa AND để query sạch hơn
+    if (where.AND.length === 0) delete where.AND;
 
     const [templates, total] = await Promise.all([
       prisma.jobTemplate.findMany({

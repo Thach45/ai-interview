@@ -3,17 +3,23 @@ import { useNavigate } from 'react-router-dom';
 
 interface JobDetailProps {
   job: {
+    id: string;
     title: string;
-    company: string;
+    companyName: string;
     location: string;
-    salary: string;
-    type: string;
-    postedAt: string;
+    salaryRange: string;
+    employmentType: string;
+    experienceLevel: string;
+    responsibilities: string;
+    requirements: string;
+    benefits: string;
+    createdAt?: string;
   } | null;
 }
 
 export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
   const navigate = useNavigate();
+
   if (!job) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-white rounded-2xl border border-gray-200 border-dashed">
@@ -28,6 +34,14 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
     );
   }
 
+  // Hàm tiện ích để render text xuống dòng hoặc danh sách
+  const renderContent = (content: string) => {
+    if (!content) return null;
+    return content.split('\n').map((line, index) => (
+      <p key={index} className="mb-2 last:mb-0">{line}</p>
+    ));
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 h-full flex flex-col overflow-hidden shadow-sm">
       {/* Header Info */}
@@ -36,24 +50,23 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
           <div className="size-16 border border-gray-100 rounded-xl flex items-center justify-center text-primary bg-white shadow-sm">
             <span className="material-symbols-outlined text-4xl font-light">corporate_fare</span>
           </div>
-          {/* Đã bỏ nút Favorite và Share */}
         </div>
 
         <h2 className="text-xl font-bold text-text-primary mb-2">{job.title}</h2>
-        <p className="text-primary font-bold text-[15px] mb-4">{job.company}</p>
+        <p className="text-primary font-bold text-[15px] mb-4">{job.companyName}</p>
 
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2 text-[13px] text-text-secondary">
             <span className="material-symbols-outlined text-lg">location_on</span>
-            {job.location}
+            {job.location || 'Địa điểm chưa cập nhật'}
           </div>
           <div className="flex items-center gap-2 text-[13px] text-text-secondary">
             <span className="material-symbols-outlined text-lg">payments</span>
-            <span className="text-[#22c55e] font-bold">{job.salary}</span>
+            <span className="text-[#22c55e] font-bold">{job.salaryRange || 'Thỏa thuận'}</span>
           </div>
           <div className="flex items-center gap-2 text-[13px] text-text-secondary">
-            <span className="material-symbols-outlined text-lg">schedule</span>
-            {job.postedAt}
+            <span className="material-symbols-outlined text-lg">work</span>
+            {job.employmentType}
           </div>
         </div>
       </div>
@@ -61,33 +74,33 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
       {/* Main Content Sections */}
       <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
         <section>
-          <h3 className="text-[16px] font-bold text-text-primary mb-3">Mô tả công việc</h3>
-          <ul className="list-disc list-inside text-[14px] text-text-secondary space-y-2 leading-relaxed">
-            <li>Tham gia phát triển các dự án Web sử dụng ReactJS / NextJS.</li>
-            <li>Phối hợp với team Design để chuyển đổi UI/UX sang code Frontend.</li>
-            <li>Tối ưu hóa hiệu suất ứng dụng và trải nghiệm người dùng.</li>
-            <li>Xây dựng các component dùng chung, có khả năng tái sử dụng cao.</li>
-          </ul>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="size-1.5 rounded-full bg-primary" />
+            <h3 className="text-[16px] font-bold text-text-primary">Mô tả công việc</h3>
+          </div>
+          <div className="text-[14px] text-text-secondary space-y-1 leading-relaxed pl-3.5">
+            {renderContent(job.responsibilities)}
+          </div>
         </section>
 
         <section>
-          <h3 className="text-[16px] font-bold text-text-primary mb-3">Yêu cầu ứng viên</h3>
-          <ul className="list-disc list-inside text-[14px] text-text-secondary space-y-2 leading-relaxed">
-            <li>Ít nhất 2 năm kinh nghiệm làm việc với ReactJS.</li>
-            <li>Thành thạo HTML5, CSS3 (TailwindCSS, SCSS).</li>
-            <li>Hiểu biết sâu về JavaScript (ES6+), TypeScript.</li>
-            <li>Có tư duy về UX/UI tốt.</li>
-          </ul>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="size-1.5 rounded-full bg-primary" />
+            <h3 className="text-[16px] font-bold text-text-primary">Yêu cầu ứng viên</h3>
+          </div>
+          <div className="text-[14px] text-text-secondary space-y-1 leading-relaxed pl-3.5">
+            {renderContent(job.requirements)}
+          </div>
         </section>
 
         <section>
-          <h3 className="text-[16px] font-bold text-text-primary mb-3">Quyền lợi</h3>
-          <ul className="list-disc list-inside text-[14px] text-text-secondary space-y-2 leading-relaxed">
-            <li>Mức lương cạnh tranh theo năng lực.</li>
-            <li>Thưởng dự án, thưởng năm hấp dẫn.</li>
-            <li>Môi trường làm việc trẻ trung, năng động.</li>
-            <li>Hỗ trợ thiết bị làm việc hiện đại.</li>
-          </ul>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="size-1.5 rounded-full bg-primary" />
+            <h3 className="text-[16px] font-bold text-text-primary">Quyền lợi</h3>
+          </div>
+          <div className="text-[14px] text-text-secondary space-y-1 leading-relaxed pl-3.5">
+            {renderContent(job.benefits)}
+          </div>
         </section>
       </div>
 
