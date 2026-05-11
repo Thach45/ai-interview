@@ -44,7 +44,7 @@ class MailService {
   /**
    * Gửi email khôi phục mật khẩu (Placeholder)
    */
-  async sendForgotPassword(email: string, token: string) {
+  async sendForgotPassword(email: string, _token: string) {
     console.log(`🔗 Đang gửi Email khôi phục mật khẩu tới ${email}`);
     return true;
   }

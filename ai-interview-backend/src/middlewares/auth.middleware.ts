@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { UnauthorizedException, ForbiddenException } from '../exceptions';
 
 import { TokenPayload as CustomJwtPayload } from '../types/jwt.type';
