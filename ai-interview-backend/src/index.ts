@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 app.use(apiLimiter);
 app.use(
   cors({
-    origin: '*', // Chỉ định frontend URL
+    origin: '*', // Yêu cầu origin cụ thể khi bật credentials
     credentials: true, // Cho phép gửi credentials (cookies, headers)
   }),
 );
