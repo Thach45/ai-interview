@@ -9,22 +9,30 @@ const FILTER_ITEMS = [
 
 export const JobFilters = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   return (
     <div className="filters-section mb-4">
       <div className="flex flex-wrap items-center gap-2 mb-3">
         {/* Saved Filter Button */}
         
-        {/* Job Role Multi-Select (Trigger Modal) */}
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all border bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+          className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all border ${
+            selectedCategories.length > 0 
+              ? 'bg-primary/10 text-primary border-primary/20' 
+              : 'bg-white text-text-secondary border-gray-200 hover:border-primary hover:text-primary'
+          }`}
         >
           <span className="material-symbols-outlined text-lg">work</span>
-          <span>Chọn ngành nghề</span>
-          <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">+1</span>
-          <span className="material-symbols-outlined text-lg">expand_more</span>
+          <span>{selectedCategories.length > 0 ? `Ngành nghề: ${selectedCategories[0]}${selectedCategories.length > 1 ? ` (+${selectedCategories.length - 1})` : ''}` : 'Chọn ngành nghề'}</span>
+          {selectedCategories.length > 0 && (
+            <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">
+              {selectedCategories.length}
+            </span>
+          )}
+          <span className="material-symbols-outlined text-lg opacity-50">expand_more</span>
         </button>
 
         {/* Other Filters */}
@@ -50,7 +58,7 @@ export const JobFilters = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onApply={(ids) => {
-          console.log('Applied categories:', ids);
+          setSelectedCategories(ids);
           setIsModalOpen(false);
         }}
       />

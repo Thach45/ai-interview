@@ -21,7 +21,6 @@ import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import ProfilePage from "../pages/ProfilePage.tsx";
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 
-import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -61,12 +60,12 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         } />
 
-          <Route path="/profile" element={
-              <ProtectedRoute>
-                  <ProfilePage />
-              </ProtectedRoute>
-          } />
-        
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+
         {/* Admin Routes (Chỉ ADMIN mới vào được) */}
         <Route path="/admin" element={<Navigate to="/admin/jobs" replace />} />
         <Route path="/admin/jobs" element={
@@ -89,7 +88,7 @@ export const AppRoutes: React.FC = () => {
             <AdminTransactionsPage />
           </ProtectedRoute>
         } />
-        
+
         {/* 404 Route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

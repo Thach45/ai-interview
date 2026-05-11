@@ -4,41 +4,27 @@ import { JobFilters } from '../../features/jobs/components/JobFilters';
 import { JobTemplateTable } from '../../features/jobs/components/JobTemplateTable';
 import { JobTemplateModal } from '../../features/jobs/components/JobTemplateModal';
 import type { JobTemplate } from '../../features/jobs/types/types';
-
-const MOCK_TEMPLATES: JobTemplate[] = [
-  { 
-    id: '1', 
-    title: 'Senior Frontend Developer', 
-    companyName: 'Google', 
-    companyLogo: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.png',
-    location: 'Hà Nội, Việt Nam',
-    salaryRange: '25 - 45 Triệu',
-    employmentType: 'Full-time',
-    experienceLevel: 'SENIOR', 
-    isRemote: true,
-    categoryName: 'IT / Software', 
-    isHotJob: true, 
-    status: 'published',
-    responsibilities: 'Build scalable UI components...',
-    requirements: 'React, TypeScript, 5+ years exp...',
-    benefits: 'High salary, Global environment...',
-    aiExtractedContext: 'Focus on System Design and Performance optimization...'
-  },
-];
+import { useJobTemplates } from '../../features/jobs/hooks/useJobTemplates';
 
 export const AdminJobsPage: React.FC = () => {
-  const [templates, setTemplates] = useState(MOCK_TEMPLATES);
+  const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<JobTemplate | null>(null);
+
+  const { templates, isLoading, deleteTemplate } = useJobTemplates({ search });
 
   const handleOpenModal = (template: JobTemplate | null = null) => {
     setEditingTemplate(template);
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa mẫu JD này?')) {
-      setTemplates(prev => prev.filter(t => t.id !== id));
+      try {
+        await deleteTemplate(id);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -52,6 +38,8 @@ export const AdminJobsPage: React.FC = () => {
             <input 
               type="text" 
               placeholder="Tìm mẫu JD theo tiêu đề, công ty..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-bg-surface border border-border-hairline rounded-lg outline-none focus:bg-white focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all text-[14px]"
             />
           </div>
@@ -71,11 +59,18 @@ export const AdminJobsPage: React.FC = () => {
       </div>
 
       {/* Table Content */}
-      <JobTemplateTable 
-        templates={templates} 
-        onEdit={handleOpenModal} 
-        onDelete={handleDelete}
-      />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="size-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+          <p className="text-[13px] text-text-tertiary font-medium">Đang tải danh sách mẫu JD...</p>
+        </div>
+      ) : (
+        <JobTemplateTable 
+          templates={templates} 
+          onEdit={handleOpenModal} 
+          onDelete={handleDelete}
+        />
+      )}
 
       {/* CRUD Modal Studio */}
       <JobTemplateModal 
@@ -86,5 +81,3 @@ export const AdminJobsPage: React.FC = () => {
     </AdminLayout>
   );
 };
-
-
