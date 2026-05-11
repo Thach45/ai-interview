@@ -18,11 +18,14 @@ class JobCategoryController {
 
   /**
    * GET /api/v1/admin/categories/flat
-   * Lấy danh sách phẳng, filter theo ?type=GROUP|INDUSTRY|POSITION
+   * Lấy danh sách phẳng, filter theo ?type=GROUP|INDUSTRY|POSITION & pagination
    */
   getAll = asyncHandler(async (req: Request, res: Response) => {
     const rawType = req.query.type;
     const type = (Array.isArray(rawType) ? rawType[0] : rawType) as CategoryType | undefined;
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     // Validate type nếu có truyền
     const validTypes = Object.values(CategoryType);
@@ -30,8 +33,8 @@ class JobCategoryController {
       return sendResponse(res, 400, `Type không hợp lệ. Phải là: ${validTypes.join(', ')}`);
     }
 
-    const categories = await this.jobCategoryService.getAll(type);
-    return sendResponse(res, 200, 'Lấy danh sách danh mục thành công', categories);
+    const result = await this.jobCategoryService.getAll(type, page, limit);
+    return sendResponse(res, 200, 'Lấy danh sách danh mục thành công', result);
   });
 
   /**

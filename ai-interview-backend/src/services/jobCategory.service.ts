@@ -24,13 +24,33 @@ export class JobCategoryService {
   }
 
   /**
-   * Lấy danh sách phẳng (flat list), có thể filter theo type
+   * Lấy danh sách phẳng (flat list), hỗ trợ phân trang và filter
    */
-  async getAll(type?: CategoryType) {
-    return prisma.jobCategory.findMany({
-      where: type ? { type } : undefined,
-      orderBy: { createdAt: 'asc' },
-    });
+  async getAll(type?: CategoryType, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [categories, total] = await Promise.all([
+      prisma.jobCategory.findMany({
+        where: type ? { type } : undefined,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { parent: true },
+      }),
+      prisma.jobCategory.count({
+        where: type ? { type } : undefined,
+      }),
+    ]);
+
+    return {
+      data: categories,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   /**
