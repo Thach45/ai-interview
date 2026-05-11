@@ -1,10 +1,15 @@
 import express, { Router } from 'express';
-import * as user from '../../controllers/v1/auth.controller';
+import { authController } from '../../controllers/v1/auth.controller';
 import { validate } from '../../middlewares/validate.middleware';
 import { registerSchema, loginSchema } from '../../validations/user.validation';
 
 const router: Router = express.Router();
-router.post('/login', validate(loginSchema), user.login);
-router.post('/refresh', user.refreshToken);
+router.post('/login', validate(loginSchema), authController.login);
+router.post('/logout', authController.logout);
+router.post('/refresh', authController.refreshToken);
+router.post('/register', validate(registerSchema), authController.register);
+router.post('/send-otp', authController.sendOTP);
+router.post('/verify-otp', authController.verifyOtp);
+router.post('/resend-otp', authController.resendOtp);
 
 export default router;

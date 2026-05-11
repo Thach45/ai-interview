@@ -1,114 +1,94 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { generateAccessToken, generateRefreshToken } from '../../utils/jwt';
-import { BadRequestException, UnauthorizedException, ForbiddenException } from '../../exceptions';
-import * as userService from '../../services/auth.service';
+import { AuthService, authService } from '../../services/auth.service';
 import { asyncHandler } from '../../utils/asyncHandler';
+import { sendResponse } from '../../utils/apiResponse';
+import { toUserResponseDTO } from '../../mappers/user.mapper';
+import { TokenPayload } from '../../types/jwt.type';
 
 dotenv.config();
 
-export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, role } = req.body;
+class AuthController {
+  constructor(private readonly authService: AuthService) {}
 
-  const existEmail = await userService.findUserByEmail(email);
-  if (existEmail) {
-    throw new BadRequestException('Email already exists');
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await userService.createUser({
-    email,
-    password: hashedPassword,
-    role: role || 'user',
+  /**
+   * Đăng ký tài khoản mới
+   */
+  register = asyncHandler(async (req: Request, res: Response) => {
+    const user = await this.authService.register(req.body);
+    return sendResponse(res, 201, 'User registered successfully', toUserResponseDTO(user));
   });
 
-  res.status(201).json({
-    status: 'success',
-    message: 'User registered successfully',
-    data: {
+  sendOTP = asyncHandler(async (req: Request, res: Response) => {
+    const otp = await this.authService.sendOtp(req.body.email);
+    return sendResponse(res, 200, 'OTP sent successfully', otp);
+  });
+
+  verifyOtp = asyncHandler(async (req: Request, res: Response) => {
+    await this.authService.verifyOtp(req.body.email, req.body.otp);
+    return sendResponse(res, 200, 'OTP verified successfully');
+  });
+
+  resendOtp = asyncHandler(async (req: Request, res: Response) => {
+    const { email } = req.body;
+    await this.authService.sendOtp(email);
+    return sendResponse(res, 200, 'Mã OTP mới đã được gửi');
+  });
+  /**
+   * Đăng nhập
+   */
+  login = asyncHandler(async (req: Request, res: Response) => {
+    const user = await this.authService.login(req.body);
+
+    const payload = {
+      id: user.id,
       email: user.email,
       role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    },
-  });
-});
-
-export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const auth = await userService.findUserByEmail(email);
-
-  if (!auth || !(await bcrypt.compare(password, auth.password))) {
-    throw new UnauthorizedException('Invalid email or password');
-  }
-
-  const payload = {
-    id: auth._id,
-    email: auth.email,
-    role: auth.role,
-  };
-
-  const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
-
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
-
-  res.status(200).json({
-    status: 'success',
-    message: 'User logged in successfully',
-    data: {
-      email: auth.email,
-      role: auth.role,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    },
-  });
-});
-
-export const refreshToken = asyncHandler(async (req: Request, res: Response) => {
-  const token = req.body.refreshToken || req.cookies.refreshToken;
-
-  if (!token) {
-    throw new UnauthorizedException('Refresh token is required');
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_TOKEN as string) as any;
-    const payload = {
-      id: decoded.id,
-      email: decoded.email,
-      role: decoded.role,
-    };
+      emailVerifyAt: user.emailVerifiedAt,
+      status: user.status,
+    } as TokenPayload;
 
     const accessToken = generateAccessToken(payload);
-    const newRefreshToken = generateRefreshToken(payload);
+    const refreshToken = generateRefreshToken(payload);
 
-    res.cookie('refreshToken', newRefreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     });
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Token refreshed successfully',
-      data: { accessToken },
+    return sendResponse(res, 200, 'User logged in successfully', {
+      user: toUserResponseDTO(user),
+      accessToken,
+      refreshToken,
     });
-  } catch (_err) {
-    throw new ForbiddenException('Invalid or expired refresh token');
-  }
-});
-
-export const logout = asyncHandler(async (req: Request, res: Response) => {
-  res.clearCookie('refreshToken');
-  res.status(200).json({
-    status: 'success',
-    message: 'User logged out successfully',
   });
-});
+
+  /**
+   * Làm mới token
+   */
+  refreshToken = asyncHandler(async (req: Request, res: Response) => {
+    return sendResponse(res, 200, 'Token refreshed successfully');
+  });
+
+  /**
+   * Đăng xuất
+   */
+  logout = asyncHandler(async (req: Request, res: Response) => {
+    // Gọi service nếu cần xử lý nghiệp vụ (như blacklist token, tracking...)
+    // await this.authService.logout(req.user?.id);
+
+    // Xóa cookie chứa refreshToken
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return sendResponse(res, 200, 'User logged out successfully');
+  });
+}
+
+// Khởi tạo và tiêm (Inject) instance vào Controller
+export const authController = new AuthController(authService);

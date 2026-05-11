@@ -1,17 +1,13 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { asyncHandler } from '../../utils/asyncHandler';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../../utils/jwt.constant';
-
-const prisma = new PrismaClient();
+import { profileService } from '../../services/profile.service';
 
 export const testLogin = async (req: Request, res: Response) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { email: 'candidate@gmail.com' },
-    });
+    const user = await profileService.findUserByEmail('candidate@gmail.com');
 
     if (!user) {
       return res.status(404).json({ message: 'Test user not found. Run seed first!' });
@@ -43,18 +39,7 @@ export const getCurrentProfile = asyncHandler(async (req: Request, res: Response
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      avatarUrl: true,
-      role: true,
-      createdAt: true,
-      creditsBalance: true,
-    },
-  });
+  const user = await profileService.getUserById(userId);
 
   if (!user) return res.status(404).json({ error: 'User not found' });
   return res.json({ data: user });
@@ -81,30 +66,14 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
     return res.status(400).json({ error: 'Invalid password' });
   }
 
-  const data: any = {};
-  if (fullName !== undefined) data.fullName = fullName.trim();
-  if (avatarUrl !== undefined) data.avatarUrl = avatarUrl.trim();
-  if (password) {
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
-    }
-    data.password = await bcrypt.hash(password, 10);
+  if (password && password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
-  data.updatedAt = new Date();
 
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data,
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      avatarUrl: true,
-      role: true,
-      createdAt: true,
-      updatedAt: true,
-      creditsBalance: true,
-    },
+  const updated = await profileService.updateUser(userId, {
+    fullName,
+    avatarUrl,
+    password,
   });
 
   return res.json({ data: updated });

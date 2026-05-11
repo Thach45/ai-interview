@@ -1,4 +1,3 @@
-import React from 'react';
 
 const StatCard = ({ title, value, icon, colorClass, textColorClass }: { title: string, value: string | number, icon: string, colorClass: string, textColorClass: string }) => (
   <div className="bg-bg-canvas p-6 rounded-lg border border-border-hairline flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">

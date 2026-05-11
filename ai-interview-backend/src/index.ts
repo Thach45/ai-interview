@@ -14,7 +14,7 @@ const port: number = parseInt(process.env.PORT || '3000', 10);
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: 'http://localhost:3001', // Chỉ định frontend URL
+    origin: 'http://localhost:5173', // Chỉ định frontend URL
     credentials: true, // Cho phép gửi credentials (cookies, headers)
   }),
 );

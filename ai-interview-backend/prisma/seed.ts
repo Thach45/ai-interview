@@ -29,9 +29,10 @@ async function main() {
     await prisma.user.create({
       data: {
         email: adminEmail,
+        fullName: 'System Administrator', // Thêm trường bắt buộc này
         password: hashedPassword,
         role: 'ADMIN',
-        fullName: 'Admin User',
+        emailVerifiedAt: new Date(),
       },
     });
 

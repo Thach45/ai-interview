@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { authService } from '../../shared/services/auth.service';
 
 const MENU_ITEMS = [
   // { id: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/admin' },
@@ -82,7 +83,7 @@ export const AdminSidebar: React.FC = () => {
             <div className="text-[13px] font-semibold text-text-primary truncate">Hoang Thach</div>
             <div className="text-[11px] text-text-tertiary truncate">Super Admin</div>
           </div>
-          <button className="material-symbols-outlined text-[18px] text-text-tertiary hover:text-red-500">logout</button>
+          <button onClick={() => authService.logout()} className="material-symbols-outlined text-[18px] text-text-tertiary hover:text-red-500 cursor-pointer">logout</button>
         </div>
       </div>
     </aside>

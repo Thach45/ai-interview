@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "husky install"
+    "prepare": "cd .. && husky install ai-interview-backend/.husky"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
