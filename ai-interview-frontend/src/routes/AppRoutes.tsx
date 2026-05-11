@@ -7,6 +7,7 @@ import InterviewPracticePage from '../pages/InterviewPractice';
 import InterviewResultPage from '../pages/InterviewResult';
 import NotFoundPage from '../pages/NotFound';
 
+
 import { AdminJobsPage } from '../pages/admin/AdminJobsPage';
 import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
 import { AdminCategoriesPage } from '../pages/admin/AdminCategoriesPage';
@@ -15,6 +16,9 @@ import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { VerifyOTPPage } from '../pages/auth/VerifyOTPPage';
+
+import { ProtectedRoute } from '../shared/components/ProtectedRoute';
+import ProfilePage from "../pages/ProfilePage.tsx";
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
@@ -56,6 +60,12 @@ export const AppRoutes: React.FC = () => {
             <InterviewResultPage />
           </ProtectedRoute>
         } />
+
+          <Route path="/profile" element={
+              <ProtectedRoute>
+                  <ProfilePage />
+              </ProtectedRoute>
+          } />
         
         {/* Admin Routes (Chỉ ADMIN mới vào được) */}
         <Route path="/admin" element={<Navigate to="/admin/jobs" replace />} />
