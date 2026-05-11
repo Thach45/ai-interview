@@ -43,7 +43,7 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 h-full flex flex-col overflow-hidden shadow-sm">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header Info */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex justify-between items-start mb-4">

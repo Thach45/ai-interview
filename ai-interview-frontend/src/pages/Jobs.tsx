@@ -58,7 +58,7 @@ const JobsPage: React.FC = () => {
   const totalPages = meta?.totalPages || 1;
 
   return (
-    <MainLayout title="Việc làm" fullHeight maxWidth="1600px" className="p-4 lg:p-6 pb-20 h-full overflow-y-auto custom-scrollbar">
+    <MainLayout hideSearch={true} fullHeight maxWidth="1440px" className="px-8 lg:px-12 py-6 pb-20 h-full overflow-y-auto custom-scrollbar">
       <>
         {/* Search Bar */}
         <JobSearch onSearch={(val) => setSearch(val)} />

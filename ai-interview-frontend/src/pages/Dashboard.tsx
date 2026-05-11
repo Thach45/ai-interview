@@ -4,7 +4,7 @@ import { DashboardOverview } from '../features/dashboard/components/DashboardOve
 
 const DashboardPage: React.FC = () => {
   return (
-    <MainLayout>
+    <MainLayout maxWidth="1440px" className="px-8 lg:px-12 py-6">
       <DashboardOverview />
     </MainLayout>
   );

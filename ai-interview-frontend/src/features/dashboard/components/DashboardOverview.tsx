@@ -1,28 +1,7 @@
-
-const StatCard = ({ title, value, icon, colorClass, textColorClass }: { title: string, value: string | number, icon: string, colorClass: string, textColorClass: string }) => (
-  <div className="bg-bg-canvas p-6 rounded-lg border border-border-hairline flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start">
-      <span className="text-[11px] font-semibold text-text-secondary uppercase">{title}</span>
-      <div className={`size-9 rounded-md ${colorClass} flex items-center justify-center`}>
-        <span className={`material-symbols-outlined text-[20px] ${textColorClass}`}>{icon}</span>
-      </div>
-    </div>
-    <div className="text-[28px] font-semibold text-text-primary leading-tight">{value}</div>
-  </div>
-);
-
-const JobListItem = ({ title, company }: { title: string, company: string }) => (
-  <div className="flex items-center gap-3 py-3 border-b border-border-hairline last:border-0 hover:bg-bg-surface-soft transition-colors cursor-pointer px-2 rounded-md group">
-    <div className="size-10 bg-bg-surface border border-border-hairline rounded-md flex items-center justify-center font-bold text-text-secondary group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-all">
-       <span className="material-symbols-outlined text-[22px]">corporate_fare</span>
-    </div>
-    <div className="flex-1 min-w-0">
-      <div className="text-[14px] font-semibold text-text-primary truncate group-hover:text-primary transition-colors">{title}</div>
-      <div className="text-[12px] text-text-secondary truncate">{company}</div>
-    </div>
-    <span className="material-symbols-outlined text-text-tertiary group-hover:text-primary text-[18px] transition-colors">chevron_right</span>
-  </div>
-);
+import React from 'react';
+import { StatCard } from './StatCard';
+import { JobListItem } from './JobListItem';
+import { PerformanceChart } from './PerformanceChart';
 
 export const DashboardOverview = () => {
   return (
@@ -70,26 +49,7 @@ export const DashboardOverview = () => {
             />
           </div>
 
-          <div className="bg-bg-canvas p-3 rounded-lg border border-border-hairline mb-10 shadow-sm">
-            <div className="flex flex-col md:flex-row gap-2">
-              <div className="relative flex-1 group">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary group-focus-within:text-primary transition-colors">search</span>
-                <input 
-                  type="text" 
-                  placeholder="Tìm kiếm câu hỏi, việc làm hoặc tài nguyên..."
-                  className="w-full pl-12 pr-4 py-3 bg-bg-surface border border-transparent rounded-md outline-none focus:bg-bg-canvas focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all text-[16px] text-text-primary"
-                />
-              </div>
-              <div className="flex gap-2">
-                <select className="bg-bg-canvas border border-border-hairline rounded-md px-4 py-2 text-[14px] font-medium text-text-primary outline-none focus:border-primary transition-colors cursor-pointer min-w-[140px]">
-                  <option>Tất cả danh mục</option>
-                </select>
-                <select className="bg-bg-canvas border border-border-hairline rounded-md px-4 py-2 text-[14px] font-medium text-text-primary outline-none focus:border-primary transition-colors cursor-pointer min-w-[120px]">
-                  <option>Độ khó</option>
-                </select>
-              </div>
-            </div>
-          </div>
+          <PerformanceChart />
 
           <div className="bg-bg-canvas p-8 rounded-lg border border-border-hairline min-h-[400px] flex flex-col shadow-sm">
             <div className="flex justify-between items-center mb-8">
@@ -178,7 +138,6 @@ export const DashboardOverview = () => {
             </div>
           </div>
 
-
           <div className="bg-bg-canvas p-6 rounded-lg border border-border-hairline shadow-sm">
             <div className="flex justify-between items-center mb-6 px-1">
               <h2 className="text-[14px] font-semibold text-text-primary flex items-center gap-2">
@@ -193,12 +152,8 @@ export const DashboardOverview = () => {
               <JobListItem title="Backend Engineer" company="DataScale AI" />
             </div>
           </div>
-
-          
         </div>
       </div>
     </>
   );
 };
-
-
