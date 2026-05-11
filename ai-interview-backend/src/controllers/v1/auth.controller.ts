@@ -20,56 +20,31 @@ class AuthController {
     return sendResponse(res, 201, 'User registered successfully', toUserResponseDTO(user));
   });
 
-  sendOTP = asyncHandler(async (req: Request, res: Response) => {
-    const otp = await this.authService.sendOtp(req.body.email);
-    return sendResponse(res, 200, 'OTP sent successfully', otp);
-  });
-
-  verifyOtp = asyncHandler(async (req: Request, res: Response) => {
-    await this.authService.verifyOtp(req.body.email, req.body.otp);
-    return sendResponse(res, 200, 'OTP verified successfully');
-  });
-
-  resendOtp = asyncHandler(async (req: Request, res: Response) => {
-    const { email } = req.body;
-    await this.authService.sendOtp(email);
-    return sendResponse(res, 200, 'Mã OTP mới đã được gửi');
-  });
   /**
-   * Đăng nhập
+   * Gửi OTP xác thực
    */
-  login = asyncHandler(async (req: Request, res: Response) => {
-    const user = await this.authService.login(req.body);
-
-    const payload = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      emailVerifyAt: user.emailVerifiedAt,
-      status: user.status,
-    } as TokenPayload;
-
-    const accessToken = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken(payload);
-
-    res.cookie('refreshToken', refreshToken, {
-  });
-
   sendOTP = asyncHandler(async (req: Request, res: Response) => {
     const otp = await this.authService.sendOtp(req.body.email);
     return sendResponse(res, 200, 'OTP sent successfully', otp);
   });
 
+  /**
+   * Xác thực mã OTP
+   */
   verifyOtp = asyncHandler(async (req: Request, res: Response) => {
     await this.authService.verifyOtp(req.body.email, req.body.otp);
     return sendResponse(res, 200, 'OTP verified successfully');
   });
 
+  /**
+   * Gửi lại mã OTP
+   */
   resendOtp = asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
     await this.authService.sendOtp(email);
     return sendResponse(res, 200, 'Mã OTP mới đã được gửi');
   });
+
   /**
    * Đăng nhập
    */
@@ -104,6 +79,7 @@ class AuthController {
    * Làm mới token
    */
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
+    // Logic refresh token sẽ được bổ sung sau
     return sendResponse(res, 200, 'Token refreshed successfully');
   });
 
@@ -111,46 +87,12 @@ class AuthController {
    * Đăng xuất
    */
   logout = asyncHandler(async (req: Request, res: Response) => {
-    // Gọi service nếu cần xử lý nghiệp vụ (như blacklist token, tracking...)
-    // await this.authService.logout(req.user?.id);
-
-    // Xóa cookie chứa refreshToken
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     });
 
-    return sendResponse(res, 200, 'User logged in successfully', {
-      user: toUserResponseDTO(user),
-      accessToken,
-      refreshToken,
-    });
-  });
-
-  /**
-   * Làm mới token
-   */
-  refreshToken = asyncHandler(async (req: Request, res: Response) => {
-    return sendResponse(res, 200, 'Token refreshed successfully');
-  });
-
-  /**
-   * Đăng xuất
-   */
-  logout = asyncHandler(async (req: Request, res: Response) => {
-    // Gọi service nếu cần xử lý nghiệp vụ (như blacklist token, tracking...)
-    // await this.authService.logout(req.user?.id);
-
-    // Xóa cookie chứa refreshToken
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    });
-
-    return sendResponse(res, 200, 'User logged out successfully');
-  });
     return sendResponse(res, 200, 'User logged out successfully');
   });
 
@@ -171,5 +113,4 @@ class AuthController {
   });
 }
 
-// Khởi tạo và tiêm (Inject) instance vào Controller
 export const authController = new AuthController(authService);

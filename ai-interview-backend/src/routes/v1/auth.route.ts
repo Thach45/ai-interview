@@ -18,7 +18,17 @@ router.post('/register', otpLimiter, validate(registerSchema), authController.re
 router.post('/send-otp', otpLimiter, authController.sendOTP);
 router.post('/verify-otp', authLimiter, authController.verifyOtp);
 router.post('/resend-otp', otpLimiter, authController.resendOtp);
-router.post('/forgot-password', otpLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
-router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
+router.post(
+  '/forgot-password',
+  otpLimiter,
+  validate(forgotPasswordSchema),
+  authController.forgotPassword,
+);
+router.post(
+  '/reset-password',
+  authLimiter,
+  validate(resetPasswordSchema),
+  authController.resetPassword,
+);
 
 export default router;
