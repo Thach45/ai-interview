@@ -21,7 +21,6 @@ import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import ProfilePage from "../pages/ProfilePage.tsx";
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 
-import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 
 export const AppRoutes: React.FC = () => {
   return (
