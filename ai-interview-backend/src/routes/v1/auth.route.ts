@@ -11,7 +11,7 @@ import { authLimiter, otpLimiter } from '../../middlewares/rate-limit.middleware
 
 const router: Router = express.Router();
 
-router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/login', validate(loginSchema), authController.login);
 router.post('/logout', authController.logout);
 router.post('/refresh', authController.refreshToken);
 router.post('/register', otpLimiter, validate(registerSchema), authController.register);

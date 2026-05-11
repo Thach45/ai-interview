@@ -14,8 +14,24 @@ class JobTemplateController {
     const limit = parseInt(req.query.limit as string) || 10;
     const search = req.query.search as string;
     const categoryIds = req.query.categoryIds as string[];
+    const location = req.query.location as string;
+    const employmentType = req.query.employmentType as string;
+    const experienceLevel = req.query.experienceLevel as string;
+    const isRemote =
+      req.query.isRemote === 'true' ? true : req.query.isRemote === 'false' ? false : undefined;
+    const salaryRange = req.query.salaryRange as string;
 
-    const result = await this.jobTemplateService.getAll(page, limit, search, categoryIds);
+    const result = await this.jobTemplateService.getAll({
+      page,
+      limit,
+      search,
+      categoryIds,
+      location,
+      employmentType,
+      experienceLevel,
+      isRemote,
+      salaryRange,
+    });
     return sendResponse(res, 200, 'Lấy danh sách mẫu JD thành công', result);
   });
 

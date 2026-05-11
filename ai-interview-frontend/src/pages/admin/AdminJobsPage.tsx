@@ -9,13 +9,19 @@ import { useJobTemplates } from '../../features/jobs/hooks/useJobTemplates';
 
 export const AdminJobsPage: React.FC = () => {
   const [search, setSearch] = useState('');
-  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState({
+    categoryIds: [] as string[],
+    location: '',
+    salaryRange: '',
+    experienceLevel: '',
+    employmentType: '',
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<JobTemplate | null>(null);
 
   const { templates, isLoading, deleteTemplate } = useJobTemplates({ 
     search, 
-    categoryIds 
+    ...filters 
   });
 
   const handleOpenModal = (template: JobTemplate | null = null) => {
@@ -33,7 +39,6 @@ export const AdminJobsPage: React.FC = () => {
     }
   };
 
-  // Định nghĩa nút bấm để đưa lên Header của AdminLayout
   const renderHeaderAction = (
     <button 
       onClick={() => handleOpenModal()}
@@ -50,17 +55,17 @@ export const AdminJobsPage: React.FC = () => {
       rightAction={renderHeaderAction}
     >
       <div className="flex flex-col gap-6 mb-8">
-        {/* Search Bar chiếm trọn chiều ngang */}
+        {/* Search Bar */}
         <div className="w-full">
           <JobSearch onSearch={(val) => setSearch(val)} />
         </div>
 
         {/* Filter Section */}
         <div className="bg-bg-surface/30 p-4 rounded-xl border border-border-hairline">
-           <div className="text-[11px] font-bold text-text-tertiary uppercase mb-3 px-1">Lọc theo ngành nghề & kỹ năng</div>
+           <div className="text-[11px] font-bold text-text-tertiary uppercase mb-3 px-1">Lọc nâng cao</div>
            <JobFilters 
-             selectedCategoryIds={categoryIds}
-             onFilterChange={(filters) => setCategoryIds(filters.categoryIds)} 
+             selectedFilters={filters}
+             onFilterChange={(newFilters) => setFilters(newFilters)} 
            />
         </div>
       </div>

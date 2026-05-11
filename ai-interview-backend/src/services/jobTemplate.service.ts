@@ -6,7 +6,28 @@ export class JobTemplateService {
   /**
    * Lấy toàn bộ danh sách Job Templates
    */
-  async getAll(page: number = 1, limit: number = 10, search?: string, categoryIds?: string[]) {
+  async getAll(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    categoryIds?: string[];
+    location?: string;
+    employmentType?: string;
+    experienceLevel?: string;
+    isRemote?: boolean;
+    salaryRange?: string; // Sẽ xử lý theo logic range nếu cần
+  }) {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      categoryIds,
+      location,
+      employmentType,
+      experienceLevel,
+      isRemote,
+      salaryRange,
+    } = params;
     const skip = (page - 1) * limit;
 
     const where: any = {
@@ -25,6 +46,32 @@ export class JobTemplateService {
     if (categoryIds && categoryIds.length > 0) {
       where.AND.push({
         categoryId: { in: categoryIds },
+      });
+    }
+
+    if (location) {
+      where.AND.push({
+        location: { contains: location, mode: 'insensitive' },
+      });
+    }
+
+    if (employmentType) {
+      where.AND.push({ employmentType });
+    }
+
+    if (experienceLevel) {
+      where.AND.push({ experienceLevel });
+    }
+
+    if (isRemote !== undefined) {
+      where.AND.push({ isRemote });
+    }
+
+    // Logic cho mức lương có thể phức tạp hơn nếu lưu dạng string.
+    // Tạm thời nếu truyền salaryRange thì filter theo title/content hoặc match chính xác
+    if (salaryRange) {
+      where.AND.push({
+        salaryRange: { contains: salaryRange, mode: 'insensitive' },
       });
     }
 

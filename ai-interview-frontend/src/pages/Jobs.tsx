@@ -10,14 +10,20 @@ import { useJobCategories } from '../features/jobs/hooks/useJobCategoriesAdmin';
 const JobsPage: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [search, setSearch] = useState('');
-  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState({
+    categoryIds: [] as string[],
+    location: '',
+    salaryRange: '',
+    experienceLevel: '',
+    employmentType: '',
+  });
   const [page, setPage] = useState(1);
   const limit = 10;
 
   // Lấy dữ liệu thật từ API
   const { templates, meta, isLoading } = useJobTemplates({ 
     search, 
-    categoryIds,
+    ...filters,
     page,
     limit
   });
@@ -38,15 +44,15 @@ const JobsPage: React.FC = () => {
   // Reset về trang 1 khi tìm kiếm hoặc lọc
   useEffect(() => {
     setPage(1);
-  }, [search, categoryIds]);
+  }, [search, filters]);
 
-  const handleClearCategory = (id: string) => {
-    const newIds = categoryIds.filter(cid => cid !== id);
-    setCategoryIds(newIds);
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
   };
 
-  const handleClearAll = () => {
-    setCategoryIds([]);
+  const handleClearCategory = (id: string) => {
+    const newIds = filters.categoryIds.filter(cid => cid !== id);
+    setFilters(prev => ({ ...prev, categoryIds: newIds }));
   };
 
   const totalPages = meta?.totalPages || 1;
@@ -59,14 +65,14 @@ const JobsPage: React.FC = () => {
         
         {/* Filters */}
         <JobFilters 
-          selectedCategoryIds={categoryIds}
-          onFilterChange={(f) => setCategoryIds(f.categoryIds)} 
+          selectedFilters={filters}
+          onFilterChange={handleFilterChange} 
         />
 
-        {/* Filter Chips */}
-        {categoryIds.length > 0 && (
+        {/* Filter Chips - Only for Categories for now to keep UI clean */}
+        {filters.categoryIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-6">
-            {categoryIds.map(id => {
+            {filters.categoryIds.map(id => {
               const category = flatCategories.find(c => c.id === id);
               return (
                 <div key={id} className="px-3 py-1.5 bg-primary/5 text-primary text-[12px] font-semibold rounded-lg flex items-center gap-2 border border-primary/10">
@@ -81,10 +87,10 @@ const JobsPage: React.FC = () => {
               );
             })}
             <button 
-              onClick={handleClearAll}
+              onClick={() => setFilters(prev => ({ ...prev, categoryIds: [] }))}
               className="text-[12px] text-text-secondary hover:text-primary font-bold ml-2 transition-colors"
             >
-              Xóa tất cả
+              Xóa tất cả ngành nghề
             </button>
           </div>
         )}
@@ -109,7 +115,6 @@ const JobsPage: React.FC = () => {
             
             <div className="space-y-3">
               {isLoading ? (
-                // Skeleton loading
                 [1,2,3,4].map(i => <div key={i} className="h-32 bg-gray-50 animate-pulse rounded-2xl" />)
               ) : templates.length > 0 ? (
                 templates.map((job: any) => (
@@ -137,61 +142,33 @@ const JobsPage: React.FC = () => {
             {/* Smart Pagination Controls */}
             {!isLoading && totalPages > 1 && (
               <div className="flex items-center justify-center gap-1.5 pt-6 pb-4">
-                <button 
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="size-9 rounded-lg border border-gray-200 flex items-center justify-center text-text-secondary hover:bg-gray-50 disabled:opacity-30 transition-all"
-                >
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="size-9 rounded-lg border border-gray-200 flex items-center justify-center text-text-secondary hover:bg-gray-50 disabled:opacity-30 transition-all">
                   <span className="material-symbols-outlined text-[20px]">chevron_left</span>
                 </button>
-                
                 {(() => {
                   const pages = [];
-                  const showEllipsis = totalPages > 5;
-                  
-                  if (!showEllipsis) {
+                  if (totalPages <= 5) {
                     for (let i = 1; i <= totalPages; i++) pages.push(i);
                   } else {
-                    // Luôn hiện trang 1
                     pages.push(1);
-                    
                     if (page > 3) pages.push('...');
-                    
-                    // Hiện các trang quanh trang hiện tại
                     for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
                       if (!pages.includes(i)) pages.push(i);
                     }
-                    
                     if (page < totalPages - 2) pages.push('...');
-                    
-                    // Luôn hiện trang cuối
                     if (!pages.includes(totalPages)) pages.push(totalPages);
                   }
-
                   return pages.map((p, i) => (
                     p === '...' ? (
-                      <span key={`el-${i}`} className="size-9 flex items-center justify-center text-text-tertiary text-[13px]">...</span>
+                      <span key={i} className="size-9 flex items-center justify-center text-text-tertiary text-[13px]">...</span>
                     ) : (
-                      <button 
-                        key={`p-${p}`}
-                        onClick={() => setPage(p as number)}
-                        className={`size-9 rounded-lg text-[13px] font-bold transition-all ${
-                          page === p 
-                          ? 'bg-primary text-white shadow-md shadow-primary/20 border border-primary' 
-                          : 'bg-white border border-gray-200 text-text-secondary hover:border-primary hover:text-primary'
-                        }`}
-                      >
+                      <button key={i} onClick={() => setPage(p as number)} className={`size-9 rounded-lg text-[13px] font-bold transition-all ${page === p ? 'bg-primary text-white' : 'bg-white border border-gray-200 text-text-secondary hover:border-primary'}`}>
                         {p}
                       </button>
                     )
                   ));
                 })()}
-
-                <button 
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="size-9 rounded-lg border border-gray-200 flex items-center justify-center text-text-secondary hover:bg-gray-50 disabled:opacity-30 transition-all"
-                >
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="size-9 rounded-lg border border-gray-200 flex items-center justify-center text-text-secondary hover:bg-gray-50 disabled:opacity-30 transition-all">
                   <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                 </button>
               </div>
@@ -203,12 +180,6 @@ const JobsPage: React.FC = () => {
             <JobDetail job={selectedJob} />
           </div>
         </div>
-
-        <footer className="max-w-[1600px] mx-auto px-6 py-8 text-center border-t border-gray-200 mt-10">
-           <p className="text-[13px] text-text-secondary font-medium italic opacity-70">
-              © 2026 Công ty cổ phần TMI. Tất cả quyền được bảo lưu.
-           </p>
-        </footer>
       </>
     </MainLayout>
   );
