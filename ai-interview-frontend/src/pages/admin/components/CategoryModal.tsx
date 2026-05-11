@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { JobCategory } from '../../../api/jobCategory.api';
+import type { JobCategory } from '../../../features/jobs/api/jobCategoryAdmin.api';
 
 interface CategoryModalProps {
   isOpen: boolean;

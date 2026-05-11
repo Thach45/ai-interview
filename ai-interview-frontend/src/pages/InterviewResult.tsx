@@ -24,8 +24,8 @@ const InterviewResultPage: React.FC = () => {
   };
 
   return (
-    <MainLayout title="Kết quả phỏng vấn">
-      <div className="max-w-5xl mx-auto p-6 lg:p-10 pb-20">
+    <MainLayout title="Kết quả phỏng vấn" maxWidth="1024px">
+      <>
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-8">
           <div className="p-8 lg:p-12 text-center border-b border-gray-50 bg-gradient-to-b from-primary/5 to-transparent">
             <h2 className="text-2xl font-bold text-text-primary mb-6">Đánh giá tổng quát</h2>
@@ -108,7 +108,7 @@ const InterviewResultPage: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </>
     </MainLayout>
   );
 };

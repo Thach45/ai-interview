@@ -57,13 +57,9 @@ const JobsPage: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
 
   return (
-    <MainLayout title="Việc làm">
-      <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto bg-white custom-scrollbar">
-          <div className="max-w-[1600px] mx-auto p-4 lg:p-6 pb-20">
-            
-            <JobSearch />
+    <MainLayout title="Việc làm" fullHeight maxWidth="1600px" className="p-4 lg:p-6 pb-20 h-full overflow-y-auto custom-scrollbar">
+      <>
+        <JobSearch />
             <JobFilters />
 
             <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -119,17 +115,13 @@ const JobsPage: React.FC = () => {
               <div className="hidden lg:block flex-1 sticky top-0 h-[calc(100vh-200px)]">
                 <JobDetail job={selectedJob} />
               </div>
-
             </div>
-          </div>
-          
           <footer className="max-w-[1600px] mx-auto px-6 py-8 text-center border-t border-gray-200">
              <p className="text-[13px] text-text-secondary font-medium italic opacity-70">
                 © 2026 Công ty cổ phần TMI. Tất cả quyền được bảo lưu.
              </p>
           </footer>
-        </div>
-      </div>
+      </>
     </MainLayout>
   );
 };

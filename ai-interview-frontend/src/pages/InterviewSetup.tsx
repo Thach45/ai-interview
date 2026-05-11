@@ -17,8 +17,8 @@ const InterviewSetupPage: React.FC = () => {
   };
 
   return (
-    <MainLayout title="Thiết lập phỏng vấn">
-      <div className="max-w-4xl mx-auto p-6 lg:p-10">
+    <MainLayout title="Thiết lập phỏng vấn" maxWidth="896px">
+      <>
         <div className="mb-10 text-center">
           <h2 className="text-2xl font-bold text-text-primary mb-2">Sẵn sàng phỏng vấn?</h2>
           <p className="text-text-secondary">Vui lòng chọn CV bạn muốn sử dụng cho vị trí <span className="font-bold text-primary">Senior Frontend Developer</span></p>
@@ -95,7 +95,7 @@ const InterviewSetupPage: React.FC = () => {
           </button>
           <p className="text-[12px] text-text-secondary">Bằng cách bắt đầu, bạn sẽ tiêu tốn <span className="font-bold text-primary">1 lượt (credit)</span></p>
         </div>
-      </div>
+      </>
     </MainLayout>
   );
 };

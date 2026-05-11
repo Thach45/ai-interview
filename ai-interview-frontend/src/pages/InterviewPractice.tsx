@@ -41,8 +41,8 @@ const InterviewPracticePage: React.FC = () => {
   };
 
   return (
-    <MainLayout title="Luyện phỏng vấn AI">
-      <div className="flex flex-col h-[calc(100vh-64px)] bg-white overflow-hidden">
+    <MainLayout title="Luyện phỏng vấn AI" fullHeight maxWidth="full">
+      <div className="flex flex-col h-full bg-white overflow-hidden">
         {/* Session Header */}
         <InterviewHeader 
           jobTitle="Senior Frontend Developer"

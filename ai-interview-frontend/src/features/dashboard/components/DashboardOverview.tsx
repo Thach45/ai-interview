@@ -26,7 +26,7 @@ const JobListItem = ({ title, company }: { title: string, company: string }) => 
 
 export const DashboardOverview = () => {
   return (
-    <div className="max-w-[1280px] mx-auto p-6 lg:p-10">
+    <>
       <div className="flex flex-col lg:flex-row gap-10">
         {/* Middle Content */}
         <div className="flex-1 min-w-0">
@@ -197,7 +197,7 @@ export const DashboardOverview = () => {
           
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
