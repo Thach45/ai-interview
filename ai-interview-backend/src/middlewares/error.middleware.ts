@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppException } from '../exceptions';
 
-export const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+export const globalErrorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
