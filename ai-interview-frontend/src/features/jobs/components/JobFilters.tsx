@@ -1,5 +1,6 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { JobCategoryModal } from './JobCategoryModal';
+import { useJobCategories } from '../hooks/useJobCategoriesAdmin';
 
 const FILTER_ITEMS = [
   { label: 'Loại việc', icon: 'business_center' },
@@ -9,7 +10,25 @@ const FILTER_ITEMS = [
 
 export const JobFilters = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  
+  const { useFlatCategories } = useJobCategories();
+  
+  // Lấy danh sách phẳng để dễ dàng tìm tên theo ID
+  const { data: flatCategoriesData } = useFlatCategories({ limit: 1000 });
+  const flatCategories = flatCategoriesData?.data.items || [];
+
+  const getSelectedLabel = () => {
+    if (selectedCategoryIds.length === 0) return 'Chọn ngành nghề';
+    
+    // Tìm tên của category đầu tiên trong danh sách chọn
+    const firstId = selectedCategoryIds[0];
+    const category = flatCategories.find(c => c.id === firstId);
+    const name = category ? category.name : 'Đã chọn';
+
+    if (selectedCategoryIds.length === 1) return `Ngành nghề: ${name}`;
+    return `Ngành nghề: ${name} (+${selectedCategoryIds.length - 1})`;
+  };
 
   return (
     <div className="filters-section mb-4">
@@ -20,16 +39,16 @@ export const JobFilters = () => {
           type="button"
           onClick={() => setIsModalOpen(true)}
           className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all border ${
-            selectedCategories.length > 0 
+            selectedCategoryIds.length > 0 
               ? 'bg-primary/10 text-primary border-primary/20' 
               : 'bg-white text-text-secondary border-gray-200 hover:border-primary hover:text-primary'
           }`}
         >
           <span className="material-symbols-outlined text-lg">work</span>
-          <span>{selectedCategories.length > 0 ? `Ngành nghề: ${selectedCategories[0]}${selectedCategories.length > 1 ? ` (+${selectedCategories.length - 1})` : ''}` : 'Chọn ngành nghề'}</span>
-          {selectedCategories.length > 0 && (
+          <span>{getSelectedLabel()}</span>
+          {selectedCategoryIds.length > 0 && (
             <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">
-              {selectedCategories.length}
+              {selectedCategoryIds.length}
             </span>
           )}
           <span className="material-symbols-outlined text-lg opacity-50">expand_more</span>
@@ -39,16 +58,10 @@ export const JobFilters = () => {
         {FILTER_ITEMS.map((item) => (
           <button
             key={item.label}
-            type="button"
-            className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-semibold transition-all border ${
-              item.active 
-                ? 'bg-primary/10 text-primary border-primary/20' 
-                : 'bg-white text-text-secondary border-gray-200 hover:border-primary hover:text-primary'
-            }`}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-[13px] text-text-secondary font-semibold hover:border-primary hover:text-primary transition-all"
           >
-            <span className="material-symbols-outlined text-lg">{item.icon}</span>
+            <span className="material-symbols-outlined text-lg opacity-50">{item.icon}</span>
             <span>{item.label}</span>
-            {item.badge && <span className="ml-0.5">{item.badge}</span>}
             <span className="material-symbols-outlined text-lg opacity-50">expand_more</span>
           </button>
         ))}
@@ -57,8 +70,9 @@ export const JobFilters = () => {
       <JobCategoryModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        initialSelectedIds={selectedCategoryIds}
         onApply={(ids) => {
-          setSelectedCategories(ids);
+          setSelectedCategoryIds(ids);
           setIsModalOpen(false);
         }}
       />

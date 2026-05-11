@@ -1,17 +1,39 @@
-import React, { useState } from 'react';
-
-
+import React, { useState, useMemo } from 'react';
+import { useJobCategories } from '../hooks/useJobCategoriesAdmin';
+import type { JobCategory } from '../api/jobCategoryAdmin.api';
 
 interface JobCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApply: (selectedIds: string[]) => void;
+  initialSelectedIds?: string[];
 }
 
-export const JobCategoryModal: React.FC<JobCategoryModalProps> = ({ isOpen, onClose, onApply }) => {
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+export const JobCategoryModal: React.FC<JobCategoryModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onApply,
+  initialSelectedIds = []
+}) => {
+  const { categoriesTree, isTreeLoading } = useJobCategories();
+  
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedIndustryId, setSelectedIndustryId] = useState<string | null>(null);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set(initialSelectedIds));
+
+  // Lấy danh sách Ngành nghề thuộc Nhóm nghề đang chọn
+  const industries = useMemo(() => {
+    if (!selectedGroupId) return [];
+    const group = categoriesTree.find(g => g.id === selectedGroupId);
+    return group?.children || [];
+  }, [selectedGroupId, categoriesTree]);
+
+  // Lấy danh sách Vị trí thuộc Ngành nghề đang chọn
+  const positions = useMemo(() => {
+    if (!selectedIndustryId) return [];
+    const industry = industries.find(i => i.id === selectedIndustryId);
+    return industry?.children || [];
+  }, [selectedIndustryId, industries]);
 
   if (!isOpen) return null;
 
@@ -39,10 +61,8 @@ export const JobCategoryModal: React.FC<JobCategoryModalProps> = ({ isOpen, onCl
           </button>
         </div>
 
-       
-
         {/* Content - 3 Columns */}
-        <div className="flex-1 overflow-hidden flex divide-x divide-border-hairline">
+        <div className="flex-1 overflow-hidden flex divide-x divide-border-hairline min-h-[400px]">
           
           {/* Column 1: Nhóm nghề */}
           <div className="flex-1 flex flex-col min-w-0">
@@ -50,48 +70,66 @@ export const JobCategoryModal: React.FC<JobCategoryModalProps> = ({ isOpen, onCl
               Nhóm nghề
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
-              {['CÔNG NGHỆ THÔNG TIN', 'MARKETING', 'KINH DOANH', 'NHÂN SỰ'].map((group) => (
-                <div 
-                  key={group}
-                  onClick={() => setSelectedGroup(group)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors group ${selectedGroup === group ? 'bg-primary/5 text-primary' : 'hover:bg-bg-surface text-text-primary'}`}
-                >
-                  <input 
-                    type="checkbox" 
-                    className="size-4 rounded border-border-hairline-strong text-primary focus:ring-primary/20 cursor-pointer"
-                    onClick={(e) => { e.stopPropagation(); toggleCheck(group); }}
-                  />
-                  <span className="text-[13px] font-medium flex-1 truncate">{group}</span>
-                  <span className="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+              {isTreeLoading ? (
+                <div className="p-4 space-y-3">
+                  {[1,2,3,4].map(i => <div key={i} className="h-10 bg-gray-100 animate-pulse rounded-md" />)}
                 </div>
-              ))}
+              ) : (
+                categoriesTree.map((group) => (
+                  <div 
+                    key={group.id}
+                    onClick={() => {
+                      setSelectedGroupId(group.id);
+                      setSelectedIndustryId(null);
+                    }}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors group ${selectedGroupId === group.id ? 'bg-primary/5 text-primary' : 'hover:bg-bg-surface text-text-primary'}`}
+                  >
+                    <input 
+                      type="checkbox" 
+                      checked={checkedIds.has(group.id)}
+                      className="size-4 rounded border-border-hairline-strong text-primary focus:ring-primary/20 cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); toggleCheck(group.id); }}
+                      onChange={() => {}} 
+                    />
+                    <span className="text-[13px] font-medium flex-1 truncate">{group.name}</span>
+                    <span className="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Column 2: Nghề */}
+          {/* Column 2: Ngành nghề */}
           <div className="flex-1 flex flex-col min-w-0 bg-bg-surface-soft/30">
             <div className="px-4 py-2 bg-bg-surface-soft text-[11px] font-bold text-text-tertiary uppercase border-b border-border-hairline">
-              Nghề
+              Ngành nghề
             </div>
             <div className="flex-1 overflow-y-auto p-2">
-              {!selectedGroup ? (
+              {!selectedGroupId ? (
                 <div className="h-full flex flex-col items-center justify-center text-text-tertiary gap-2 opacity-60">
                   <span className="material-symbols-outlined text-[32px]">arrow_back</span>
-                  <span className="text-[12px] font-medium">Chọn nhóm nghề</span>
+                  <span className="text-[12px] font-medium text-center px-4">Chọn nhóm nghề để xem danh sách ngành</span>
                 </div>
               ) : (
                 <div className="space-y-0.5">
-                  {['Phần mềm', 'Mạng máy tính', 'Bảo mật', 'Dữ liệu'].map((industry) => (
+                  {industries.map((industry) => (
                     <div 
-                      key={industry}
-                      onClick={() => setSelectedIndustry(industry)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors group ${selectedIndustry === industry ? 'bg-primary/5 text-primary' : 'hover:bg-bg-surface text-text-primary'}`}
+                      key={industry.id}
+                      onClick={() => setSelectedIndustryId(industry.id)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors group ${selectedIndustryId === industry.id ? 'bg-primary/5 text-primary' : 'hover:bg-bg-surface text-text-primary'}`}
                     >
-                      <input type="checkbox" className="size-4 rounded border-border-hairline-strong text-primary focus:ring-primary/20 cursor-pointer" />
-                      <span className="text-[13px] font-medium flex-1 truncate">{industry}</span>
+                      <input 
+                        type="checkbox" 
+                        checked={checkedIds.has(industry.id)}
+                        className="size-4 rounded border-border-hairline-strong text-primary focus:ring-primary/20 cursor-pointer"
+                        onClick={(e) => { e.stopPropagation(); toggleCheck(industry.id); }}
+                        onChange={() => {}}
+                      />
+                      <span className="text-[13px] font-medium flex-1 truncate">{industry.name}</span>
                       <span className="material-symbols-outlined text-[18px] opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
                     </div>
                   ))}
+                  {industries.length === 0 && <p className="text-center py-10 text-[12px] text-text-tertiary italic">Chưa có dữ liệu ngành</p>}
                 </div>
               )}
             </div>
@@ -103,22 +141,29 @@ export const JobCategoryModal: React.FC<JobCategoryModalProps> = ({ isOpen, onCl
               Vị trí chuyên môn
             </div>
             <div className="flex-1 overflow-y-auto p-2">
-              {!selectedIndustry ? (
+              {!selectedIndustryId ? (
                 <div className="h-full flex flex-col items-center justify-center text-text-tertiary gap-2 opacity-60">
                   <span className="material-symbols-outlined text-[32px]">arrow_back</span>
-                  <span className="text-[12px] font-medium">Chọn nghề</span>
+                  <span className="text-[12px] font-medium text-center px-4">Chọn ngành nghề để xem vị trí</span>
                 </div>
               ) : (
                 <div className="space-y-0.5">
-                  {['Frontend Developer', 'Backend Developer', 'Fullstack Developer'].map((pos) => (
+                  {positions.map((pos) => (
                     <div 
-                      key={pos}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer hover:bg-bg-surface text-text-primary transition-colors group"
+                      key={pos.id}
+                      onClick={() => toggleCheck(pos.id)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors group ${checkedIds.has(pos.id) ? 'bg-primary/5 text-primary' : 'hover:bg-bg-surface text-text-primary'}`}
                     >
-                      <input type="checkbox" className="size-4 rounded border-border-hairline-strong text-primary focus:ring-primary/20 cursor-pointer" />
-                      <span className="text-[13px] font-medium flex-1 truncate">{pos}</span>
+                      <input 
+                        type="checkbox" 
+                        checked={checkedIds.has(pos.id)}
+                        className="size-4 rounded border-border-hairline-strong text-primary focus:ring-primary/20 cursor-pointer"
+                        onChange={() => {}}
+                      />
+                      <span className="text-[13px] font-medium flex-1 truncate">{pos.name}</span>
                     </div>
                   ))}
+                  {positions.length === 0 && <p className="text-center py-10 text-[12px] text-text-tertiary italic">Chưa có dữ liệu vị trí</p>}
                 </div>
               )}
             </div>
