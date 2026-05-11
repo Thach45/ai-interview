@@ -6,6 +6,8 @@ import type {
     RegisterResponse,
     SendOtpRequest,
     VerifyOtpRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
 } from "../types";
 
 export const authApi = {
@@ -44,6 +46,18 @@ export const authApi = {
    */
   resendOtp: (data: { email: string }) =>
     apiClient.post<any, { success: boolean; message: string }>("/auth/resend-otp", data),
+
+  /**
+   * Gửi mã OTP đặt lại mật khẩu
+   */
+  forgotPassword: (data: ForgotPasswordRequest) =>
+    apiClient.post<any, { success: boolean; message: string }>("/auth/forgot-password", data),
+
+  /**
+   * Đặt lại mật khẩu với mã OTP
+   */
+  resetPassword: (data: ResetPasswordRequest) =>
+    apiClient.post<any, { success: boolean; message: string }>("/auth/reset-password", data),
 };
 
 export default authApi;

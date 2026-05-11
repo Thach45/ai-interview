@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -14,16 +14,10 @@ async function main() {
   await prisma.user.deleteMany();
   console.log('✅ Dữ liệu cũ đã xóa!');
 
-  // 1. Kiểm tra xem đã có Admin chưa
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: adminEmail },
-  });
+  console.log('🚀 Đang khởi tạo/cập nhật tài khoản Admin mặc định...');
 
-  if (!existingAdmin) {
-    console.log('🚀 Đang khởi tạo tài khoản Admin mặc định...');
-
-    // 2. Mã hóa mật khẩu
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+  // Mã hóa mật khẩu
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     // 3. Tạo Admin mới
     await prisma.user.create({
@@ -69,6 +63,30 @@ async function main() {
   } else {
     console.log('ℹ️ Tài khoản Candidate đã tồn tại, bỏ qua bước khởi tạo.');
   }
+  // Dùng upsert: tạo mới nếu chưa có, cập nhật nếu đã tồn tại
+  const admin = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      // Luôn đảm bảo các trường quan trọng được set đúng
+      role: 'ADMIN',
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+    },
+    create: {
+      email: adminEmail,
+      fullName: 'System Administrator',
+      password: hashedPassword,
+      role: 'ADMIN',
+      status: UserStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+    },
+  });
+
+  console.log('✅ Tài khoản Admin đã sẵn sàng!');
+  console.log(`📧 Email: ${admin.email}`);
+  console.log(`🔑 Password: ${adminPassword}`);
+  console.log(`📌 Status: ${admin.status}`);
+  console.log(`✉️  emailVerifiedAt: ${admin.emailVerifiedAt}`);
 }
 
 main()

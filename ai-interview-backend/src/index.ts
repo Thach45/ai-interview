@@ -6,12 +6,15 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import setupRoutes from './routes';
 
+import { apiLimiter } from './middlewares/rate-limit.middleware';
+
 dotenv.config();
 
 const app: Express = express();
 const port: number = parseInt(process.env.PORT || '3000', 10);
 
 app.use(bodyParser.json());
+app.use(apiLimiter);
 app.use(
   cors({
     origin: 'http://localhost:5173', // Chỉ định frontend URL

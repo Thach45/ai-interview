@@ -15,7 +15,7 @@ export const generateRefreshToken = (payload: TokenPayload): string => {
 export const verifyRefreshToken = (token: string): TokenPayload | null => {
   try {
     return jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) as TokenPayload;
-  } catch (_error) {
+  } catch {
     return null;
   }
 };

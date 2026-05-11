@@ -19,6 +19,9 @@ import { VerifyOTPPage } from '../pages/auth/VerifyOTPPage';
 
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import ProfilePage from "../pages/ProfilePage.tsx";
+import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
+
+import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -28,6 +31,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-otp" element={<VerifyOTPPage />} />
 
         {/* Private Routes (Bất kỳ user nào đăng nhập cũng vào được) */}

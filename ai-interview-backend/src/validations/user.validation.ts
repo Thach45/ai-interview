@@ -14,10 +14,9 @@ export const registerSchema = z.object({
     }),
 });
 
-export const loginSchema = z.object({
+export const forgotPasswordSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email format'),
-    password: z.string().min(1, 'Password is required'),
   }),
 });
 
