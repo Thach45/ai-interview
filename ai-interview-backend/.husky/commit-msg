@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-ROOT_DIR=$(git rev-parse --show-toplevel)
 cd ai-interview-backend
-npx commitlint --edit "$ROOT_DIR/$1"
+npx commitlint --edit "../$1"
