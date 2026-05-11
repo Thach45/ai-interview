@@ -1,6 +1,6 @@
 import prisma from '../config/prisma';
 import bcrypt from 'bcryptjs';
-import { BadRequestException, UnauthorizedException } from '../exceptions';
+import { BadRequestException, UnauthorizedException, NotFoundException } from '../exceptions';
 
 import { mailService as _mailService, MailService } from '../shared/services/mail.service';
 import { UserStatus } from '@prisma/client';
@@ -80,7 +80,7 @@ export class AuthService {
     });
 
     // Gọi MailService để gửi email thực tế
-    await this.mailService.sendOtp(email, otp);
+    await this.mailService.sendVerifyAccountOtp(email, otp);
 
     return otp;
   }
@@ -104,6 +104,52 @@ export class AuthService {
     });
 
     // Xóa mã OTP đã sử dụng
+    await prisma.verificationCode.delete({
+      where: { id: verificationCode.id },
+    });
+
+    return true;
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.findUserByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Email không tồn tại trong hệ thống');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await prisma.verificationCode.create({
+      data: { email, code: otp, expiresAt },
+    });
+
+    await this.mailService.sendResetPasswordOtp(email, otp);
+    return true;
+  }
+
+  async resetPassword(data: any) {
+    const { email, otp, newPassword } = data;
+
+    const verificationCode = await prisma.verificationCode.findFirst({
+      where: { email, code: otp },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!verificationCode) {
+      throw new BadRequestException('Mã OTP không hợp lệ');
+    }
+    if (verificationCode.expiresAt < new Date()) {
+      throw new BadRequestException('Mã OTP đã hết hạn');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+
     await prisma.verificationCode.delete({
       where: { id: verificationCode.id },
     });

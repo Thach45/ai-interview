@@ -1,29 +1,18 @@
-import { generateOtpTemplate } from '../../utils/generate-template';
+import { verifyAccountTemplate, resetPasswordTemplate } from '../../utils/mail.template';
 import dotenv from 'dotenv';
 dotenv.config();
 
 class MailService {
   private readonly emailApiUrl = process.env.URL_EMAIL;
 
-  /**
-   * Gửi mã OTP về email người dùng thông qua API bên ngoài
-   */
-  async sendOtp(email: string, otp: string) {
+  private async sendEmail(recipientEmail: string, content: string): Promise<boolean> {
     try {
       const url = `${this.emailApiUrl}/api/email/send`;
-      const content = generateOtpTemplate(otp);
-      console.log(this.emailApiUrl);
-      console.log(`📧 Đang gửi OTP tới ${email}...`);
 
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipientEmail: email,
-          content: content,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipientEmail, content }),
       });
 
       if (!response.ok) {
@@ -34,7 +23,7 @@ class MailService {
 
       const data = await response.json();
       console.log('✅ Đã gửi Email thành công:', data);
-      return data;
+      return true;
     } catch (error) {
       console.error('💥 Lỗi hệ thống khi gửi Email:', error);
       return false;
@@ -42,11 +31,21 @@ class MailService {
   }
 
   /**
-   * Gửi email khôi phục mật khẩu (Placeholder)
+   * Gửi mã OTP xác thực tài khoản
    */
-  async sendForgotPassword(email: string, _token: string) {
-    console.log(`🔗 Đang gửi Email khôi phục mật khẩu tới ${email}`);
-    return true;
+  async sendVerifyAccountOtp(email: string, otp: string): Promise<boolean> {
+    console.log(`📧 Đang gửi OTP xác thực tài khoản tới ${email}...`);
+    const content = verifyAccountTemplate(otp);
+    return this.sendEmail(email, content);
+  }
+
+  /**
+   * Gửi mã OTP đặt lại mật khẩu
+   */
+  async sendResetPasswordOtp(email: string, otp: string): Promise<boolean> {
+    console.log(`📧 Đang gửi OTP đặt lại mật khẩu tới ${email}...`);
+    const content = resetPasswordTemplate(otp);
+    return this.sendEmail(email, content);
   }
 }
 

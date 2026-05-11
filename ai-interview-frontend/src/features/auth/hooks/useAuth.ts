@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import authApi from "../api/auth.api";
 import { useAuthStore } from "../../../store/authStore";
-import type { LoginRequest, RegisterRequest, SendOtpRequest, VerifyOtpRequest } from "../types";
+import type { LoginRequest, RegisterRequest, SendOtpRequest, VerifyOtpRequest, ForgotPasswordRequest, ResetPasswordRequest } from "../types";
 
 export const useAuth = () => {
   const navigate = useNavigate();
@@ -96,11 +96,41 @@ export const useAuth = () => {
   const logout = () => {
     // Xóa sạch cache của React Query khi logout
     queryClient.clear();
-    
+
     logoutStore();
     toast.info("Hẹn gặp lại bạn sớm! 👋");
     navigate("/login");
   };
+
+  /**
+   * Hook Quên mật khẩu - gửi OTP về email
+   */
+  const forgotPasswordMutation = useMutation({
+    mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
+    onSuccess: (_, variables) => {
+      toast.success("Mã OTP đã được gửi về email của bạn! 📧");
+      navigate(`/reset-password?email=${variables.email}`);
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Không thể gửi mã OTP";
+      toast.error(message);
+    },
+  });
+
+  /**
+   * Hook Đặt lại mật khẩu
+   */
+  const resetPasswordMutation = useMutation({
+    mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
+    onSuccess: () => {
+      toast.success("Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại. ✅");
+      navigate("/login");
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Không thể đặt lại mật khẩu";
+      toast.error(message);
+    },
+  });
 
   return {
     login: loginMutation.mutate,
@@ -122,6 +152,12 @@ export const useAuth = () => {
     resendOtp: (email: string) => resendOtpMutation.mutate({ email }),
     isResendingOtp: resendOtpMutation.isPending,
     resendOtpSuccess: resendOtpMutation.isSuccess,
+
+    forgotPassword: forgotPasswordMutation.mutate,
+    isSendingForgotOtp: forgotPasswordMutation.isPending,
+
+    resetPassword: resetPasswordMutation.mutate,
+    isResettingPassword: resetPasswordMutation.isPending,
 
     logout,
   };
