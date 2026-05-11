@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 app.use(apiLimiter);
 app.use(
   cors({
-    origin: '*', // Yêu cầu origin cụ thể khi bật credentials
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Yêu cầu origin cụ thể khi bật credentials
     credentials: true, // Cho phép gửi credentials (cookies, headers)
   }),
 );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
 import { cn } from '../shared/utils/cn';
+import { Header } from '../components/layout/Header';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Trang chủ', href: '/', icon: 'dashboard' },
@@ -18,10 +18,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
   hideSearch = false
 }) => {
   const location = useLocation();
-  const user = useAuthStore((state) => state.user);
   const [isHovered, setIsHovered] = useState(false);
-
-  const currentPath = location.pathname.replace('/', '') || 'Dashboard';
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f9fafb] overflow-hidden font-sans">
@@ -32,62 +29,8 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
         isHovered ? "opacity-100" : "opacity-0"
       )} />
 
-      {/* STARK MINIMALIST HEADER */}
-      <header className="h-16 flex items-center justify-between px-11 bg-white/70 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30 shrink-0">
-        {/* Left Section: Brand & Breadcrumbs */}
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="size-10 flex items-center justify-center transition-all group-hover:scale-110 drop-shadow-sm">
-              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
-            </div>
-            <span className="text-[16px] font-black text-gray-900 hidden xs:block uppercase tracking-tighter">AI Interview</span>
-          </Link>
-          
-          <div className="h-4 w-px bg-gray-200 hidden md:block" />
-          
-          <nav className="hidden md:flex items-center gap-2 text-[12px] font-medium text-gray-400">
-            <span className="hover:text-primary cursor-pointer transition-colors">Admin</span>
-            <span className="material-symbols-outlined text-[14px] opacity-40">chevron_right</span>
-            <span className="text-gray-900 font-semibold">{currentPath}</span>
-          </nav>
-        </div>
-
-        {/* Middle Section: Functional Search Bar */}
-        {!hideSearch && (
-          <div className="hidden lg:flex items-center gap-3 px-4 py-2 bg-gray-100/50 border border-transparent rounded-xl w-[340px] group/search focus-within:bg-white focus-within:border-gray-200 focus-within:shadow-sm transition-all">
-            <label htmlFor="global-search" className="cursor-text">
-              <span className="material-symbols-outlined text-[18px] text-gray-400 group-focus-within/search:text-primary transition-colors">search</span>
-            </label>
-            <input 
-              id="global-search"
-              type="text"
-              placeholder="Tìm kiếm nhanh..."
-              className="bg-transparent border-none outline-none text-[12px] font-medium flex-1 text-gray-900 placeholder:text-gray-400 w-full"
-            />
-            <kbd className="text-[14px] font-bold text-gray-400">⌘K</kbd>
-          </div>
-        )}
-
-        {/* Right Section: Icon-based Credit & Profile */}
-        <div className="flex items-center gap-6">
-          {/* Minimalist Credit Display with Icon */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-100 rounded-lg shadow-sm">
-            <span className="material-symbols-outlined text-[16px] text-gray-400">database</span>
-            <span className="text-[13px] font-bold text-gray-900 leading-none">1,250</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button className="material-symbols-outlined text-gray-400 hover:text-gray-900 transition-colors text-[20px]">notifications</button>
-            <Link to="/profile" className="flex items-center gap-3 group">
-              <div className="size-9 rounded-full bg-white border border-gray-100 shadow-sm overflow-hidden p-0.5 transition-all group-hover:border-primary/30">
-                <div className="size-full rounded-full overflow-hidden">
-                  <img src={user?.avatarUrl || "https://i.pravatar.cc/100?u=admin"} alt="Avatar" className="size-full object-cover grayscale hover:grayscale-0 transition-all duration-500" />
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* REUSABLE HEADER COMPONENT */}
+      <Header hideSearch={hideSearch} />
 
       {/* Main Content Area */}
       <main className={cn(

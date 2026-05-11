@@ -62,10 +62,10 @@ const JobsPage: React.FC = () => {
       <div className="flex flex-col h-full pb-14">
         
         {/* Header Section */}
-        <div className="mb-2 space-y-3">
+        <div className="mb-4 space-y-3">
           <div>
-            <h1 className="text-[26px] font-bold text-text-primary tracking-tight">Việc làm</h1>
-            <p className="text-[13px] text-text-secondary mt-0.5">
+            <h1 className="text-[28px] font-bold text-text-primary tracking-tight">Việc làm</h1>
+            <p className="text-[14px] text-text-secondary mt-0.5">
               {isLoading ? 'Đang tìm kiếm...' : `Khám phá ${meta?.total ?? 0} cơ hội việc làm dành cho bạn`}
             </p>
           </div>

@@ -20,6 +20,7 @@ import { VerifyOTPPage } from '../pages/auth/VerifyOTPPage';
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import ProfilePage from "../pages/ProfilePage.tsx";
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
+import CVAnalysisResultPage from '../pages/CVAnalysisResult';
 
 
 export const AppRoutes: React.FC = () => {
@@ -63,6 +64,12 @@ export const AppRoutes: React.FC = () => {
         <Route path="/profile" element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/jobs/cv-analysis/:id" element={
+          <ProtectedRoute>
+            <CVAnalysisResultPage />
           </ProtectedRoute>
         } />
 

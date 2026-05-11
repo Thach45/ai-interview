@@ -106,7 +106,8 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
 
       {/* Sticky Action Footer */}
       <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex gap-3">
-        <button className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-[14px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+        <button className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-[14px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+          onClick={() => navigate(`/jobs/cv-analysis/${job.id}`)}>
           <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
           Phân tích CV
         </button>
