@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+ABS_PATH=$(readlink -f "$1")
 cd ai-interview-backend
-npx commitlint --edit "../$1"
+npx commitlint --edit "$ABS_PATH"

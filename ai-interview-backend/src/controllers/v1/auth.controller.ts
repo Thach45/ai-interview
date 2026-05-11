@@ -88,6 +88,22 @@ class AuthController {
 
     return sendResponse(res, 200, 'User logged out successfully');
   });
+
+  /**
+   * Yêu cầu quên mật khẩu - gửi OTP về email
+   */
+  forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+    await this.authService.forgotPassword(req.body.email);
+    return sendResponse(res, 200, 'Mã OTP đã được gửi đến email của bạn');
+  });
+
+  /**
+   * Đặt lại mật khẩu với mã OTP
+   */
+  resetPassword = asyncHandler(async (req: Request, res: Response) => {
+    await this.authService.resetPassword(req.body);
+    return sendResponse(res, 200, 'Mật khẩu đã được cập nhật thành công');
+  });
 }
 
 // Khởi tạo và tiêm (Inject) instance vào Controller
