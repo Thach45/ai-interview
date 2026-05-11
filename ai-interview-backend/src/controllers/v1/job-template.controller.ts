@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { sendResponse } from '../../utils/apiResponse';
-import { JobTemplateService, jobTemplateService } from '../../services/jobTemplate.service';
+import { JobTemplateService, jobTemplateService } from '../../services/job-template.service';
 
 class JobTemplateController {
   constructor(private readonly jobTemplateService: JobTemplateService) {}

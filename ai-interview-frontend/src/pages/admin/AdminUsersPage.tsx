@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AdminLayout } from '../../layouts/AdminLayout';
-import { UserModal } from '../../features/components/UserModal';
+import { UserModal } from '../../features/user/components/UserModal';
 
 interface User {
   id: string;

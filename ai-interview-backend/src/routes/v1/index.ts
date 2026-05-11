@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import authRoute from './auth.route';
 import profileRoute from './profile.route';
-import jobCategoryRoute from './jobCategory.route';
-import jobTemplateRoute from './jobTemplate.route';
+import jobCategoryRoute from './job-category.route';
+import jobTemplateRoute from './job-template.route';
 
 const router: Router = Router();
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { authService } from '../../shared/services/auth.service';
+import { useAuthStore } from '../../store/authStore';
+import { cn } from '../../shared/utils/cn';
 
 const MENU_ITEMS = [
   // { id: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/admin' },
@@ -19,6 +21,7 @@ const SECONDARY_ITEMS = [
 
 export const AdminSidebar: React.FC = () => {
   const location = useLocation();
+   const user = useAuthStore((state) => state.user);
 
   return (
     <aside className="w-[280px] h-full flex flex-col bg-bg-canvas p-4 select-none">
@@ -74,18 +77,37 @@ export const AdminSidebar: React.FC = () => {
       </div>
 
       {/* Profile Area */}
-      <div className="mt-4 p-4 bg-bg-surface-soft rounded-lg border border-border-hairline">
-        <div className="flex items-center gap-3">
-          <div className="size-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
-            HT
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-semibold text-text-primary truncate">Hoang Thach</div>
-            <div className="text-[11px] text-text-tertiary truncate">Super Admin</div>
-          </div>
-          <button onClick={() => authService.logout()} className="material-symbols-outlined text-[18px] text-text-tertiary hover:text-red-500 cursor-pointer">logout</button>
-        </div>
-      </div>
+       {/* User Footer */}
+            <div className="p-4 border-t border-gray-50">
+              <Link 
+                to="/profile" 
+                className={cn(
+                  "flex items-center gap-3 p-2 rounded-xl transition-all group overflow-hidden",
+                  location.pathname === '/profile' ? "bg-gray-100" : "hover:bg-gray-50"
+                )}
+              >
+                <div className="size-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs overflow-hidden shrink-0">
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Avatar" className="size-full object-cover" />
+                  ) : (
+                    user?.fullName?.charAt(0).toUpperCase() || 'U'
+                  )}
+                </div>
+                
+                  
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-text-primary truncate">{user?.fullName || 'Người dùng'}</p>
+                      <p className="text-[10px] text-text-secondary truncate">{user?.email}</p>
+                    </div>
+                    <span 
+                      className="material-symbols-outlined text-gray-400 text-[18px] group-hover:text-primary transition-colors"
+                      title="Cài đặt tài khoản"
+                    >
+                      settings
+                    </span>
+                
+              </Link>
+            </div>
     </aside>
   );
 };

@@ -9,6 +9,7 @@ import { useJobTemplates } from '../../features/jobs/hooks/useJobTemplates';
 
 export const AdminJobsPage: React.FC = () => {
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
     categoryIds: [] as string[],
     location: '',
@@ -19,8 +20,10 @@ export const AdminJobsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<JobTemplate | null>(null);
 
-  const { templates, isLoading, deleteTemplate } = useJobTemplates({ 
+  const { templates, meta, isLoading, deleteTemplate } = useJobTemplates({ 
     search, 
+    page,
+    limit: 10,
     ...filters 
   });
 
@@ -57,7 +60,10 @@ export const AdminJobsPage: React.FC = () => {
       <div className="flex flex-col gap-6 mb-8">
         {/* Search Bar */}
         <div className="w-full">
-          <JobSearch onSearch={(val) => setSearch(val)} />
+          <JobSearch onSearch={(val) => {
+            setSearch(val);
+            setPage(1); // Reset page on search
+          }} />
         </div>
 
         {/* Filter Section */}
@@ -65,7 +71,10 @@ export const AdminJobsPage: React.FC = () => {
            <div className="text-[11px] font-bold text-text-tertiary uppercase mb-3 px-1">Lọc nâng cao</div>
            <JobFilters 
              selectedFilters={filters}
-             onFilterChange={(newFilters) => setFilters(newFilters)} 
+             onFilterChange={(newFilters) => {
+               setFilters(newFilters);
+               setPage(1); // Reset page on filter
+             }} 
            />
         </div>
       </div>
@@ -81,6 +90,11 @@ export const AdminJobsPage: React.FC = () => {
           templates={templates} 
           onEdit={handleOpenModal} 
           onDelete={handleDelete}
+          currentPage={page}
+          totalPages={meta?.totalPages || 1}
+          totalItems={meta?.total || 0}
+          limit={meta?.limit || 10}
+          onPageChange={(p) => setPage(p)}
         />
       )}
 

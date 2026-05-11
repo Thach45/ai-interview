@@ -3,18 +3,24 @@ import { toast } from "sonner";
 import jobTemplateApi from "../api/jobTemplate.api";
 import type { JobTemplate } from "../types/types";
 
-export const useJobTemplates = (params?: { 
-  page?: number; 
-  limit?: number; 
-  search?: string; 
-  categoryIds?: string[];
-  location?: string;
-  employmentType?: string;
-  experienceLevel?: string;
-  isRemote?: boolean;
-  salaryRange?: string;
-}) => {
+export const useJobTemplates = (
+  params?: { 
+    page?: number; 
+    limit?: number; 
+    search?: string; 
+    categoryIds?: string[];
+    location?: string;
+    employmentType?: string;
+    experienceLevel?: string;
+    isRemote?: boolean;
+    salaryRange?: string;
+  },
+  options: { enabled?: boolean } = {}
+) => {
   const queryClient = useQueryClient();
+
+  // Mặc định disable query nếu không truyền params (thường là khi chỉ cần mutation)
+  const isEnabled = options.enabled !== undefined ? options.enabled : !!params;
 
   /**
    * Lấy danh sách job templates
@@ -22,6 +28,7 @@ export const useJobTemplates = (params?: {
   const { data: templatesResponse, isLoading, refetch } = useQuery({
     queryKey: ["job-templates", params],
     queryFn: () => jobTemplateApi.getAll(params),
+    enabled: isEnabled,
   });
 
   /**
