@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { cvApi } from '../features/cvs/api/cv.api';
+import { useCvs } from '../features/cvs/hooks/useCvs';
 import { 
   FileText, CheckCircle, XCircle, AlertTriangle, 
   ChevronLeft, Download, Share2, ZoomIn, ZoomOut, Maximize,
@@ -17,49 +20,7 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
-// --- Mock Data ---
-const MOCK_DATA = {
-  jobTitle: "Senior Frontend Engineer",
-  company: "TechNova Solutions",
-  matchScore: 82,
-  summary: "Your profile is a strong match for this position. Your experience with React and modern frontend architectures aligns well with the requirements. However, there are some gaps in cloud deployment and specific testing frameworks that could be addressed.",
-  strengths: [
-    "5+ years of React and TypeScript experience",
-    "Strong background in state management (Redux, Zustand)",
-    "Excellent responsive design skills with Tailwind CSS",
-    "Proven track record of mentoring junior developers"
-  ],
-  weaknesses: [
-    "Lacks experience with AWS/GCP CI/CD pipelines",
-    "No mention of Cypress or end-to-end testing",
-    "Missing GraphQL experience which is a nice-to-have"
-  ],
-  skillsGap: [
-    { name: "React/Vue", user: 95, required: 90 },
-    { name: "TypeScript", user: 90, required: 85 },
-    { name: "Testing (Jest/Cypress)", user: 40, required: 80 },
-    { name: "CI/CD & Cloud", user: 30, required: 70 },
-    { name: "System Design", user: 75, required: 85 },
-    { name: "GraphQL", user: 20, required: 60 }
-  ],
-  recommendations: [
-    {
-      title: "Highlight Testing Experience",
-      desc: "Add any unit or integration testing experience you have, even if it's not Cypress. Mentioning Jest or React Testing Library would boost your profile.",
-      impact: "high"
-    },
-    {
-      title: "Include Cloud Deployment Projects",
-      desc: "If you have personal projects deployed on Vercel, Netlify, or AWS, make sure to explicitly mention them to show familiarity with deployment concepts.",
-      impact: "medium"
-    },
-    {
-      title: "Quantify Mentorship Impact",
-      desc: "Instead of just 'mentored juniors', specify 'mentored 3 junior devs, reducing onboarding time by 20%'.",
-      impact: "high"
-    }
-  ]
-};
+// API data is fetched directly using React Query.
 
 // --- Custom Components ---
 
@@ -154,7 +115,7 @@ const RadarChart = ({ data }: { data: any[] }) => {
               dominantBaseline="middle"
               className="text-[11px] font-medium fill-gray-500"
             >
-              {d.name}
+              {d.skill || d.name}
             </text>
           );
         })}
@@ -223,11 +184,65 @@ const CircularProgress = ({ score }: { score: number }) => {
 
 export default function CVAnalysisResultPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const cvId = searchParams.get('cvId');
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'recommendations'>('overview');
   
-  // Initialize PDF viewer plugin
+  const { cvs } = useCvs();
+  const selectedCv = cvs.find(c => c.id === cvId);
+
+  const { data: analysisResponse, isLoading, error } = useQuery({
+    queryKey: ['analyze-cv', cvId, id],
+    queryFn: () => cvApi.analyzeCv(cvId!, id!),
+    enabled: !!cvId && !!id,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 60,
+  });
+
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
+
+  if (!cvId || !id) {
+    return (
+      <MainLayout hideSearch={true} fullHeight={true}>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
+           <AlertTriangle size={48} className="text-amber-500 mb-4" />
+           <p className="text-lg font-bold">Thiếu thông tin phân tích</p>
+           <button onClick={() => navigate(-1)} className="mt-4 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <MainLayout hideSearch={true} fullHeight={true} className="bg-[#fafafa]">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] animate-in fade-in zoom-in duration-500">
+           <div className="relative mb-8">
+             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+             <BrainCircuit size={80} className="text-primary relative animate-bounce" />
+           </div>
+           <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-tight">AI đang phân tích CV của bạn...</h2>
+           <p className="text-gray-500 font-medium max-w-md text-center">Quá trình này có thể mất vài chục giây để hệ thống đọc hiểu, trích xuất dữ liệu và đối chiếu đa chiều với yêu cầu tuyển dụng.</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error || !analysisResponse) {
+    return (
+      <MainLayout hideSearch={true} fullHeight={true}>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
+           <XCircle size={60} className="text-red-500 mb-4" />
+           <p className="text-xl font-bold text-gray-800">Lỗi khi phân tích CV</p>
+           <p className="text-gray-500 mt-2 mb-6">Không thể kết nối với AI hoặc CV không hợp lệ.</p>
+           <button onClick={() => navigate(-1)} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Thử lại</button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const result = analysisResponse;
 
   return (
     <MainLayout hideSearch={true} fullHeight={true} maxWidth="1600px" className="px-4 lg:px-8 pt-2 overflow-hidden bg-[#fafafa]">
@@ -243,7 +258,7 @@ export default function CVAnalysisResultPage() {
           <div className="flex-1 overflow-hidden relative">
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
               <Viewer
-                fileUrl="https://res.cloudinary.com/drblblupt/image/upload/v1778512676/My_cv_ul3n3k.pdf"
+                fileUrl={selectedCv?.fileUrl || ''}
                 plugins={[defaultLayoutPluginInstance]}
               />
             </Worker>
@@ -255,14 +270,14 @@ export default function CVAnalysisResultPage() {
           
           {/* AI Banner */}
           <div className="bg-white p-6 shrink-0 border-b border-gray-100 flex gap-6 items-center">
-            <CircularProgress score={MOCK_DATA.matchScore} />
+            <CircularProgress score={result.matchScore} />
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1.5">
                 <Sparkles size={18} className="text-primary" />
                 <h2 className="text-lg font-bold text-gray-900 tracking-tight">Đánh giá mức độ phù hợp</h2>
               </div>
               <p className="text-gray-600 text-[14px] leading-relaxed">
-                {MOCK_DATA.summary}
+                {result.summary}
               </p>
               <div className="mt-4 flex gap-3">
                 <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
@@ -322,7 +337,7 @@ export default function CVAnalysisResultPage() {
                         <CheckCircle size={18} className="text-green-500" /> Điểm mạnh
                       </h3>
                       <ul className="space-y-3">
-                        {MOCK_DATA.strengths.map((item, i) => (
+                        {result.strengths.map((item: string, i: number) => (
                           <li key={i} className="flex items-start gap-2.5">
                             <div className="mt-1 min-w-1.5 min-h-1.5 rounded-full bg-green-400"></div>
                             <span className="text-[13px] text-gray-700 leading-snug">{item}</span>
@@ -338,7 +353,7 @@ export default function CVAnalysisResultPage() {
                         <XCircle size={18} className="text-red-500" /> Điểm cần cải thiện
                       </h3>
                       <ul className="space-y-3">
-                        {MOCK_DATA.weaknesses.map((item, i) => (
+                        {result.weaknesses.map((item: string, i: number) => (
                           <li key={i} className="flex items-start gap-2.5">
                             <div className="mt-1 min-w-1.5 min-h-1.5 rounded-full bg-red-400"></div>
                             <span className="text-[13px] text-gray-700 leading-snug">{item}</span>
@@ -354,12 +369,14 @@ export default function CVAnalysisResultPage() {
                       <AlertTriangle size={18} className="text-amber-500" /> Từ khóa thiếu sót quan trọng
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {['Cypress', 'AWS/GCP', 'GraphQL', 'CI/CD', 'Jest'].map(keyword => (
+                      {result.missingKeywords.length > 0 ? result.missingKeywords.map((keyword: string) => (
                         <div key={keyword} className="px-3 py-1.5 bg-white text-amber-800 text-[12px] font-bold rounded-lg border border-amber-200 shadow-sm flex items-center gap-1.5">
                           {keyword}
                           <span className="material-symbols-outlined text-[14px] opacity-50">add_circle</span>
                         </div>
-                      ))}
+                      )) : (
+                        <p className="text-[13px] text-amber-700 font-medium">CV của bạn đã bao gồm hầu hết các từ khóa quan trọng.</p>
+                      )}
                     </div>
                     <p className="text-[12px] text-amber-700/80 mt-3 font-medium">
                       Việc bổ sung các từ khóa này vào CV có thể tăng tỷ lệ match lên đến <span className="font-bold text-amber-600">12%</span>
@@ -379,19 +396,19 @@ export default function CVAnalysisResultPage() {
                 >
                   <div className="flex-1 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
                     <h3 className="text-[15px] font-bold text-gray-900 mb-6 w-full text-left">Biểu đồ Kỹ năng</h3>
-                    <RadarChart data={MOCK_DATA.skillsGap} />
+                    <RadarChart data={result.skillsAnalysis} />
                   </div>
                   
                   <div className="w-[40%] flex flex-col gap-3">
                     <h3 className="text-[15px] font-bold text-gray-900 mb-2">Chi tiết mức độ phù hợp</h3>
-                    {MOCK_DATA.skillsGap.map((skill, i) => {
+                    {result.skillsAnalysis.map((skill: any, i: number) => {
                       const gap = skill.required - skill.user;
                       const isGood = gap <= 0;
                       
                       return (
                         <div key={i} className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-[13px] font-bold text-gray-800">{skill.name}</span>
+                            <span className="text-[13px] font-bold text-gray-800">{skill.skill}</span>
                             <span className={`text-[12px] font-bold px-2 py-0.5 rounded-md ${
                               isGood ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                             }`}>
@@ -441,11 +458,11 @@ export default function CVAnalysisResultPage() {
                     Dựa trên phân tích yêu cầu công việc và CV của bạn, AI của chúng tôi đề xuất các bước hành động sau để tối ưu hóa hồ sơ của bạn.
                   </p>
                   
-                  {MOCK_DATA.recommendations.map((rec, i) => (
+                  {result.improvementSuggestions.map((rec: any, i: number) => (
                     <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-primary/30 hover:shadow-md transition-all group">
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                          rec.impact === 'high' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-500'
+                          rec.priority === 'HIGH' ? 'bg-red-50 text-red-500' : 'bg-amber-50 text-amber-500'
                         }`}>
                           <TrendingUp size={20} />
                         </div>
@@ -453,14 +470,18 @@ export default function CVAnalysisResultPage() {
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="text-[15px] font-bold text-gray-900 group-hover:text-primary transition-colors">{rec.title}</h4>
                             <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
-                              rec.impact === 'high' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                              rec.priority === 'HIGH' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                             }`}>
-                              Impact: {rec.impact}
+                              Mức độ: {rec.priority}
                             </span>
                           </div>
-                          <p className="text-[13px] text-gray-600 leading-relaxed">
+                          <p className="text-[13px] text-gray-600 leading-relaxed mb-2">
                             {rec.desc}
                           </p>
+                          <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                            <p className="text-[12px] font-semibold text-gray-800">💡 Giải pháp AI gợi ý:</p>
+                            <p className="text-[12px] text-gray-600 mt-1">{rec.solution}</p>
+                          </div>
                           
                           <div className="mt-3">
                             <button className="text-[12px] font-bold text-primary flex items-center gap-1 hover:gap-2 transition-all">

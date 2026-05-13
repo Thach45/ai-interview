@@ -1,11 +1,8 @@
 import express, { Router } from 'express';
-import { userController } from '../../controllers/v1/user.controller';
-import { auth, authorize } from '../../middlewares/auth.middleware';
-import { validate } from '../../middlewares/validate.middleware';
-import {
-  adminCreateUserSchema,
-  adminUpdateUserSchema,
-} from '../../validations/user.validation';
+import { userController } from '../../../controllers/v1/admin/user.controller';
+import { auth, authorize } from '../../../middlewares/auth.middleware';
+import { validate } from '../../../middlewares/validate.middleware';
+import { adminCreateUserSchema, adminUpdateUserSchema } from '../../../validations/user.validation';
 
 const router: Router = express.Router();
 

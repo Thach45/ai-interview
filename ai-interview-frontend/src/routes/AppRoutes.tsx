@@ -22,6 +22,8 @@ import ProfilePage from "../pages/ProfilePage.tsx";
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import CVAnalysisResultPage from '../pages/CVAnalysisResult';
 
+import MyCvsPage from '../pages/MyCvs';
+
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -43,6 +45,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/jobs" element={
           <ProtectedRoute>
             <JobsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-cvs" element={
+          <ProtectedRoute>
+            <MyCvsPage />
           </ProtectedRoute>
         } />
         <Route path="/interviews/setup" element={

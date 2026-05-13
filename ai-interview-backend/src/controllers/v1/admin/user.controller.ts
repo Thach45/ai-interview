@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { asyncHandler } from '../../utils/asyncHandler';
-import { userService } from '../../services/user.service';
+import { asyncHandler } from '../../../utils/asyncHandler';
+import { userService } from '../../../services/admin/user.service';
 import { Role, UserStatus } from '@prisma/client';
-import { sendResponse } from '../../utils/apiResponse';
-import { toUserResponseDTO } from '../../mappers/user.mapper';
+import { sendResponse } from '../../../utils/apiResponse';
+import { toUserResponseDTO } from '../../../mappers/user.mapper';
 
 export const userController = {
   getAll: asyncHandler(async (req: Request, res: Response) => {
@@ -12,9 +12,9 @@ export const userController = {
     const result = await userService.getAllUsers({
       page: page ? parseInt(page as string) : undefined,
       limit: limit ? parseInt(limit as string) : undefined,
-      role: role as Role,
-      status: status as UserStatus,
-      search: search as string,
+      role: role ? (role as string as Role) : undefined,
+      status: status ? (status as string as UserStatus) : undefined,
+      search: search ? (search as string) : undefined,
     });
 
     const mappedUsers = result.users.map(toUserResponseDTO);
@@ -27,7 +27,7 @@ export const userController = {
 
   getById: asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const user = await userService.getUserById(id);
+    const user = await userService.getUserById(id as string);
     return sendResponse(res, 200, 'User retrieved successfully', toUserResponseDTO(user));
   }),
 
@@ -38,13 +38,13 @@ export const userController = {
 
   update: asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const user = await userService.updateUser(id, req.body);
+    const user = await userService.updateUser(id as string, req.body);
     return sendResponse(res, 200, 'User updated successfully', toUserResponseDTO(user));
   }),
 
   delete: asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await userService.deleteUser(id);
+    const result = await userService.deleteUser(id as string);
     return sendResponse(res, 200, result.message);
   }),
 };

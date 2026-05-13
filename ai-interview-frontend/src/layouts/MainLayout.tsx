@@ -6,6 +6,7 @@ import { Header } from '../components/layout/Header';
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Trang chủ', href: '/', icon: 'dashboard' },
   { id: 'jobs', label: 'Việc làm', href: '/jobs', icon: 'work' },
+  { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs', icon: 'description' },
   { id: 'history', label: 'Lịch sử', href: '/history', icon: 'history' },
   { id: 'profile', label: 'Cá nhân', href: '/profile', icon: 'person' },
 ];

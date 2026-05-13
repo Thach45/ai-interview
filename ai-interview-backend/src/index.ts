@@ -1,14 +1,14 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import { Express } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import setupRoutes from './routes';
 
 import { apiLimiter } from './middlewares/rate-limit.middleware';
-
-dotenv.config();
 
 const app: Express = express();
 const port: number = parseInt(process.env.PORT || '3000', 10);

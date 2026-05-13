@@ -14,7 +14,6 @@ class AnalysisCVController {
     }
 
     const { cvId, jobDescriptionId } = req.body;
-
     const result = await this.analysisCVService.analysisCV(userId, cvId, jobDescriptionId);
 
     return sendResponse(res, 201, 'Phân tích CV thành công', result);

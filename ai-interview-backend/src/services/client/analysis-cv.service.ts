@@ -15,6 +15,19 @@ export class AnalysisCVService {
    * 3. Lưu kết quả chi tiết vào database
    */
   async analysisCV(userId: string, cvId: string, jobTemplateId: string) {
+    // 0. Kiểm tra xem cặp CV và Job này đã được phân tích chưa (Caching logic)
+    const existingAnalysis = await this._prisma.cvAnalysis.findFirst({
+      where: {
+        userId,
+        cvId,
+        jobTemplateId,
+      },
+    });
+
+    if (existingAnalysis) {
+      return existingAnalysis;
+    }
+
     // 1. Lấy nội dung CV của người dùng
     const userCv = await this._prisma.userCv.findFirstOrThrow({
       where: {

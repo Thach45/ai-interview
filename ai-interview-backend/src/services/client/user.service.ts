@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import pdf from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import prisma from '../../config/prisma';
 import { uploadService, UploadService } from '../../shared/services/upload.service';
 
@@ -76,8 +76,9 @@ export class UserService {
     // 1. Trích xuất văn bản từ PDF
     let contentExtracted = '';
     if (file.mimetype === 'application/pdf') {
-      const data = await (pdf as any)(file.buffer);
-      contentExtracted = data.text;
+      const parser = new PDFParse({ data: file.buffer });
+      const result = await parser.getText();
+      contentExtracted = result.text;
     }
 
     // 2. Upload file lên cloud thông qua Shared Service

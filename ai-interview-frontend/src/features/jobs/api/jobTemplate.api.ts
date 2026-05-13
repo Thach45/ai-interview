@@ -15,14 +15,14 @@ export const jobTemplateApi = {
     salaryRange?: string;
   }) =>
     apiClient.get<any, { success: boolean; data: { data: JobTemplate[]; meta: any } }>(
-      "/admin/job-templates",
+      "/job-templates",
       { params }
     ),
 
   /** Lấy chi tiết 1 job template */
   getById: (id: string) =>
     apiClient.get<any, { success: boolean; data: JobTemplate }>(
-      `/admin/job-templates/${id}`
+      `/job-templates/${id}`
     ),
 
   /** Tạo mới job template */

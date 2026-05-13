@@ -24,13 +24,13 @@ export const jobCategoryApi = {
   /**
    * Lấy cây danh mục 3 tầng
    */
-  getTree: () => apiClient.get<JobCategory[]>("/admin/categories"),
+  getTree: () => apiClient.get<JobCategory[]>("/categories"),
 
   /**
    * Lấy danh sách phẳng (có phân trang)
    */
   getFlat: (params: { type?: string; page?: number; limit?: number }) =>
-    apiClient.get<PaginatedResponse<JobCategory>>("/admin/categories/flat", {
+    apiClient.get<PaginatedResponse<JobCategory>>("/categories/flat", {
       params,
     }),
 

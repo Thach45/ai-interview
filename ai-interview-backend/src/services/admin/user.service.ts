@@ -1,7 +1,7 @@
-import prisma from '../config/prisma';
+import prisma from '../../config/prisma';
 import bcrypt from 'bcryptjs';
 import { UserStatus, Role } from '@prisma/client';
-import { BadRequestException, NotFoundException } from '../exceptions';
+import { BadRequestException, NotFoundException } from '../../exceptions';
 
 export class UserService {
   async getAllUsers(params: {

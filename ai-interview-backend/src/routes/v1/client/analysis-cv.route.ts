@@ -1,5 +1,5 @@
 import express from 'express';
-import { analysisCVController } from '../../../controllers/v1/analysis-cv.controller';
+import { analysisCVController } from '../../../controllers/v1/client/analysis-cv.controller';
 import { auth } from '../../../middlewares/auth.middleware';
 import { validate } from '../../../middlewares/validate.middleware';
 import { analyzeCvSchema } from '../../../validations/analysis-cv.validation';
