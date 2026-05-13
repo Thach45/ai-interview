@@ -3,6 +3,7 @@ import { asyncHandler } from '../../../utils/asyncHandler';
 import { sendResponse } from '../../../utils/apiResponse';
 import { JobCategoryService, jobCategoryService } from '../../../services/admin/job-category.service';
 import { CategoryType } from '@prisma/client';
+import { toJobCategoryResponseDTO } from '../../mappers/job-category.mapper';
 
 class JobCategoryController {
   constructor(private readonly jobCategoryService: JobCategoryService) {}
@@ -13,7 +14,8 @@ class JobCategoryController {
    */
   getTree = asyncHandler(async (req: Request, res: Response) => {
     const tree = await this.jobCategoryService.getTree();
-    return sendResponse(res, 200, 'Lấy cây danh mục thành công', tree);
+    const mappedTree = tree.map((item: any) => toJobCategoryResponseDTO(item));
+    return sendResponse(res, 200, 'Lấy cây danh mục thành công', mappedTree);
   });
 
   /**
@@ -34,7 +36,12 @@ class JobCategoryController {
     }
 
     const result = await this.jobCategoryService.getAll(type, page, limit);
-    return sendResponse(res, 200, 'Lấy danh sách danh mục thành công', result);
+    const mappedData = result.data.map((item: any) => toJobCategoryResponseDTO(item));
+
+    return sendResponse(res, 200, 'Lấy danh sách danh mục thành công', {
+      data: mappedData,
+      meta: result.meta,
+    });
   });
 
   /**
@@ -44,7 +51,7 @@ class JobCategoryController {
   getById = asyncHandler(async (req: Request, res: Response) => {
     const id = req.params['id'] as string;
     const category = await this.jobCategoryService.getById(id);
-    return sendResponse(res, 200, 'Lấy danh mục thành công', category);
+    return sendResponse(res, 200, 'Lấy danh mục thành công', toJobCategoryResponseDTO(category as any));
   });
 
   /**
@@ -53,7 +60,7 @@ class JobCategoryController {
    */
   create = asyncHandler(async (req: Request, res: Response) => {
     const category = await this.jobCategoryService.create(req.body);
-    return sendResponse(res, 201, 'Tạo danh mục thành công', category);
+    return sendResponse(res, 201, 'Tạo danh mục thành công', toJobCategoryResponseDTO(category as any));
   });
 
   /**
@@ -63,7 +70,7 @@ class JobCategoryController {
   update = asyncHandler(async (req: Request, res: Response) => {
     const id = req.params['id'] as string;
     const category = await this.jobCategoryService.update(id, req.body);
-    return sendResponse(res, 200, 'Cập nhật danh mục thành công', category);
+    return sendResponse(res, 200, 'Cập nhật danh mục thành công', toJobCategoryResponseDTO(category as any));
   });
 
   /**

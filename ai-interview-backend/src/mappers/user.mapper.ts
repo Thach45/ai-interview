@@ -8,6 +8,11 @@ export const toUserResponseDTO = (user: User): UserResponseDTO => {
     fullName: user.fullName,
     role: user.role,
     avatarUrl: user.avatarUrl,
+    status: user.status,
+    creditsBalance: user.creditsBalance,
+    emailVerifiedAt: user.emailVerifiedAt,
+    provider: user.provider,
     createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 };

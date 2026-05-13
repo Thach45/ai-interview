@@ -13,5 +13,10 @@ export type UserResponseDTO = {
   fullName: string;
   role: string;
   avatarUrl?: string | null;
+  status: string;
+  creditsBalance: number;
+  emailVerifiedAt?: Date | null;
+  provider: string;
   createdAt: Date;
+  updatedAt: Date;
 };
