@@ -9,7 +9,7 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: any; // Để kiểu any để tránh xung đột với các thư viện khác
+      user?: CustomJwtPayload; // Để kiểu any để tránh xung đột với các thư viện khác
     }
   }
 }

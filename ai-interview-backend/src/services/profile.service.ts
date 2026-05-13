@@ -23,7 +23,7 @@ export class ProfileService {
       fullName?: string;
       avatarUrl?: string;
       password?: string;
-    }
+    },
   ) {
     const updateData: any = {};
 
@@ -62,4 +62,3 @@ export class ProfileService {
 }
 
 export const profileService = new ProfileService();
-

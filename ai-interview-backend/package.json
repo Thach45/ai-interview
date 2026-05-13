@@ -15,6 +15,7 @@
     "prepare": "cd .. && husky install ai-interview-backend/.husky"
   },
   "dependencies": {
+    "@google/genai": "^2.2.0",
     "@prisma/client": "^5.22.0",
     "axios": "^1.7.7",
     "bcryptjs": "^3.0.2",

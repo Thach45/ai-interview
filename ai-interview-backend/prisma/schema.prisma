@@ -238,16 +238,63 @@ model Transaction {
 
 // ================= THỰC THỂ TÍNH NĂNG PHỤ TRỢ =================
 
+// Enum cho mức độ ưu tiên của gợi ý
+enum AnalysisPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+// Enum cho các hạng mục chấm điểm
+enum ScoreCategory {
+  TECHNICAL_SKILLS
+  EXPERIENCE
+  SOFT_SKILLS
+  EDUCATION
+  PROJECT_RELEVANCE
+}
+
+// Định nghĩa cấu trúc cho phân tích kỹ năng
+type SkillAnalysis {
+  skill    String
+  user     Int
+  required Int
+}
+
+// Định nghĩa cấu trúc cho gợi ý cải thiện
+type ImprovementSuggestion {
+  title    String
+  desc     String
+  solution String
+  priority AnalysisPriority
+}
+
+// Định nghĩa cấu trúc cho chi tiết điểm số kèm lý do
+type ScoreDetail {
+  category ScoreCategory
+  score    Int
+  reason   String
+}
+
 // 8. BẢNG PHÂN TÍCH CV (Trợ lý ứng tuyển)
 model CvAnalysis {
-  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId                 String   @db.ObjectId
-  cvId                   String   @db.ObjectId
-  jobTemplateId          String   @db.ObjectId
+  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId                 String                  @db.ObjectId
+  cvId                   String                  @db.ObjectId
+  jobTemplateId          String                  @db.ObjectId
   
   matchScore             Int      
-  missingKeywords        Json     
-  improvementSuggestions Json     
+  summary                String?
+  
+  // Chi tiết điểm số theo từng hạng mục
+  scoringDetails         ScoreDetail[]
+  
+  strengths              String[]
+  weaknesses             String[]
+  skillsAnalysis         SkillAnalysis[]
+  foundKeywords          String[]
+  missingKeywords        String[]
+  improvementSuggestions ImprovementSuggestion[]
   
   createdAt              DateTime @default(now())
 
