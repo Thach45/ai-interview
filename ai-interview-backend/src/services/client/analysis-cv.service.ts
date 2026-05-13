@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import prisma from '../config/prisma';
-import { AiService, aiService } from './ai.service';
+import prisma from '../../config/prisma';
+import { AiService, aiService } from '../core/ai.service';
 
 export class AnalysisCVService {
   constructor(

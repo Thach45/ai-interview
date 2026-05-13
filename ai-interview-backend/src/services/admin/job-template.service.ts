@@ -1,6 +1,6 @@
-import prisma from '../config/prisma';
+import prisma from '../../config/prisma';
 import { ExperienceLevel } from '@prisma/client';
-import { NotFoundException } from '../exceptions';
+import { NotFoundException } from '../../exceptions';
 
 export class JobTemplateService {
   /**

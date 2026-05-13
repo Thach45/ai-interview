@@ -1,8 +1,8 @@
-import prisma from '../config/prisma';
+import prisma from '../../config/prisma';
 import bcrypt from 'bcryptjs';
-import { BadRequestException, UnauthorizedException, NotFoundException } from '../exceptions';
+import { BadRequestException, UnauthorizedException, NotFoundException } from '../../exceptions';
 
-import { mailService as _mailService, MailService } from '../shared/services/mail.service';
+import { mailService as _mailService, MailService } from '../../shared/services/mail.service';
 import { UserStatus } from '@prisma/client';
 
 export class AuthService {

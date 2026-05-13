@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { asyncHandler } from '../../utils/asyncHandler';
-import { sendResponse } from '../../utils/apiResponse';
-import { JobCategoryService, jobCategoryService } from '../../services/job-category.service';
+import { asyncHandler } from '../../../utils/asyncHandler';
+import { sendResponse } from '../../../utils/apiResponse';
+import { JobCategoryService, jobCategoryService } from '../../../services/admin/job-category.service';
 import { CategoryType } from '@prisma/client';
 
 class JobCategoryController {

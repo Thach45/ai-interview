@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { generateAccessToken, generateRefreshToken } from '../../utils/jwt';
-import { AuthService, authService } from '../../services/auth.service';
-import { asyncHandler } from '../../utils/asyncHandler';
-import { sendResponse } from '../../utils/apiResponse';
-import { toUserResponseDTO } from '../../mappers/user.mapper';
-import { TokenPayload } from '../../types/jwt.type';
+import { generateAccessToken, generateRefreshToken } from '../../../utils/jwt';
+import { AuthService, authService } from '../../../services/client/auth.service';
+import { asyncHandler } from '../../../utils/asyncHandler';
+import { sendResponse } from '../../../utils/apiResponse';
+import { toUserResponseDTO } from '../../../mappers/user.mapper';
+import { TokenPayload } from '../../../types/jwt.type';
 
 dotenv.config();
 

@@ -1,9 +1,9 @@
-import { ai, AI_MODEL_CONFIG } from '../config/ai.config';
+import { ai, AI_MODEL_CONFIG } from '../../config/ai.config';
 import {
   CV_ANALYSIS_RESPONSE_SCHEMA,
   CV_ANALYSIS_SYSTEM_PROMPT,
   getCVAnalysisUserPrompt,
-} from '../prompts/cv-analysis.prompt';
+} from '../../prompts/cv-analysis.prompt';
 
 export class AiService {
   async analysisCV(cvContent: string, jobDescription: string) {

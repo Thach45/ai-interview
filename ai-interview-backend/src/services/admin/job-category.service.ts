@@ -1,6 +1,6 @@
-import prisma from '../config/prisma';
+import prisma from '../../config/prisma';
 import { CategoryType } from '@prisma/client';
-import { BadRequestException, NotFoundException } from '../exceptions';
+import { BadRequestException, NotFoundException } from '../../exceptions';
 
 export class JobCategoryService {
   /**

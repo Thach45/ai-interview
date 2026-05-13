@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { jobTemplateController } from '../../controllers/v1/job-template.controller';
+import { jobTemplateController } from '../../../controllers/v1/admin/job-template.controller';
 
 const router: Router = Router();
 

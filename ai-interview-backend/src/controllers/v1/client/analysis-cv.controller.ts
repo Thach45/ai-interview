@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { analysisCVService, AnalysisCVService } from '../../services/analysis-cv.service';
-import { asyncHandler } from '../../utils/asyncHandler';
-import { sendResponse } from '../../utils/apiResponse';
-import { UnauthorizedException, BadRequestException } from '../../exceptions';
+import { analysisCVService, AnalysisCVService } from '../../../services/client/analysis-cv.service';
+import { asyncHandler } from '../../../utils/asyncHandler';
+import { sendResponse } from '../../../utils/apiResponse';
+import { UnauthorizedException, BadRequestException } from '../../../exceptions';
 
 class AnalysisCVController {
   constructor(private readonly analysisCVService: AnalysisCVService) {}

@@ -1,11 +1,11 @@
 import express, { Router } from 'express';
-import { jobCategoryController } from '../../controllers/v1/job-category.controller';
-import { auth, authorize } from '../../middlewares/auth.middleware';
-import { validate } from '../../middlewares/validate.middleware';
+import { jobCategoryController } from '../../../controllers/v1/admin/job-category.controller';
+import { auth, authorize } from '../../../middlewares/auth.middleware';
+import { validate } from '../../../middlewares/validate.middleware';
 import {
   createJobCategorySchema,
   updateJobCategorySchema,
-} from '../../validations/job-category.validation';
+} from '../../../validations/job-category.validation';
 
 const router: Router = express.Router();
 
