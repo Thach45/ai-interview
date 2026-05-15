@@ -14,6 +14,8 @@ const pathMap: { [key: string]: string } = {
   'settings': 'Cài đặt',
   'templates': 'Mẫu câu hỏi',
   'cv-analysis': 'Phân tích CV',
+  'interview-setup': 'Thiết lập phỏng vấn',
+  'interview-room': 'Phòng phỏng vấn',
 };
 
 export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {

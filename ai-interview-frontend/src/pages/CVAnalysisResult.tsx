@@ -8,7 +8,7 @@ import {
   FileText, CheckCircle, XCircle, AlertTriangle, 
   ChevronLeft, Download, Share2, ZoomIn, ZoomOut, Maximize,
   Briefcase, GraduationCap, Award, Lightbulb, TrendingUp,
-  BrainCircuit, Target, Sparkles, ChevronRight
+  BrainCircuit, Target, Sparkles, ChevronRight, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,6 +21,121 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 // API data is fetched directly using React Query.
+
+const CATEGORY_LABELS: Record<string, string> = {
+  TECHNICAL_SKILLS: 'Kỹ năng kỹ thuật',
+  EXPERIENCE: 'Kinh nghiệm',
+  SOFT_SKILLS: 'Kỹ năng mềm',
+  EDUCATION: 'Học vấn',
+  PROJECT_RELEVANCE: 'Độ phù hợp dự án',
+};
+
+const CATEGORY_COLORS: Record<string, { bg: string; bar: string; text: string }> = {
+  TECHNICAL_SKILLS: { bg: 'bg-blue-50', bar: 'bg-blue-500', text: 'text-blue-700' },
+  EXPERIENCE:       { bg: 'bg-purple-50', bar: 'bg-purple-500', text: 'text-purple-700' },
+  SOFT_SKILLS:      { bg: 'bg-green-50', bar: 'bg-green-500', text: 'text-green-700' },
+  EDUCATION:        { bg: 'bg-amber-50', bar: 'bg-amber-500', text: 'text-amber-700' },
+  PROJECT_RELEVANCE:{ bg: 'bg-rose-50', bar: 'bg-rose-500', text: 'text-rose-700' },
+};
+
+// --- Scoring Radar Chart with Tooltip ---
+
+const ScoringRadarChart = ({ data }: { data: any[] }) => {
+  const [tooltip, setTooltip] = useState<{ mouseX: number; mouseY: number; detail: any } | null>(null);
+  const hideTimeout = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const size = 320;
+  const center = size / 2;
+  const radius = (size / 2) - 55;
+  const angleStep = (Math.PI * 2) / data.length;
+
+  const getPoint = (value: number, index: number) => {
+    const r = (value / 100) * radius;
+    const x = center + r * Math.sin(index * angleStep);
+    const y = center - r * Math.cos(index * angleStep);
+    return { x, y };
+  };
+
+  const polygon = data.map((d, i) => { const p = getPoint(d.score, i); return `${p.x},${p.y}`; }).join(' ');
+
+  const showTooltip = (e: React.MouseEvent, d: any) => {
+    if (hideTimeout.current) clearTimeout(hideTimeout.current);
+    setTooltip({ mouseX: e.clientX, mouseY: e.clientY, detail: d });
+  };
+
+  const scheduleHide = () => {
+    hideTimeout.current = setTimeout(() => setTooltip(null), 120);
+  };
+
+  const cancelHide = () => {
+    if (hideTimeout.current) clearTimeout(hideTimeout.current);
+  };
+
+  return (
+    <div className="relative flex flex-col items-center justify-center w-full">
+      <svg width={size} height={size} className="overflow-visible">
+        {[20, 40, 60, 80, 100].map(level => (
+          <polygon
+            key={level}
+            points={data.map((_, i) => { const p = getPoint(level, i); return `${p.x},${p.y}`; }).join(' ')}
+            fill="none"
+            stroke="#e5e7eb"
+            strokeWidth="1"
+            strokeDasharray={level === 100 ? '0' : '4 4'}
+          />
+        ))}
+        {data.map((_, i) => {
+          const outer = getPoint(100, i);
+          return <line key={i} x1={center} y1={center} x2={outer.x} y2={outer.y} stroke="#e5e7eb" strokeWidth="1" />;
+        })}
+        <polygon points={polygon} fill="rgba(124,58,237,0.15)" stroke="#7c3aed" strokeWidth="2" />
+        {data.map((d, i) => {
+          const p = getPoint(d.score, i);
+          const label = getPoint(114, i);
+          return (
+            <g key={i}>
+              <text x={label.x} y={label.y} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="600" fill="#6b7280">
+                {CATEGORY_LABELS[d.category]?.split(' ').map((w: string, wi: number) => (
+                  <tspan key={wi} x={label.x} dy={wi === 0 ? 0 : 13}>{w}</tspan>
+                ))}
+              </text>
+              <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="10" fontWeight="700" fill="#7c3aed">
+                {d.score}
+              </text>
+              <circle
+                cx={p.x} cy={p.y} r="8"
+                fill="#7c3aed"
+                stroke="white"
+                strokeWidth="2"
+                className="cursor-pointer"
+                onMouseEnter={(e) => showTooltip(e, d)}
+                onMouseLeave={scheduleHide}
+              />
+            </g>
+          );
+        })}
+      </svg>
+
+      {tooltip && (
+        <div
+          className="fixed z-50 w-60 max-h-44 overflow-y-auto rounded-2xl bg-gray-900 text-white shadow-2xl border border-white/10"
+          style={{ left: tooltip.mouseX + 14, top: tooltip.mouseY - 20 }}
+          onMouseEnter={cancelHide}
+          onMouseLeave={scheduleHide}
+        >
+          <div className="sticky top-0 bg-gray-800 px-3 pt-3 pb-1.5 rounded-t-2xl border-b border-white/10">
+            <p className="font-bold text-[12px] text-purple-300">
+              {CATEGORY_LABELS[tooltip.detail.category]}
+              <span className="ml-2 text-white font-extrabold">{tooltip.detail.score}/100</span>
+            </p>
+          </div>
+          <div className="px-3 pb-3 pt-1.5">
+            <p className="text-[11px] text-gray-300 leading-relaxed">{tooltip.detail.reason}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // --- Custom Components ---
 
@@ -187,6 +302,7 @@ export default function CVAnalysisResultPage() {
   const [searchParams] = useSearchParams();
   const cvId = searchParams.get('cvId');
   const navigate = useNavigate();
+  const [showDetail, setShowDetail] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'recommendations'>('overview');
   
   const { cvs } = useCvs();
@@ -280,8 +396,12 @@ export default function CVAnalysisResultPage() {
                 {result.summary}
               </p>
               <div className="mt-4 flex gap-3">
-                <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
-                  Xem chi tiết
+                <button 
+                  onClick={() => setShowDetail(prev => !prev)}
+                  className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm flex items-center gap-1.5"
+                >
+                  {showDetail ? 'Thu gọn' : 'Xem chi tiết'}
+                  <ChevronDown size={14} className={`transition-transform duration-300 ${showDetail ? 'rotate-180' : ''}`} />
                 </button>
                 <button className="px-4 py-2 bg-primary text-white rounded-lg text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5">
                   <BrainCircuit size={16} />
@@ -291,7 +411,35 @@ export default function CVAnalysisResultPage() {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
+          {/* Scoring Detail Panel (default view) */}
+          <AnimatePresence>
+            {!showDetail && (
+              <motion.div
+                key="scoring"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/30 flex flex-col items-center"
+              >
+                <p className="text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2 w-full">Mức độ phù hợp theo từng hạng mục</p>
+                <p className="text-[12px] text-gray-400 mb-4 w-full">Di chuột vào từng điểm để xem nhận xét chi tiết</p>
+                <ScoringRadarChart data={result.scoringDetails} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Navigation Tabs (shown when 'Xem chi tiết' clicked) */}
+          <AnimatePresence>
+            {showDetail && (
+              <motion.div
+                key="detail"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="flex flex-col flex-1 overflow-hidden"
+              >
           <div className="flex px-6 border-b border-gray-100 mt-2 shrink-0">
             {[
               { id: 'overview', label: 'Tổng quan', icon: Target },
@@ -511,9 +659,12 @@ export default function CVAnalysisResultPage() {
             </AnimatePresence>
           </div>
 
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </div>
-      </div>
-      
+      </div>      
     </MainLayout>
   );
 }
