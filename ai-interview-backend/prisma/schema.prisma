@@ -59,6 +59,17 @@ enum UserStatus {
   INACTIVE
 }
 
+enum InterviewMode {
+  VIDEO
+  TEXT
+}
+
+enum InterviewLanguage {
+  VIETNAMESE
+  ENGLISH
+  BILINGUAL
+}
+
 
 // ================= THỰC THỂ CỐT LÕI (CORE ENTITIES) =================
 
@@ -163,6 +174,18 @@ model InterviewSession {
   userId           String        @db.ObjectId
   status           SessionStatus @default(PENDING)
 
+  // --- THÔNG SỐ THIẾT LẬP (MỚI) ---
+  mode             InterviewMode   @default(VIDEO)
+  level            ExperienceLevel @default(JUNIOR)
+  persona          String          // Lưu tên nhân vật (Thảo Chi, Nam Anh...)
+  language         InterviewLanguage @default(VIETNAMESE)
+  difficulty       Int             @default(3) // 1-5
+  duration         Int             @default(30) // Phút
+  focusSkills      String[]        // Danh sách kỹ năng tập trung
+  companyName      String?         // Tên công ty ứng tuyển (Step 1)
+  jobTitle         String          // Tiêu đề vị trí (Lưu trực tiếp để độc lập với Template)
+
+  // --- LIÊN KẾT ---
   jobTemplateId    String?       @db.ObjectId
   customJdText     String?       
   

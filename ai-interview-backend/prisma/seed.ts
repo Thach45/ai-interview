@@ -9,65 +9,18 @@ async function main() {
   const candidateEmail = 'candidate@gmail.com';
   const candidatePassword = 'candidate123';
 
-  // 0. Xóa tất cả user cũ (tùy chọn)
   console.log('🧹 Đang xóa dữ liệu cũ...');
   await prisma.user.deleteMany();
   console.log('✅ Dữ liệu cũ đã xóa!');
 
-  console.log('🚀 Đang khởi tạo/cập nhật tài khoản Admin mặc định...');
+  console.log('🚀 Đang mã hóa mật khẩu...');
+  const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
+  const hashedCandidatePassword = await bcrypt.hash(candidatePassword, 10);
 
-  // Mã hóa mật khẩu
-  const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
-    // 3. Tạo Admin mới
-    await prisma.user.create({
-      data: {
-        email: adminEmail,
-        fullName: 'System Administrator', // Thêm trường bắt buộc này
-        password: hashedPassword,
-        role: 'ADMIN',
-        emailVerifiedAt: new Date(),
-      },
-    });
-
-    console.log('✅ Đã tạo tài khoản Admin thành công!');
-    console.log(`📧 Email: ${adminEmail}`);
-    console.log(`🔑 Password: ${adminPassword}`);
-  } else {
-    console.log('ℹ️ Tài khoản Admin đã tồn tại, bỏ qua bước khởi tạo.');
-  }
-
-  // 4. Tạo user Candidate fake để test edit profile
-  const existingCandidate = await prisma.user.findUnique({
-    where: { email: candidateEmail },
-  });
-
-  if (!existingCandidate) {
-    console.log('🚀 Đang khởi tạo tài khoản Candidate...');
-    const hashedPassword = await bcrypt.hash(candidatePassword, 10);
-
-    await prisma.user.create({
-      data: {
-        email: candidateEmail,
-        password: hashedPassword,
-        fullName: 'John Doe',
-        role: 'CANDIDATE',
-        provider: 'LOCAL',
-        creditsBalance: 3,
-      },
-    });
-
-    console.log('✅ Đã tạo tài khoản Candidate thành công!');
-    console.log(`📧 Email: ${candidateEmail}`);
-    console.log(`🔑 Password: ${candidatePassword}`);
-  } else {
-    console.log('ℹ️ Tài khoản Candidate đã tồn tại, bỏ qua bước khởi tạo.');
-  }
-  // Dùng upsert: tạo mới nếu chưa có, cập nhật nếu đã tồn tại
+  // 1. Tạo tài khoản Admin bằng upsert
   const admin = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {
-      // Luôn đảm bảo các trường quan trọng được set đúng
       role: 'ADMIN',
       status: UserStatus.ACTIVE,
       emailVerifiedAt: new Date(),
@@ -75,7 +28,7 @@ async function main() {
     create: {
       email: adminEmail,
       fullName: 'System Administrator',
-      password: hashedPassword,
+      password: hashedAdminPassword,
       role: 'ADMIN',
       status: UserStatus.ACTIVE,
       emailVerifiedAt: new Date(),
@@ -86,7 +39,27 @@ async function main() {
   console.log(`📧 Email: ${admin.email}`);
   console.log(`🔑 Password: ${adminPassword}`);
   console.log(`📌 Status: ${admin.status}`);
-  console.log(`✉️  emailVerifiedAt: ${admin.emailVerifiedAt}`);
+
+  // 2. Tạo tài khoản Candidate bằng upsert
+  const candidate = await prisma.user.upsert({
+    where: { email: candidateEmail },
+    update: {
+      role: 'CANDIDATE',
+      status: UserStatus.ACTIVE,
+    },
+    create: {
+      email: candidateEmail,
+      fullName: 'John Doe',
+      password: hashedCandidatePassword,
+      role: 'CANDIDATE',
+      status: UserStatus.ACTIVE,
+      creditsBalance: 3,
+    },
+  });
+
+  console.log('✅ Tài khoản Candidate đã sẵn sàng!');
+  console.log(`📧 Email: ${candidate.email}`);
+  console.log(`🔑 Password: ${candidatePassword}`);
 }
 
 main()

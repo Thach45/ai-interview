@@ -9,10 +9,12 @@ import {
   UserCircle, Settings2, Target, Clock,
   ChevronRight, AlertCircle, Trash2, Plus,
   Info, Rocket, Zap, ChevronDown, Upload,
-  Search, Check
+  Search, Check, Gauge, Video, MessageSquare,
+  Smile, GraduationCap, Medal, Star, ShieldCheck, Trophy
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { useCvs } from '../features/cvs/hooks/useCvs';
+import { ExperienceLevel, InterviewLanguage, InterviewMode, InterviewPersona } from '../shared/types/interview';
 
 const InterviewSetupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,36 +25,101 @@ const InterviewSetupPage: React.FC = () => {
     companyName: '',
     jdText: '',
     selectedCvId: '',
-    language: 'Vietnamese',
-    persona: 'Professional',
+    level: ExperienceLevel.JUNIOR,
+    language: InterviewLanguage.VIETNAMESE,
+    persona: InterviewPersona.PROFESSIONAL,
     duration: 30,
     difficulty: 3,
+    mode: InterviewMode.VIDEO, 
     skills: [] as string[],
     newSkill: ''
   });
 
+  const levels = [
+    { id: ExperienceLevel.INTERN, name: 'Intern', icon: GraduationCap, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { id: ExperienceLevel.FRESHER, name: 'Fresher', icon: Star, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { id: ExperienceLevel.JUNIOR, name: 'Junior', icon: Medal, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { id: ExperienceLevel.MIDDLE, name: 'Middle', icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+    { id: ExperienceLevel.SENIOR, name: 'Senior', icon: Trophy, color: 'text-rose-500', bg: 'bg-rose-50' },
+  ];
+
   const personas = [
-    { id: 'Professional', name: 'Chuyên nghiệp', desc: 'Nghiêm túc, cân bằng, tập trung vào phương pháp STAR.', icon: UserCircle, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
-    { id: 'Friendly', name: 'Hỗ trợ', desc: 'Tông giọng khích lệ, giúp bạn xây dựng sự tự tin.', icon: Sparkles, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
-    { id: 'Strict', name: 'Áp lực', desc: 'Đặt câu hỏi dồn dập, xoáy sâu vào các điểm yếu.', icon: Target, color: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-100' },
+    { 
+      id: InterviewPersona.PROFESSIONAL, 
+      name: 'Ms. Thảo Chi', 
+      title: 'Chuyên nghiệp',
+      desc: 'Nghiêm túc, tập trung vào phương pháp STAR và tư duy hệ thống.', 
+      icon: UserCircle, 
+      color: 'text-blue-600', 
+      bg: 'bg-blue-50', 
+      avatar: '/avatars/thao-chi.png'
+    },
+    { 
+      id: InterviewPersona.FRIENDLY, 
+      name: 'Mr. Nam Anh', 
+      title: 'Hỗ trợ',
+      desc: 'Tông giọng khích lệ, giúp bạn xây dựng sự tự tin khi trả lời.', 
+      icon: Sparkles, 
+      color: 'text-emerald-600', 
+      bg: 'bg-emerald-50', 
+      avatar: '/avatars/nam-anh.png'
+    },
+    { 
+      id: InterviewPersona.STRICT, 
+      name: 'Mr. Quốc Hùng', 
+      title: 'Áp lực',
+      desc: 'Đặt câu hỏi dồn dập, xoáy sâu vào các điểm yếu và lỗi logic.', 
+      icon: Target, 
+      color: 'text-rose-600', 
+      bg: 'bg-rose-50', 
+      avatar: '/avatars/quoc-hung.png'
+    },
+    { 
+      id: InterviewPersona.CHEERFUL, 
+      name: 'Ms. Linh San', 
+      title: 'Vui vẻ',
+      desc: 'Năng lượng tích cực, tạo không khí thoải mái như một buổi cafe.', 
+      icon: Smile, 
+      color: 'text-amber-600', 
+      bg: 'bg-amber-50', 
+      avatar: '/avatars/linh-san.png'
+    },
   ];
 
   const languages = [
-    { id: 'Vietnamese', name: 'Tiếng Việt', flag: '🇻🇳' },
-    { id: 'English', name: 'English', flag: '🇺🇸' },
-    { id: 'Bilingual', name: 'Song ngữ', flag: '🌍' },
+    { id: InterviewLanguage.VIETNAMESE, name: 'Tiếng Việt', flag: '🇻🇳' },
+    { id: InterviewLanguage.ENGLISH, name: 'English', flag: '🇺🇸' },
+    { id: InterviewLanguage.BILINGUAL, name: 'Song ngữ', flag: '🌍' },
+  ];
+
+  const difficulties = [
+    { id: 1, name: 'Người mới', desc: 'Câu hỏi căn bản, kiến thức nền tảng.' },
+    { id: 2, name: 'Junior', desc: 'Kỹ năng thực thi, xử lý tình huống đơn giản.' },
+    { id: 3, name: 'Middle', desc: 'Phân tích hệ thống, giải quyết vấn đề phức tạp.' },
+    { id: 4, name: 'Senior', desc: 'Tầm nhìn chiến lược, tối ưu hóa và dẫn dắt.' },
+    { id: 5, name: 'Chuyên gia', desc: 'Thách thức cực hạn, xử lý edge case khó nhất.' },
+  ];
+
+  const durations = [
+    { id: 15, name: '15 phút', desc: 'Phỏng vấn nhanh' },
+    { id: 30, name: '30 phút', desc: 'Phỏng vấn chuẩn' },
+    { id: 45, name: '45 phút', desc: 'Phỏng vấn sâu' },
+    { id: 60, name: '60 phút', desc: 'Phỏng vấn marathon' },
   ];
 
   const steps = [
     { id: 1, title: 'Bối cảnh & JD', icon: Briefcase, desc: 'Vị trí bạn đang ứng tuyển là gì?' },
-    { id: 2, title: 'Kinh nghiệm', icon: FileText, desc: 'Chọn CV phù hợp nhất' },
-    { id: 3, title: 'Người phỏng vấn', icon: UserCircle, desc: 'Chọn đối thủ của bạn' },
-    { id: 4, title: 'Thông số phiên', icon: Settings2, desc: 'Tinh chỉnh buổi phỏng vấn' },
+    { id: 2, title: 'Kinh nghiệm', icon: FileText, desc: 'Chọn CV và trình độ của bạn' },
+    { id: 3, title: 'Thông số phiên', icon: Settings2, desc: 'Thiết lập cách thức phỏng vấn' },
+    { id: 4, title: 'Người phỏng vấn', icon: UserCircle, desc: 'Chọn đối thủ và ngôn ngữ' },
   ];
 
   const handleNext = () => {
     if (step < 4) setStep(step + 1);
-    else navigate('/interview-room', { state: { config: formData } });
+    else {
+      const path = formData.mode === InterviewMode.VIDEO ? '/interview/video' : '/interview/chat';
+      navigate(path, { state: { config: formData } });
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,101 +299,259 @@ const InterviewSetupPage: React.FC = () => {
 
                 {/* Step 2: Experience */}
                 {step === 2 && (
-                  <div className="space-y-8">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xl font-bold text-gray-900">Chọn CV của bạn</h3>
-                      <p className="text-sm text-gray-400">Vui lòng chọn hồ sơ bạn muốn sử dụng</p>
+                  <div className="space-y-12">
+                    {/* CV Selection */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-gray-900">Chọn CV của bạn</h3>
+                        <p className="text-sm text-gray-400">Hồ sơ sử dụng cho phiên này</p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {cvs.map((cv: any) => (
+                          <button
+                            key={cv.id}
+                            onClick={() => setFormData({ ...formData, selectedCvId: cv.id })}
+                            className={cn(
+                              "p-5 rounded-2xl border-2 text-left transition-all relative flex items-center gap-4",
+                              formData.selectedCvId === cv.id 
+                                ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5" 
+                                : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
+                            )}
+                          >
+                            <div className="w-10 h-10 bg-white rounded-lg border border-gray-100 flex items-center justify-center text-primary shadow-sm">
+                              <FileText size={20} />
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                              <h4 className="text-sm font-bold text-gray-900 truncate">{cv.title || 'CV chưa đặt tên'}</h4>
+                              <p className="text-[11px] text-gray-400 mt-0.5">Tải lên ngày: {new Date(cv.createdAt).toLocaleDateString('vi-VN')}</p>
+                            </div>
+                            {formData.selectedCvId === cv.id && (
+                              <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center">
+                                <Check size={14} />
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                        <label className="p-5 rounded-2xl border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/[0.02] transition-all flex flex-col items-center justify-center gap-2 min-h-[100px]">
+                          <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
+                          {isUploading ? (
+                            <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              <Upload size={20} className="text-gray-400" />
+                              <span className="text-[11px] font-bold text-gray-500 uppercase">Tải lên mới</span>
+                            </>
+                          )}
+                        </label>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {cvs.map((cv: any) => (
-                        <button
-                          key={cv.id}
-                          onClick={() => setFormData({ ...formData, selectedCvId: cv.id })}
-                          className={cn(
-                            "p-5 rounded-2xl border-2 text-left transition-all relative flex items-center gap-4",
-                            formData.selectedCvId === cv.id 
-                              ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5" 
-                              : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
-                          )}
-                        >
-                          <div className="w-10 h-10 bg-white rounded-lg border border-gray-100 flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
-                            <FileText size={20} />
-                          </div>
-                          <div className="flex-1 overflow-hidden">
-                            <h4 className="text-sm font-bold text-gray-900 truncate">{cv.title || 'CV chưa đặt tên'}</h4>
-                            <p className="text-[11px] text-gray-400 mt-0.5">Tải lên ngày: {new Date(cv.createdAt).toLocaleDateString('vi-VN')}</p>
-                          </div>
-                          {formData.selectedCvId === cv.id && (
-                            <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-                              <Check size={14} />
-                            </div>
-                          )}
-                        </button>
-                      ))}
-                      
-                      <label className="p-5 rounded-2xl border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/[0.02] transition-all flex flex-col items-center justify-center gap-3 min-h-[100px]">
-                        <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
-                        {isUploading ? (
-                          <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-                              <Upload size={20} />
-                            </div>
-                            <span className="text-[11px] font-bold text-gray-500 uppercase">Tải lên hồ sơ mới</span>
-                          </>
-                        )}
-                      </label>
+                    {/* Level Selection */}
+                    <div className="space-y-6 border-t border-gray-50 pt-10">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-gray-900">Trình độ của bạn</h3>
+                        <p className="text-sm text-gray-400">Lựa chọn cấp độ hiện tại của bạn</p>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {levels.map((lvl) => {
+                          const isActive = formData.level === lvl.id;
+                          const Icon = lvl.icon;
+                          return (
+                            <button
+                              key={lvl.id}
+                              onClick={() => setFormData({ ...formData, level: lvl.id })}
+                              className={cn(
+                                "flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all group",
+                                isActive 
+                                  ? "border-primary bg-primary/[0.02] shadow-md shadow-primary/5" 
+                                  : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
+                              )}
+                            >
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110",
+                                isActive ? "bg-primary text-white" : `${lvl.bg} ${lvl.color}`
+                              )}>
+                                <Icon size={20} />
+                              </div>
+                              <span className={cn(
+                                "text-xs font-bold transition-colors",
+                                isActive ? "text-primary" : "text-gray-500"
+                              )}>{lvl.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
-                    <div className="mt-10 p-6 bg-primary/[0.03] rounded-3xl border border-primary/10 flex items-start gap-4">
+                    <div className="p-6 bg-primary/[0.03] rounded-3xl border border-primary/10 flex items-start gap-4">
                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
                         <BrainCircuit size={20} className="text-primary" />
                       </div>
                       <p className="text-xs text-gray-500 leading-relaxed">
-                        Hệ thống sẽ tự động trích xuất thông tin từ hồ sơ bạn đã chọn để tối ưu hóa bộ câu hỏi phỏng vấn.
+                        AI sẽ cân đối bộ câu hỏi và tiêu chí đánh giá dựa trên trình độ **{formData.level}** mà bạn đã chọn.
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Step 3: AI Persona */}
+                {/* Step 3: Parameters */}
                 {step === 3 && (
-                  <div className="space-y-12">
+                  <div className="space-y-10">
                     <div className="space-y-6">
-                      <div className="text-center mb-8">
-                        <h3 className="text-xl font-bold text-gray-900">Chọn người phỏng vấn</h3>
-                        <p className="text-gray-400 text-sm">Phong cách đối thoại bạn muốn trải nghiệm</p>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {personas.map((p) => {
-                          const isActive = formData.persona === p.id;
-                          const Icon = p.icon;
+                       <h3 className="text-xl font-bold text-gray-900">Hình thức phỏng vấn</h3>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          { id: InterviewMode.VIDEO, name: 'Video Call', desc: 'Giao diện gọi video, hội thoại trực tiếp bằng giọng nói.', icon: Video },
+                          { id: InterviewMode.TEXT, name: 'Nhắn tin', desc: 'Giao diện chat, trả lời bằng văn bản.', icon: MessageSquare },
+                        ].map((m) => {
+                          const isActive = formData.mode === m.id;
+                          const Icon = m.icon;
                           return (
                             <button
-                              key={p.id}
-                              onClick={() => setFormData({ ...formData, persona: p.id })}
+                              key={m.id}
+                              onClick={() => setFormData({ ...formData, mode: m.id as any })}
                               className={cn(
-                                "flex flex-col items-center text-center p-8 rounded-3xl border-2 transition-all relative group",
+                                "flex items-start gap-4 p-6 rounded-2xl border-2 transition-all relative group",
                                 isActive 
                                   ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5" 
                                   : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
                               )}
                             >
                               <div className={cn(
-                                "w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all group-hover:scale-110",
-                                p.bg, p.color
+                                "w-12 h-12 rounded-xl flex items-center justify-center transition-all group-hover:scale-110",
+                                isActive ? "bg-primary text-white" : "bg-gray-100 text-gray-400"
                               )}>
-                                <Icon size={32} />
+                                <Icon size={24} />
                               </div>
-                              <h4 className="text-base font-bold text-gray-900 mb-2">{p.name}</h4>
-                              <p className="text-[11px] text-gray-500 leading-relaxed mb-6 flex-1">{p.desc}</p>
-                              <div className={cn(
-                                "px-5 py-1.5 rounded-full text-[10px] font-bold border transition-all",
-                                isActive ? "bg-primary text-white border-primary" : "bg-white text-gray-400 border-gray-100 group-hover:border-gray-200"
-                              )}>
-                                {isActive ? 'ĐÃ CHỌN' : 'CHỌN'}
+                              <div className="text-left flex-1">
+                                <h4 className="text-base font-bold text-gray-900 mb-1">{m.name}</h4>
+                                <p className="text-[11px] text-gray-400 leading-relaxed">{m.desc}</p>
+                              </div>
+                              {isActive && (
+                                <div className="absolute top-4 right-4 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center">
+                                  <Check size={12} />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-gray-50 pt-10">
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-bold text-gray-900">Độ khó hội thoại</h3>
+                        <div className="grid grid-cols-5 gap-2">
+                          {[1, 2, 3, 4, 5].map((lvl) => (
+                            <button
+                              key={lvl}
+                              onClick={() => setFormData({ ...formData, difficulty: lvl })}
+                              className={cn(
+                                "h-14 rounded-xl border-2 font-bold transition-all flex items-center justify-center",
+                                formData.difficulty === lvl 
+                                  ? "border-primary bg-primary text-white" 
+                                  : "border-gray-100 bg-gray-50/50 text-gray-400 hover:bg-white"
+                              )}
+                            >
+                              {lvl}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-bold text-gray-900">Thời lượng (Phút)</h3>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[15, 30, 45, 60].map(m => (
+                            <button 
+                              key={m} 
+                              onClick={() => setFormData({...formData, duration: m})} 
+                              className={cn(
+                                "h-14 rounded-xl border-2 font-bold transition-all flex items-center justify-center text-xs",
+                                formData.duration === m 
+                                  ? "border-primary bg-primary text-white" 
+                                  : "border-gray-100 bg-gray-50/50 text-gray-400 hover:bg-white"
+                              )}
+                            >
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6 border-t border-gray-50 pt-10">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-bold text-gray-900">Kỹ năng cần tập trung</h3>
+                      </div>
+                      <div className="p-6 rounded-[24px] bg-gray-50/30 border border-gray-100 flex flex-wrap gap-2 content-start min-h-[100px]">
+                        {formData.skills.map(skill => (
+                          <div key={skill} className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-[11px] font-bold flex items-center gap-2 shadow-sm group">
+                            {skill}
+                            <button onClick={() => setFormData({...formData, skills: formData.skills.filter(s => s !== skill)})} className="text-gray-300 group-hover:text-rose-500 transition-colors">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white/50 border border-dashed border-gray-300 rounded-xl focus-within:border-primary/50 focus-within:bg-white transition-all">
+                           <input 
+                            type="text" 
+                            placeholder="+ Thêm..." 
+                            className="bg-transparent outline-none text-[11px] font-bold w-20 text-gray-900 placeholder:text-gray-300"
+                            value={formData.newSkill}
+                            onChange={(e) => setFormData({...formData, newSkill: e.target.value})}
+                            onKeyDown={(e) => {
+                              if(e.key === 'Enter' && formData.newSkill.trim()) {
+                                setFormData({...formData, skills: [...formData.skills, formData.newSkill.trim()], newSkill: ''});
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4: AI Persona */}
+                {step === 4 && (
+                  <div className="space-y-12">
+                    <div className="space-y-6">
+                      <div className="text-center mb-8">
+                        <h3 className="text-xl font-bold text-gray-900">Chọn người phỏng vấn</h3>
+                        <p className="text-gray-400 text-sm">Mỗi nhân vật mang một phong cách đối thoại riêng biệt</p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {personas.map((p) => {
+                          const isActive = formData.persona === p.id;
+                          return (
+                            <button
+                              key={p.id}
+                              onClick={() => setFormData({ ...formData, persona: p.id })}
+                              className={cn(
+                                "flex flex-col p-2 rounded-3xl border-2 transition-all relative group overflow-hidden h-full",
+                                isActive 
+                                  ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5" 
+                                  : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
+                              )}
+                            >
+                              <div className="aspect-[4/5] w-full rounded-2xl overflow-hidden mb-4 relative">
+                                <img 
+                                  src={p.avatar} 
+                                  alt={p.name} 
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                />
+                                <div className={cn(
+                                  "absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center shadow-lg",
+                                  isActive ? "bg-primary text-white" : "bg-white/80 backdrop-blur text-gray-400"
+                                )}>
+                                  {isActive ? <Check size={16} /> : <p.icon size={16} />}
+                                </div>
+                                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                                  <p className="text-white font-bold text-sm">{p.name}</p>
+                                  <p className="text-white/70 text-[10px]">{p.title}</p>
+                                </div>
+                              </div>
+                              <div className="px-3 pb-4">
+                                <p className="text-[11px] text-gray-500 leading-relaxed text-left line-clamp-2">{p.desc}</p>
                               </div>
                             </button>
                           );
@@ -354,84 +579,6 @@ const InterviewSetupPage: React.FC = () => {
                             {lang.name}
                           </button>
                         ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 4: Final Parameters */}
-                {step === 4 && (
-                  <div className="space-y-12">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                      <div className="space-y-8">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-lg font-bold text-gray-900">Độ khó hội thoại</h3>
-                          <span className="px-3 py-1 bg-gray-900 text-white rounded-lg text-[10px] font-bold uppercase">Cấp độ {formData.difficulty}</span>
-                        </div>
-                        <div className="space-y-4 px-2">
-                          <input 
-                            type="range" min="1" max="5" 
-                            value={formData.difficulty} 
-                            onChange={(e) => setFormData({...formData, difficulty: Number(e.target.value)})} 
-                            className="w-full h-2.5 bg-gray-100 rounded-full appearance-none cursor-pointer accent-primary" 
-                          />
-                          <div className="flex justify-between text-[10px] font-bold text-gray-300">
-                            <span>DỄ</span>
-                            <span>TRUNG BÌNH</span>
-                            <span>HÀN LÂM</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="space-y-8">
-                        <h3 className="text-lg font-bold text-gray-900">Thời lượng (Phút)</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                          {[15, 30, 45, 60].map(m => (
-                            <button 
-                              key={m} 
-                              onClick={() => setFormData({...formData, duration: m})} 
-                              className={cn(
-                                "h-20 rounded-3xl font-bold transition-all flex flex-col items-center justify-center gap-0.5 border",
-                                formData.duration === m 
-                                  ? "bg-gray-900 text-white border-gray-900 shadow-xl scale-[1.02]" 
-                                  : "bg-gray-50 text-gray-400 border-gray-100 hover:bg-white hover:border-gray-200"
-                              )}
-                            >
-                              <span className="text-xl">{m}</span>
-                              <span className="text-[9px] uppercase font-bold">Phút</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-6 border-t border-gray-50 pt-12">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-bold text-gray-900">Kỹ năng cần tập trung</h3>
-                        <p className="text-[11px] text-gray-400 font-medium">AI sẽ ưu tiên đặt câu hỏi xoay quanh các kỹ năng này</p>
-                      </div>
-                      <div className="p-8 rounded-[32px] bg-gray-50/30 border border-gray-100 flex flex-wrap gap-3 content-start min-h-[140px]">
-                        {formData.skills.map(skill => (
-                          <div key={skill} className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-[12px] font-bold flex items-center gap-2.5 shadow-sm hover:border-primary/20 transition-all group">
-                            {skill}
-                            <button onClick={() => setFormData({...formData, skills: formData.skills.filter(s => s !== skill)})} className="text-gray-300 group-hover:text-rose-500 transition-colors">
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        ))}
-                        <div className="flex items-center gap-2.5 px-5 py-2.5 bg-white/50 border border-dashed border-gray-300 rounded-xl focus-within:border-primary/50 focus-within:bg-white transition-all">
-                           <Plus size={16} className="text-gray-400" />
-                           <input 
-                            type="text" 
-                            placeholder="Thêm kỹ năng..." 
-                            className="bg-transparent outline-none text-[12px] font-bold w-32 text-gray-900 placeholder:text-gray-300"
-                            value={formData.newSkill}
-                            onChange={(e) => setFormData({...formData, newSkill: e.target.value})}
-                            onKeyDown={(e) => {
-                              if(e.key === 'Enter' && formData.newSkill.trim()) {
-                                setFormData({...formData, skills: [...formData.skills, formData.newSkill.trim()], newSkill: ''});
-                              }
-                            }}
-                          />
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -467,7 +614,7 @@ const InterviewSetupPage: React.FC = () => {
               ) : (
                 <button 
                   onClick={handleNext}
-                  className="flex items-center gap-3 bg-gray-900 text-white h-13 px-12 rounded-xl font-bold text-sm shadow-xl shadow-gray-400 hover:bg-black hover:scale-[1.02] active:scale-95 transition-all group"
+                  className="flex items-center gap-3 bg-primary text-white h-13 px-12 rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:bg-primary-deep hover:scale-[1.02] active:scale-95 transition-all group"
                 >
                   BẮT ĐẦU PHỎNG VẤN
                   <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />

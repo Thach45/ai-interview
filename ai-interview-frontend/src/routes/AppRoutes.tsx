@@ -5,6 +5,8 @@ import JobsPage from '../pages/Jobs';
 import InterviewSetupPage from '../pages/InterviewSetup';
 import InterviewPracticePage from '../pages/InterviewPractice';
 import InterviewResultPage from '../pages/InterviewResult';
+import InterviewRoomVideoPage from '../pages/InterviewRoomVideo';
+import InterviewRoomTextPage from '../pages/InterviewRoomText';
 import NotFoundPage from '../pages/NotFound';
 
 
@@ -60,6 +62,16 @@ export const AppRoutes: React.FC = () => {
         <Route path="/interviews/practice" element={
           <ProtectedRoute>
             <InterviewPracticePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/interview/video" element={
+          <ProtectedRoute>
+            <InterviewRoomVideoPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/interview/chat" element={
+          <ProtectedRoute>
+            <InterviewRoomTextPage />
           </ProtectedRoute>
         } />
         <Route path="/interviews/result" element={

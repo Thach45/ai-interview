@@ -1,5 +1,5 @@
 import { JobCategory } from '@prisma/client';
-import { JobCategoryResponseDTO } from '../types/job-category';
+import { JobCategoryResponseDTO } from '../types/job-category.type';
 
 export const toJobCategoryResponseDTO = (
   category: JobCategory & {
