@@ -85,7 +85,9 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
       <div className="flex items-center gap-6">
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-100 rounded-lg shadow-sm">
           <span className="material-symbols-outlined text-[16px] text-gray-400">database</span>
-          <span className="text-[13px] font-bold text-gray-900 leading-none">1,250</span>
+          <span className="text-[13px] font-bold text-gray-900 leading-none">
+            {user?.creditsBalance !== undefined ? (user.creditsBalance >= 99999 ? 'Vô hạn' : user.creditsBalance.toLocaleString()) : 0}
+          </span>
         </div>
 
         <div className="flex items-center gap-4">

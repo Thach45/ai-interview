@@ -13,14 +13,14 @@ import { apiLimiter } from './middlewares/rate-limit.middleware';
 const app: Express = express();
 const port: number = parseInt(process.env.PORT || '3000', 10);
 
-app.use(bodyParser.json());
-app.use(apiLimiter);
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Yêu cầu origin cụ thể khi bật credentials
-    credentials: true, // Cho phép gửi credentials (cookies, headers)
+    origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'http://localhost:5174'],
+    credentials: true,
   }),
 );
+app.use(bodyParser.json());
+app.use(apiLimiter);
 app.use(express.static('public'));
 app.use(cookieParser());
 

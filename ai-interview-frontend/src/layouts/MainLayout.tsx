@@ -8,12 +8,13 @@ const NAV_ITEMS = [
   { id: 'jobs', label: 'Việc làm', href: '/jobs', icon: 'work' },
   { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs', icon: 'description' },
   { id: 'history', label: 'Lịch sử', href: '/history', icon: 'history' },
+  { id: 'subscription', label: 'Gói dịch vụ', href: '/subscription', icon: 'payments' },
   { id: 'profile', label: 'Cá nhân', href: '/profile', icon: 'person' },
 ];
 
-export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: boolean; className?: string; maxWidth?: string; hideSearch?: boolean }> = ({ 
-  children, 
-  fullHeight = false, 
+export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: boolean; className?: string; maxWidth?: string; hideSearch?: boolean }> = ({
+  children,
+  fullHeight = false,
   className = '',
   maxWidth = '1280px',
   hideSearch = false
@@ -23,7 +24,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f9fafb] overflow-hidden font-sans">
-      
+
       {/* GLOBAL FULL SCREEN OVERLAY (Scrim) */}
       <div className={cn(
         "fixed inset-0 bg-black/25 backdrop-blur-[2px] z-[90] transition-all duration-700 pointer-events-none",
@@ -38,7 +39,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
         "flex-1 relative min-w-0",
         fullHeight ? "h-[calc(100vh-64px)] overflow-hidden" : "overflow-y-auto pb-32"
       )}>
-        <div 
+        <div
           className={cn(
             "mx-auto h-full transition-all duration-500",
             !fullHeight && "p-6 lg:p-10",
@@ -51,7 +52,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
       </main>
 
       {/* THE MAGIC ORB DOCK CONTAINER */}
-      <div 
+      <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] flex justify-center cursor-default"
@@ -60,7 +61,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
           "flex items-center gap-2 p-1.5 rounded-full bg-white/95 backdrop-blur-2xl border border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
           isHovered ? "w-auto px-3" : "w-12 h-12 overflow-hidden"
         )}>
-          
+
           {/* Neutral Orb Trigger Icon */}
           <div className="size-9 shrink-0 flex items-center justify-center text-gray-900">
             <span className={cn(
@@ -84,8 +85,8 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
                   to={item.href}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 whitespace-nowrap",
-                    isActive 
-                      ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                    isActive
+                      ? "bg-primary text-white shadow-lg shadow-primary/20"
                       : "text-gray-500 hover:bg-gray-100 hover:text-primary"
                   )}
                 >

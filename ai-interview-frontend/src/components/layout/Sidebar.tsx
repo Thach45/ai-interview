@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 const NAV_ITEMS = [
   { icon: 'dashboard', label: 'Trang chủ', href: '/' },
   { icon: 'work', label: 'Việc làm', href: '/jobs' },
+  { icon: 'payments', label: 'Gói dịch vụ', href: '/subscription' },
   // { icon: 'chat', label: 'Phỏng vấn AI', href: '/interviews/setup' },
   // { icon: 'history', label: 'Lịch sử', href: '/history' },
 ];
@@ -37,15 +38,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
       <nav className="flex-1 py-6 px-3 space-y-1">
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.href;
-          
+
           return (
             <Link
               key={item.label}
               to={item.href}
               className={cn(
                 "flex items-center gap-3 p-3 rounded-xl transition-all group overflow-hidden whitespace-nowrap",
-                isActive 
-                  ? "bg-primary/5 text-primary" 
+                isActive
+                  ? "bg-primary/5 text-primary"
                   : "text-text-secondary hover:bg-gray-50 hover:text-text-primary"
               )}
             >
@@ -65,8 +66,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
 
       {/* User Footer */}
       <div className="p-4 border-t border-gray-50">
-        <Link 
-          to="/profile" 
+        <Link
+          to="/profile"
           className={cn(
             "flex items-center gap-3 p-2 rounded-xl transition-all group overflow-hidden",
             location.pathname === '/profile' ? "bg-gray-100" : "hover:bg-gray-50"
@@ -85,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                 <p className="text-xs font-bold text-text-primary truncate">{user?.fullName || 'Người dùng'}</p>
                 <p className="text-[10px] text-text-secondary truncate">{user?.email}</p>
               </div>
-              <span 
+              <span
                 className="material-symbols-outlined text-gray-400 text-[18px] group-hover:text-primary transition-colors"
                 title="Cài đặt tài khoản"
               >

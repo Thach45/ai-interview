@@ -12,6 +12,7 @@ import { AdminJobsPage } from '../pages/admin/AdminJobsPage';
 import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
 import { AdminCategoriesPage } from '../pages/admin/AdminCategoriesPage';
 import { AdminTransactionsPage } from '../pages/admin/AdminTransactionsPage';
+import { AdminPackagesPage } from '../pages/admin/AdminPackagesPage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
@@ -23,6 +24,7 @@ import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import CVAnalysisResultPage from '../pages/CVAnalysisResult';
 
 import MyCvsPage from '../pages/MyCvs';
+import SubscriptionPage from '../pages/SubscriptionPage';
 
 
 export const AppRoutes: React.FC = () => {
@@ -50,6 +52,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/my-cvs" element={
           <ProtectedRoute>
             <MyCvsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/subscription" element={
+          <ProtectedRoute>
+            <SubscriptionPage />
           </ProtectedRoute>
         } />
         <Route path="/interviews/setup" element={
@@ -100,6 +107,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/admin/transactions" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminTransactionsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/packages" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminPackagesPage />
           </ProtectedRoute>
         } />
 

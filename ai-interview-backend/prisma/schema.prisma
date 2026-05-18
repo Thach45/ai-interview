@@ -219,16 +219,41 @@ enum TransactionType {
   PROMOTION     // Khuyến mãi, quà tặng
 }
 
-// 7. BẢNG LỊCH SỬ NẠP TIỀN (Pay-as-you-go)
+// 7. BẢNG GÓI DỊCH VỤ
+model SubscriptionPackage {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String   
+  tagline       String?
+  price         Int
+  oldPrice      Int?
+  durationDays  Int
+  credits       Int      // -1 nếu vô hạn
+  isPopular     Boolean  @default(false)
+  features      String[]
+  icon          String?  
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  transactions  Transaction[]
+}
+
+// 8. BẢNG LỊCH SỬ NẠP TIỀN (Pay-as-you-go / Subscription)
 model Transaction {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   userId        String          @db.ObjectId
   type          TransactionType @default(DEPOSIT)
   
+  packageId     String?         @db.ObjectId
+  package       SubscriptionPackage? @relation(fields: [packageId], references: [id])
+
   amount        Int           // Số tiền nạp
   creditsAdded  Int           // Số credit tương ứng
   status        PaymentStatus @default(PENDING) 
-  paymentRefId  String?       @unique // Mã đối soát của VNPay/Momo
+  paymentRefId  String?       // Mã đối soát của VNPay/Momo/Sepay
+  
+  sepayTransactionId String?  // ID giao dịch từ Sepay
   
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt

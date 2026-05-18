@@ -5,6 +5,7 @@ export interface User {
   role: string;
   avatarUrl?: string | null;
   createdAt: string;
+  creditsBalance?: number;
 }
 
 export interface AuthResponseData {

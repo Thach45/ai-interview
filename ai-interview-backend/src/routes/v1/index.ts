@@ -8,6 +8,9 @@ import jobCategoryRoute from './client/job-category.route';
 import adminJobCategoryRoute from './admin/job-category.route';
 import adminJobTemplateRoute from './admin/job-template.route';
 import adminUserRoute from './admin/user.route';
+import adminPackagesRoute from './admin/packages.route';
+import adminTransactionsRoute from './admin/transactions.route';
+import subscriptionRoutes from './client/subscription.routes';
 
 const router: Router = Router();
 
@@ -20,6 +23,7 @@ router.use('/cvs', cvRoute);
 router.use('/analysis-cv', analysisCvRoute);
 router.use('/job-templates', jobTemplateRoute);
 router.use('/categories', jobCategoryRoute);
+router.use('/subscriptions', subscriptionRoutes);
 
 // ==========================
 // ADMIN ROUTES (Quản trị)
@@ -27,5 +31,7 @@ router.use('/categories', jobCategoryRoute);
 router.use('/admin/categories', adminJobCategoryRoute);
 router.use('/admin/job-templates', adminJobTemplateRoute);
 router.use('/admin/users', adminUserRoute);
+router.use('/admin/packages', adminPackagesRoute);
+router.use('/admin/transactions', adminTransactionsRoute);
 
 export default router;

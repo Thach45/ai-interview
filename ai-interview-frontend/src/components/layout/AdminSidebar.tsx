@@ -10,6 +10,7 @@ const MENU_ITEMS = [
   { id: 'jobs', label: 'Mẫu JD', icon: 'description', path: '/admin/jobs' },
   { id: 'categories', label: 'Ngành nghề', icon: 'category', path: '/admin/categories' },
   { id: 'transactions', label: 'Giao dịch & Credit', icon: 'toll', path: '/admin/transactions' },
+  { id: 'packages', label: 'Gói dịch vụ', icon: 'inventory_2', path: '/admin/packages' },
   // { id: 'interviews', label: 'Phiên phỏng vấn', icon: 'history', path: '/admin/interviews' },
 ];
 
