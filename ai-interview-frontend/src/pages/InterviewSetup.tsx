@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MainLayout } from '../layouts/MainLayout';
-import { 
-  Sparkles, Cpu, CheckCircle2, 
+import {
+  Sparkles, Cpu, CheckCircle2,
   ArrowRight, ArrowLeft, BrainCircuit,
   Briefcase, Building2, FileText, Languages,
   UserCircle, Settings2, Target, Clock,
@@ -15,11 +15,35 @@ import {
 import { cn } from '../shared/utils/cn';
 import { useCvs } from '../features/cvs/hooks/useCvs';
 import { ExperienceLevel, InterviewLanguage, InterviewMode, InterviewPersona } from '../shared/types/interview';
+import { useInterviewAi } from '../features/interviews/hooks/useInterviewAI';
 
 const InterviewSetupPage: React.FC = () => {
   const navigate = useNavigate();
   const { cvs, uploadCv, isUploading } = useCvs();
+  const { setupInterviewMutation } = useInterviewAi();
   const [step, setStep] = useState(1);
+  const [loadingStepIdx, setLoadingStepIdx] = useState(0);
+
+  const loadingSteps = [
+    "Đang nạp hồ sơ CV và phân tích kỹ năng chuyên môn...",
+    "Đang giải cấu trúc Mô tả Công việc (JD)...",
+    "Đang thiết kế bộ câu hỏi cốt lõi cá nhân hóa...",
+    "Đang đồng bộ cấu trúc câu hỏi theo thang đo kỹ năng...",
+    "Người phỏng vấn đang kiểm tra tài liệu và chuẩn bị phòng phỏng vấn..."
+  ];
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (setupInterviewMutation.isPending) {
+      interval = setInterval(() => {
+        setLoadingStepIdx((prev) => (prev + 1) % loadingSteps.length);
+      }, 2500);
+    } else {
+      setLoadingStepIdx(0);
+    }
+    return () => clearInterval(interval);
+  }, [setupInterviewMutation.isPending]);
+
   const [formData, setFormData] = useState({
     jobTitle: '',
     companyName: '',
@@ -30,7 +54,7 @@ const InterviewSetupPage: React.FC = () => {
     persona: InterviewPersona.PROFESSIONAL,
     duration: 30,
     difficulty: 3,
-    mode: InterviewMode.VIDEO, 
+    mode: InterviewMode.VIDEO,
     skills: [] as string[],
     newSkill: ''
   });
@@ -44,44 +68,44 @@ const InterviewSetupPage: React.FC = () => {
   ];
 
   const personas = [
-    { 
-      id: InterviewPersona.PROFESSIONAL, 
-      name: 'Ms. Thảo Chi', 
+    {
+      id: InterviewPersona.PROFESSIONAL,
+      name: 'Ms. Thảo Chi',
       title: 'Chuyên nghiệp',
-      desc: 'Nghiêm túc, tập trung vào phương pháp STAR và tư duy hệ thống.', 
-      icon: UserCircle, 
-      color: 'text-blue-600', 
-      bg: 'bg-blue-50', 
+      desc: 'Nghiêm túc, tập trung vào phương pháp STAR và tư duy hệ thống.',
+      icon: UserCircle,
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
       avatar: '/avatars/thao-chi.png'
     },
-    { 
-      id: InterviewPersona.FRIENDLY, 
-      name: 'Mr. Nam Anh', 
+    {
+      id: InterviewPersona.FRIENDLY,
+      name: 'Mr. Nam Anh',
       title: 'Hỗ trợ',
-      desc: 'Tông giọng khích lệ, giúp bạn xây dựng sự tự tin khi trả lời.', 
-      icon: Sparkles, 
-      color: 'text-emerald-600', 
-      bg: 'bg-emerald-50', 
+      desc: 'Tông giọng khích lệ, giúp bạn xây dựng sự tự tin khi trả lời.',
+      icon: Sparkles,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50',
       avatar: '/avatars/nam-anh.png'
     },
-    { 
-      id: InterviewPersona.STRICT, 
-      name: 'Mr. Quốc Hùng', 
+    {
+      id: InterviewPersona.STRICT,
+      name: 'Mr. Quốc Hùng',
       title: 'Áp lực',
-      desc: 'Đặt câu hỏi dồn dập, xoáy sâu vào các điểm yếu và lỗi logic.', 
-      icon: Target, 
-      color: 'text-rose-600', 
-      bg: 'bg-rose-50', 
+      desc: 'Đặt câu hỏi dồn dập, xoáy sâu vào các điểm yếu và lỗi logic.',
+      icon: Target,
+      color: 'text-rose-600',
+      bg: 'bg-rose-50',
       avatar: '/avatars/quoc-hung.png'
     },
-    { 
-      id: InterviewPersona.CHEERFUL, 
-      name: 'Ms. Linh San', 
+    {
+      id: InterviewPersona.CHEERFUL,
+      name: 'Ms. Linh San',
       title: 'Vui vẻ',
-      desc: 'Năng lượng tích cực, tạo không khí thoải mái như một buổi cafe.', 
-      icon: Smile, 
-      color: 'text-amber-600', 
-      bg: 'bg-amber-50', 
+      desc: 'Năng lượng tích cực, tạo không khí thoải mái như một buổi cafe.',
+      icon: Smile,
+      color: 'text-amber-600',
+      bg: 'bg-amber-50',
       avatar: '/avatars/linh-san.png'
     },
   ];
@@ -114,11 +138,118 @@ const InterviewSetupPage: React.FC = () => {
     { id: 4, title: 'Người phỏng vấn', icon: UserCircle, desc: 'Chọn đối thủ và ngôn ngữ' },
   ];
 
+  if (setupInterviewMutation.isPending) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden">
+        {/* Ambient Background Glows */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div
+            className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse"
+            style={{ animationDuration: '6s' }}
+          />
+          <div
+            className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[140px] animate-pulse"
+            style={{ animationDuration: '8s' }}
+          />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center max-w-md px-6 text-center">
+          {/* Rotating Outer Ring & Core Glowing AI Icon */}
+          <div className="relative w-32 h-32 mb-10 flex items-center justify-center">
+            {/* Outermost dotted orbit */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
+              className="absolute inset-0 border border-dashed border-white/10 rounded-full"
+            />
+            {/* Middle colored pulsing ring */}
+            <motion.div
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              className="absolute inset-2 border-2 border-indigo-500/30 rounded-full"
+            />
+            {/* Inner fast rotating gradient ring */}
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+              className="absolute inset-4 border-2 border-t-primary border-r-transparent border-b-indigo-400 border-l-transparent rounded-full"
+            />
+            {/* Central Brain Icon with deep pulse glow */}
+            <div className="w-18 h-18 bg-gradient-to-tr from-primary to-indigo-600 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.4)] relative z-20">
+              <BrainCircuit className="text-white animate-pulse" size={32} />
+            </div>
+          </div>
+
+          {/* Title & Micro-Status */}
+          <motion.h2
+            initial={{ y: 15, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-2xl font-bold tracking-tight mb-3"
+          >
+            Khởi tạo phòng phỏng vấn AI
+          </motion.h2>
+          <motion.p
+            initial={{ y: 15, opacity: 0 }}
+            animate={{ y: 0, opacity: 0.6 }}
+            transition={{ delay: 0.3 }}
+            className="text-xs text-slate-400 uppercase tracking-widest mb-8"
+          >
+            Đang kết nối với AI....
+          </motion.p>
+
+          {/* Animated Sliding Status Steps */}
+          <div className="h-[75px] flex items-center justify-center overflow-hidden w-full relative mb-12 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-4 min-h-[75px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={loadingStepIdx}
+                initial={{ y: 15, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -15, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-sm font-medium text-slate-200"
+              >
+                {loadingSteps[loadingStepIdx]}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Tip / Quote */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            transition={{ delay: 0.6 }}
+            className="text-xs text-slate-500 italic max-w-xs"
+          >
+            "Mẹo: Hãy hít một hơi thật sâu, bình tĩnh đọc kỹ câu hỏi và trả lời đúng trọng tâm để đạt điểm đánh giá cao nhất."
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   const handleNext = () => {
     if (step < 4) setStep(step + 1);
     else {
-      const path = formData.mode === InterviewMode.VIDEO ? '/interview/video' : '/interview/chat';
-      navigate(path, { state: { config: formData } });
+      setupInterviewMutation.mutate({
+        cvId: formData.selectedCvId,
+        jobDescriptionId: null, // Có thể cập nhật ID template nếu dùng sau này
+        customJdText: formData.jdText || null,
+        position: formData.jobTitle,
+        nameCompany: formData.companyName || null,
+        level: formData.level,
+        language: formData.language,
+        mode: formData.mode,
+        duration: formData.duration,
+        difficulty: formData.difficulty,
+        persona: formData.persona,
+        focusSkills: formData.skills,
+      }, {
+        onSuccess: () => {
+          const targetRoute = formData.mode === InterviewMode.VIDEO ? '/interview/video' : '/interview/chat';
+          navigate(`${targetRoute}?cvId=${formData.selectedCvId}`);
+        }
+      });
     }
   };
 
@@ -136,9 +267,9 @@ const InterviewSetupPage: React.FC = () => {
 
   return (
     <MainLayout hideSearch={true} fullHeight={true} maxWidth="1600px" className="px-4 lg:px-8 pt-2 overflow-hidden bg-[#fafafa]">
-      
+
       <div className="flex gap-6 h-[calc(100vh-100px)] p-3">
-        
+
         {/* LEFT COLUMN: Guide & Steps */}
         <div className="w-[26%] flex flex-col bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden relative">
           <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
@@ -164,15 +295,15 @@ const InterviewSetupPage: React.FC = () => {
                 const isActive = step === s.id;
                 const isCompleted = step > s.id;
                 const Icon = s.icon;
-                
+
                 return (
                   <div key={s.id} className="relative group/step">
-                    <button 
+                    <button
                       onClick={() => s.id < step && setStep(s.id)}
                       className={cn(
                         "w-full flex items-center gap-4 p-5 rounded-2xl transition-all text-left border",
-                        isActive 
-                          ? "bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-primary/20" 
+                        isActive
+                          ? "bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-primary/20"
                           : "bg-transparent border-transparent hover:bg-gray-50"
                       )}
                     >
@@ -192,7 +323,7 @@ const InterviewSetupPage: React.FC = () => {
                           isActive ? "text-gray-900" : "text-gray-500"
                         )}>{s.title}</h4>
                       </div>
-                      
+
                       <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 w-48 p-3 bg-gray-900 text-white text-[10px] rounded-xl opacity-0 group-hover/step:opacity-100 pointer-events-none transition-all z-50 shadow-xl translate-x-2 group-hover/step:translate-x-0">
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
                         <p className="font-medium leading-relaxed">{s.desc}</p>
@@ -217,13 +348,13 @@ const InterviewSetupPage: React.FC = () => {
 
         {/* RIGHT COLUMN: Form Area */}
         <div className="flex-1 flex flex-col bg-white rounded-3xl border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden relative">
-          
+
           <div className="h-16 border-b border-gray-100 px-8 flex items-center justify-between bg-white shrink-0">
             <div className="flex items-center gap-4">
               <div className="flex -space-x-1.5">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="w-7 h-7 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?img=${i+20}`} alt="User" />
+                    <img src={`https://i.pravatar.cc/100?img=${i + 20}`} alt="User" />
                   </div>
                 ))}
               </div>
@@ -288,9 +419,9 @@ const InterviewSetupPage: React.FC = () => {
                           onChange={(e) => setFormData({ ...formData, jdText: e.target.value })}
                         />
                         <div className="absolute bottom-6 right-6">
-                           <div className="px-3 py-1 bg-white border border-gray-100 rounded-lg text-[10px] font-bold text-gray-400 shadow-sm">
-                             {formData.jdText.length} ký tự
-                           </div>
+                          <div className="px-3 py-1 bg-white border border-gray-100 rounded-lg text-[10px] font-bold text-gray-400 shadow-sm">
+                            {formData.jdText.length} ký tự
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -313,8 +444,8 @@ const InterviewSetupPage: React.FC = () => {
                             onClick={() => setFormData({ ...formData, selectedCvId: cv.id })}
                             className={cn(
                               "p-5 rounded-2xl border-2 text-left transition-all relative flex items-center gap-4",
-                              formData.selectedCvId === cv.id 
-                                ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5" 
+                              formData.selectedCvId === cv.id
+                                ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5"
                                 : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
                             )}
                           >
@@ -362,8 +493,8 @@ const InterviewSetupPage: React.FC = () => {
                               onClick={() => setFormData({ ...formData, level: lvl.id })}
                               className={cn(
                                 "flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all group",
-                                isActive 
-                                  ? "border-primary bg-primary/[0.02] shadow-md shadow-primary/5" 
+                                isActive
+                                  ? "border-primary bg-primary/[0.02] shadow-md shadow-primary/5"
                                   : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
                               )}
                             >
@@ -398,8 +529,8 @@ const InterviewSetupPage: React.FC = () => {
                 {step === 3 && (
                   <div className="space-y-10">
                     <div className="space-y-6">
-                       <h3 className="text-xl font-bold text-gray-900">Hình thức phỏng vấn</h3>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <h3 className="text-xl font-bold text-gray-900">Hình thức phỏng vấn</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
                           { id: InterviewMode.VIDEO, name: 'Video Call', desc: 'Giao diện gọi video, hội thoại trực tiếp bằng giọng nói.', icon: Video },
                           { id: InterviewMode.TEXT, name: 'Nhắn tin', desc: 'Giao diện chat, trả lời bằng văn bản.', icon: MessageSquare },
@@ -412,8 +543,8 @@ const InterviewSetupPage: React.FC = () => {
                               onClick={() => setFormData({ ...formData, mode: m.id as any })}
                               className={cn(
                                 "flex items-start gap-4 p-6 rounded-2xl border-2 transition-all relative group",
-                                isActive 
-                                  ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5" 
+                                isActive
+                                  ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5"
                                   : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
                               )}
                             >
@@ -435,7 +566,7 @@ const InterviewSetupPage: React.FC = () => {
                             </button>
                           );
                         })}
-                       </div>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-gray-50 pt-10">
@@ -448,8 +579,8 @@ const InterviewSetupPage: React.FC = () => {
                               onClick={() => setFormData({ ...formData, difficulty: lvl })}
                               className={cn(
                                 "h-14 rounded-xl border-2 font-bold transition-all flex items-center justify-center",
-                                formData.difficulty === lvl 
-                                  ? "border-primary bg-primary text-white" 
+                                formData.difficulty === lvl
+                                  ? "border-primary bg-primary text-white"
                                   : "border-gray-100 bg-gray-50/50 text-gray-400 hover:bg-white"
                               )}
                             >
@@ -462,13 +593,13 @@ const InterviewSetupPage: React.FC = () => {
                         <h3 className="text-lg font-bold text-gray-900">Thời lượng (Phút)</h3>
                         <div className="grid grid-cols-4 gap-2">
                           {[15, 30, 45, 60].map(m => (
-                            <button 
-                              key={m} 
-                              onClick={() => setFormData({...formData, duration: m})} 
+                            <button
+                              key={m}
+                              onClick={() => setFormData({ ...formData, duration: m })}
                               className={cn(
                                 "h-14 rounded-xl border-2 font-bold transition-all flex items-center justify-center text-xs",
-                                formData.duration === m 
-                                  ? "border-primary bg-primary text-white" 
+                                formData.duration === m
+                                  ? "border-primary bg-primary text-white"
                                   : "border-gray-100 bg-gray-50/50 text-gray-400 hover:bg-white"
                               )}
                             >
@@ -487,21 +618,21 @@ const InterviewSetupPage: React.FC = () => {
                         {formData.skills.map(skill => (
                           <div key={skill} className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-[11px] font-bold flex items-center gap-2 shadow-sm group">
                             {skill}
-                            <button onClick={() => setFormData({...formData, skills: formData.skills.filter(s => s !== skill)})} className="text-gray-300 group-hover:text-rose-500 transition-colors">
+                            <button onClick={() => setFormData({ ...formData, skills: formData.skills.filter(s => s !== skill) })} className="text-gray-300 group-hover:text-rose-500 transition-colors">
                               <Trash2 size={14} />
                             </button>
                           </div>
                         ))}
                         <div className="flex items-center gap-2 px-4 py-2 bg-white/50 border border-dashed border-gray-300 rounded-xl focus-within:border-primary/50 focus-within:bg-white transition-all">
-                           <input 
-                            type="text" 
-                            placeholder="+ Thêm..." 
+                          <input
+                            type="text"
+                            placeholder="+ Thêm..."
                             className="bg-transparent outline-none text-[11px] font-bold w-20 text-gray-900 placeholder:text-gray-300"
                             value={formData.newSkill}
-                            onChange={(e) => setFormData({...formData, newSkill: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, newSkill: e.target.value })}
                             onKeyDown={(e) => {
-                              if(e.key === 'Enter' && formData.newSkill.trim()) {
-                                setFormData({...formData, skills: [...formData.skills, formData.newSkill.trim()], newSkill: ''});
+                              if (e.key === 'Enter' && formData.newSkill.trim()) {
+                                setFormData({ ...formData, skills: [...formData.skills, formData.newSkill.trim()], newSkill: '' });
                               }
                             }}
                           />
@@ -528,16 +659,16 @@ const InterviewSetupPage: React.FC = () => {
                               onClick={() => setFormData({ ...formData, persona: p.id })}
                               className={cn(
                                 "flex flex-col p-2 rounded-3xl border-2 transition-all relative group overflow-hidden h-full",
-                                isActive 
-                                  ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5" 
+                                isActive
+                                  ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5"
                                   : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
                               )}
                             >
                               <div className="aspect-[4/5] w-full rounded-2xl overflow-hidden mb-4 relative">
-                                <img 
-                                  src={p.avatar} 
-                                  alt={p.name} 
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                <img
+                                  src={p.avatar}
+                                  alt={p.name}
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                                 <div className={cn(
                                   "absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center shadow-lg",
@@ -570,8 +701,8 @@ const InterviewSetupPage: React.FC = () => {
                             onClick={() => setFormData({ ...formData, language: lang.id })}
                             className={cn(
                               "px-8 h-16 rounded-2xl border-2 transition-all flex items-center gap-3 font-bold text-sm active:scale-95",
-                              formData.language === lang.id 
-                                ? "border-primary bg-primary/5 text-primary shadow-md" 
+                              formData.language === lang.id
+                                ? "border-primary bg-primary/5 text-primary shadow-md"
                                 : "border-gray-50 text-gray-400 bg-gray-50/30 hover:bg-white hover:border-gray-100"
                             )}
                           >
@@ -588,7 +719,7 @@ const InterviewSetupPage: React.FC = () => {
           </div>
 
           <div className="h-20 border-t border-gray-100 px-10 flex items-center justify-between shrink-0 bg-white/95 backdrop-blur-md z-20">
-            <button 
+            <button
               onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)}
               className="flex items-center gap-2 px-6 h-12 rounded-xl font-bold text-[13px] text-gray-400 hover:bg-gray-100 hover:text-gray-800 transition-all active:scale-95"
             >
@@ -604,7 +735,7 @@ const InterviewSetupPage: React.FC = () => {
                 ))}
               </div>
               {step < 4 ? (
-                <button 
+                <button
                   onClick={handleNext}
                   disabled={(step === 1 && !formData.jobTitle.trim()) || (step === 2 && !formData.selectedCvId)}
                   className="flex items-center gap-2 bg-primary text-white h-12 px-10 rounded-xl font-bold text-[13px] shadow-lg shadow-primary/20 hover:bg-primary-deep hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-30 uppercase"
@@ -612,11 +743,12 @@ const InterviewSetupPage: React.FC = () => {
                   TIẾP THEO <ArrowRight size={16} />
                 </button>
               ) : (
-                <button 
+                <button
                   onClick={handleNext}
-                  className="flex items-center gap-3 bg-primary text-white h-13 px-12 rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:bg-primary-deep hover:scale-[1.02] active:scale-95 transition-all group"
+                  disabled={setupInterviewMutation.isPending}
+                  className="flex items-center gap-3 bg-primary text-white h-13 px-12 rounded-xl font-bold text-sm shadow-xl shadow-primary/20 hover:bg-primary-deep hover:scale-[1.02] active:scale-95 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  BẮT ĐẦU PHỎNG VẤN
+                  {setupInterviewMutation.isPending ? 'ĐANG KHỞI TẠO...' : 'BẮT ĐẦU PHỎNG VẤN'}
                   <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               )}

@@ -1,6 +1,2 @@
-export enum InterviewPersona {
-  PROFESSIONAL = 'Professional',
-  FRIENDLY = 'Friendly',
-  STRICT = 'Strict',
-  CHEERFUL = 'Cheerful',
-}
+import { InterviewPersona } from '@prisma/client';
+export { InterviewPersona };

@@ -20,8 +20,8 @@ export enum InterviewLanguage {
 }
 
 export enum InterviewPersona {
-  PROFESSIONAL = 'Professional',
-  FRIENDLY = 'Friendly',
-  STRICT = 'Strict',
-  CHEERFUL = 'Cheerful',
+  PROFESSIONAL = 'PROFESSIONAL',
+  FRIENDLY = 'FRIENDLY',
+  STRICT = 'STRICT',
+  CHEERFUL = 'CHEERFUL',
 }

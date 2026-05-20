@@ -1,6 +1,10 @@
 import { z } from 'zod';
-import { ExperienceLevel, InterviewMode, InterviewLanguage } from '@prisma/client';
-import { InterviewPersona } from '../types/interview-ai.type';
+import {
+  ExperienceLevel,
+  InterviewMode,
+  InterviewLanguage,
+  InterviewPersona,
+} from '@prisma/client';
 
 export const interviewAISchema = z.object({
   body: z
@@ -47,9 +51,10 @@ export const interviewAISchema = z.object({
 
       difficulty: z.number().min(1, 'Độ khó tối thiểu là 1').max(5, 'Độ khó tối đa là 5'),
 
-      persona: z.nativeEnum(InterviewPersona, {
-        message: 'Nhân vật phỏng vấn không hợp lệ',
-      }),
+      persona: z.preprocess(
+        (val) => (typeof val === 'string' ? val.toUpperCase() : val),
+        z.nativeEnum(InterviewPersona),
+      ),
       // Cho phép mảng kỹ năng trống nếu ứng viên không điền (Tương thích UI)
       focusSkills: z.array(z.string()).default([]),
     })
@@ -57,4 +62,21 @@ export const interviewAISchema = z.object({
       message: 'Vui lòng cung cấp jobDescriptionId hoặc customJdText',
       path: ['jobDescriptionId'],
     }),
+});
+
+export type SetupInterviewBody = z.infer<typeof interviewAISchema>['body'];
+
+export const startInterviewSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'sessionId không hợp lệ (phải là MongoDB ObjectId)'),
+  }),
+});
+
+export const chatMessageSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'sessionId không hợp lệ (phải là MongoDB ObjectId)'),
+  }),
+  body: z.object({
+    message: z.string().min(1, 'Nội dung tin nhắn không được để trống'),
+  }),
 });

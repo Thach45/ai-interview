@@ -8,6 +8,7 @@ import jobCategoryRoute from './client/job-category.route';
 import adminJobCategoryRoute from './admin/job-category.route';
 import adminJobTemplateRoute from './admin/job-template.route';
 import adminUserRoute from './admin/user.route';
+import interviewAIRoute from './client/interview-ai.route';
 
 const router: Router = Router();
 
@@ -20,6 +21,7 @@ router.use('/cvs', cvRoute);
 router.use('/analysis-cv', analysisCvRoute);
 router.use('/job-templates', jobTemplateRoute);
 router.use('/categories', jobCategoryRoute);
+router.use('/interview-ai', interviewAIRoute);
 
 // ==========================
 // ADMIN ROUTES (Quản trị)

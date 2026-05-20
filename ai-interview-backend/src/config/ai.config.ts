@@ -1,9 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
 
-/**
- * Cấu hình tập trung cho Google GenAI SDK mới.
- * Tuân thủ tài liệu hướng dẫn mới nhất của Google.
- */
 export const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });

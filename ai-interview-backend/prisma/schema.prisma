@@ -70,6 +70,13 @@ enum InterviewLanguage {
   BILINGUAL
 }
 
+enum InterviewPersona {
+  PROFESSIONAL
+  FRIENDLY
+  STRICT
+  CHEERFUL
+}
+
 
 // ================= THỰC THỂ CỐT LÕI (CORE ENTITIES) =================
 
@@ -177,13 +184,16 @@ model InterviewSession {
   // --- THÔNG SỐ THIẾT LẬP (MỚI) ---
   mode             InterviewMode   @default(VIDEO)
   level            ExperienceLevel @default(JUNIOR)
-  persona          String          // Lưu tên nhân vật (Thảo Chi, Nam Anh...)
+  persona          InterviewPersona @default(PROFESSIONAL)
   language         InterviewLanguage @default(VIETNAMESE)
   difficulty       Int             @default(3) // 1-5
   duration         Int             @default(30) // Phút
   focusSkills      String[]        // Danh sách kỹ năng tập trung
   companyName      String?         // Tên công ty ứng tuyển (Step 1)
   jobTitle         String          // Tiêu đề vị trí (Lưu trực tiếp để độc lập với Template)
+
+  // --- TIẾN TRÌNH PHỎNG VẤN ---
+  coreQuestions        CoreQuestion[]
 
   // --- LIÊN KẾT ---
   jobTemplateId    String?       @db.ObjectId
@@ -211,6 +221,10 @@ model InterviewMessage {
   role             MessageRole 
   content          String      
   audioUrl         String?     
+  
+  // --- PHÂN LOẠI CÂU HỎI (MỚI) ---
+  questionIndex    Int?        // Thuộc câu hỏi cốt lõi thứ mấy
+  isFollowUp       Boolean     @default(false) // Có phải câu hỏi xoáy phụ không
   
   createdAt        DateTime    @default(now())
 
@@ -351,4 +365,10 @@ model VerificationCode {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+// Định nghĩa cấu trúc cho câu hỏi cốt lõi
+type CoreQuestion {
+  title        String    // Chủ đề hoặc kỹ năng tương ứng (ví dụ: Security, Database...)
+  reason       String    // Lý do hỏi câu hỏi này
 }

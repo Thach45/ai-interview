@@ -4,7 +4,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts",
+    "dev": "nodemon --exec tsx src/index.ts",
     "build": "rimraf dist && tsc",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
@@ -56,6 +56,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "husky": "^8.0.0",
+    "nodemon": "^3.1.14",
     "prettier": "^3.8.3",
     "prisma": "^5.22.0",
     "tsx": "^4.21.0",
