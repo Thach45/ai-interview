@@ -5,7 +5,7 @@ export const toJobCategoryResponseDTO = (
   category: JobCategory & {
     parent?: JobCategory | null;
     children?: JobCategory[];
-  }
+  },
 ): JobCategoryResponseDTO => {
   return {
     id: category.id,

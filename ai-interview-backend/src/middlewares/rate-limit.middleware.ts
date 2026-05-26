@@ -5,7 +5,7 @@ import rateLimit from 'express-rate-limit';
  */
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 phút
-  max: 100, // Tối đa 100 request từ mỗi IP trong 15 phút
+  max: 500, // Tối đa 500 request từ mỗi IP trong 15 phút (cho phép Polling QR Code)
   message: {
     success: false,
     message: 'Bạn đã gửi quá nhiều yêu cầu, vui lòng thử lại sau 15 phút.',
