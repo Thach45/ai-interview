@@ -1,4 +1,4 @@
-import { InterviewPersona } from '../types/interview-ai.type';
+import { InterviewPersona } from '@prisma/client';
 
 export const PERSONA_PROMPTS = {
   [InterviewPersona.PROFESSIONAL]: `
