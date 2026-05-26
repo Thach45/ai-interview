@@ -33,26 +33,6 @@ class SubscriptionController {
   });
 
   /**
-   * Webhook nhận thông báo đối soát tự động từ Sepay
-   */
-  handleWebhook = asyncHandler(async (req: Request, res: Response) => {
-    const apiKey = req.headers['x-api-key'];
-    const secretKey = process.env.SEPAY_WEBHOOK_KEY;
-
-    if (secretKey && apiKey !== secretKey) {
-      return sendResponse(res, 401, 'Unauthorized webhook request');
-    }
-
-    const result = await this.subscriptionService.handleSepayWebhook(req.body);
-
-    if (result.success) {
-      return sendResponse(res, 200, 'Webhook processed successfully');
-    } else {
-      return sendResponse(res, 400, result.message || 'Webhook processing failed', result);
-    }
-  });
-
-  /**
    * Lấy trạng thái của một giao dịch chuyển khoản phục vụ Polling
    */
   getTransactionStatus = asyncHandler(async (req: Request, res: Response) => {
