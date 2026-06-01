@@ -11,12 +11,10 @@ export const interviewAiApi = {
   },
 
   /**
-   * Lấy thông tin phiên phỏng vấn dựa trên cvId của ứng viên
+   * Lấy thông tin phiên phỏng vấn dựa trên sessionId
    */
-  getInterviewSession: async (cvId: string): Promise<any> => {
-    const response = await apiClient.get<any, { success: boolean; data: any }>('/interview-ai/get', {
-      params: { cvId }
-    });
+  getInterviewSession: async (sessionId: string): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>(`/interview-ai/${sessionId}`);
     return response.data;
   },
 
@@ -39,4 +37,20 @@ export const interviewAiApi = {
     const response = await apiClient.post<any, { success: boolean; data: any }>(`/interview-ai/${sessionId}/chat`, { message });
     return response.data;
   },
+
+  /**
+   * Yêu cầu AI nộp và tổng hợp kết quả phỏng vấn
+   */
+  submitInterviewResult: async (sessionId: string): Promise<any> => {
+    const response = await apiClient.post<any, { success: boolean; data: any }>(`/interview-ai/${sessionId}/submit`);
+    return response.data;
+  },
+
+  /**
+   * Lấy báo cáo kết quả phỏng vấn đã được phân tích
+   */
+  getInterviewResult: async (sessionId: string): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>(`/interview-ai/${sessionId}/result`);
+    return response.data;
+  }
 };

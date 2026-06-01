@@ -81,7 +81,7 @@ export const AppRoutes: React.FC = () => {
             <InterviewRoomTextPage />
           </ProtectedRoute>
         } />
-        <Route path="/interviews/result" element={
+        <Route path="/interviews/report" element={
           <ProtectedRoute>
             <InterviewResultPage />
           </ProtectedRoute>

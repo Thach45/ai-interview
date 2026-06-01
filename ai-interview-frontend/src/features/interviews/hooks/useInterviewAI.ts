@@ -26,14 +26,14 @@ export const useInterviewAi = () => {
   };
 };
 
-export const useInterviewSession = (cvId: string) => {
+export const useInterviewSession = (sessionId: string) => {
   return useQuery({
-    queryKey: ["interviewSession", cvId],
+    queryKey: ["interviewSession", sessionId],
     queryFn: async () => {
-      const response = await interviewAiApi.getInterviewSession(cvId);
+      const response = await interviewAiApi.getInterviewSession(sessionId);
       return response;
     },
-    enabled: !!cvId,
+    enabled: !!sessionId,
     staleTime: 0,
   });
 };
@@ -59,6 +59,19 @@ export const useSendChatMessage = (sessionId: string) => {
         error.response?.data?.error ||
         error.response?.data?.message ||
         "Không thể gửi tin nhắn";
+      toast.error(message);
+    },
+  });
+};
+
+export const useSubmitInterviewResult = (sessionId: string) => {
+  return useMutation({
+    mutationFn: () => interviewAiApi.submitInterviewResult(sessionId),
+    onError: (error: any) => {
+      const message =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Không thể nộp kết quả phỏng vấn";
       toast.error(message);
     },
   });

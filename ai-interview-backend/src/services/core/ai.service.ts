@@ -16,6 +16,12 @@ import {
   getInterviewChatSystemPrompt,
   InterviewChatInput,
 } from '../../prompts/interview-chat.prompt';
+import {
+  SubmitInterviewResultInput,
+  getSubmitInterviewResultSystemPrompt,
+  getSubmitInterviewResultUserPrompt,
+  SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
+} from '../../prompts/submit-interview-result.prompt';
 
 export class AiService {
   async analysisCV(cvContent: string, jobDescription: string) {
@@ -109,6 +115,59 @@ export class AiService {
       return parsed;
     } catch (error: any) {
       console.error('Lỗi khi gọi AI chat phỏng vấn:', error);
+      throw new (Error as any)('Lỗi khi kết nối với bộ não AI.', { cause: error });
+    }
+  }
+  async submitInterviewResult(input: SubmitInterviewResultInput) {
+    try {
+      const systemInstruction = getSubmitInterviewResultSystemPrompt(input);
+      const userPrompt = getSubmitInterviewResultUserPrompt(input);
+
+      const response = await ai.models.generateContent({
+        model: AI_MODEL_CONFIG.model,
+        contents: userPrompt,
+        config: {
+          ...AI_MODEL_CONFIG.config,
+          systemInstruction,
+          responseSchema: SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
+        },
+      });
+
+      if (!response.text) {
+        throw new Error('AI không phản hồi dữ liệu báo cáo đánh giá.');
+      }
+
+      // 3. Parse JSON từ phản hồi của AI
+      const parsed = JSON.parse(response.text) as {
+        generalEvaluation: {
+          overall: { score: number; reason: string };
+          domain: { score: number; reason: string };
+          problemSolving: { score: number; reason: string };
+          clarity: { score: number; reason: string };
+          confidence: { score: number; reason: string };
+          relevance: { score: number; reason: string };
+        };
+        recommendation: string;
+        summary: string;
+        strengths: string[];
+        weaknesses: string[];
+        learningPath: string[];
+        questionEvaluations: Array<{
+          questionIndex: number;
+          questionTitle: string;
+          feedback: string;
+          score: number;
+        }>;
+      };
+
+      // Tùy chọn: Validate cấu trúc cơ bản
+      if (!parsed.generalEvaluation || !parsed.recommendation || !Array.isArray(parsed.strengths)) {
+        throw new Error('Cấu trúc phản hồi phân tích từ AI không đúng định dạng Schema quy định.');
+      }
+
+      return parsed;
+    } catch (error: any) {
+      console.error('Lỗi khi gọi AI submit interview result:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI.', { cause: error });
     }
   }

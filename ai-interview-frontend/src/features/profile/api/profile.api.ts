@@ -5,13 +5,13 @@ export const profileApi = {
   /** Lấy thông tin profile hiện tại */
   getProfile: () =>
     apiClient.get<any, ProfileResponse>(
-      "/profile",
+      "/user/me",
     ),
 
   /** Cập nhật profile */
   updateProfile: (data: UpdateProfileRequest) =>
     apiClient.put<any, ProfileResponse>(
-      "/profile",
+      "/user/me",
       data,
     ),
 };

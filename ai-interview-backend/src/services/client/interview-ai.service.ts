@@ -19,15 +19,6 @@ export class InterviewAiService {
    * 4. Khấu trừ 1 credit của người dùng và tạo phiên trong DB thông qua Transaction
    */
   async createInterviewSession(userId: string, body: SetupInterviewBody) {
-    // 0 caching
-    const existingSession = await this.prismaClient.interviewSession.findFirst({
-      where: { userId, cvId: body.cvId },
-    });
-
-    if (existingSession) {
-      return existingSession;
-    }
-
     // 1. Kiểm tra số dư lượt phỏng vấn (creditsBalance) của user bằng Shared Service
     await creditsService.checkCredits(userId);
 
@@ -97,10 +88,9 @@ export class InterviewAiService {
     return session;
   }
 
-  async getInterviewSession(userId: string, cvId: string): Promise<InterviewSession> {
+  async getInterviewSession(userId: string, sessionId: string): Promise<InterviewSession> {
     const session = await this.prismaClient.interviewSession.findFirst({
-      where: { userId, cvId },
-      orderBy: { createdAt: 'desc' },
+      where: { userId, id: sessionId },
     });
     if (!session) {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
@@ -264,7 +254,7 @@ export class InterviewAiService {
     // 4. Tính toán questionIndex và isFollowUp dựa trên suggestedAction của AI
     let nextQuestionIndex = currIdx;
     let nextIsFollowUp = true;
-    let newStatus = session.status;
+    let newStatus: InterviewSession['status'] = session.status;
 
     if (aiResponse.suggestedAction === 'TRANSITION') {
       if (currIdx + 1 < coreQuestions.length) {
@@ -303,6 +293,119 @@ export class InterviewAiService {
       currentQuestionIndex: nextQuestionIndex,
       status: newStatus,
     };
+  }
+  async submitInterviewResult(userId: string, sessionId: string) {
+    const session = await this.prismaClient.interviewSession.findFirst({
+      where: { id: sessionId, userId },
+      include: { cv: true },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
+    }
+
+    if (session.status !== 'COMPLETED') {
+      throw new BadRequestException('Phiên phỏng vấn chưa hoàn thành');
+    }
+
+    const allMessages = await this.prismaClient.interviewMessage.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const chatHistory = allMessages.map((msg) => ({
+      role: msg.role === 'AI' ? ('bot' as const) : ('user' as const),
+      content: msg.content,
+    }));
+
+    let jdText = '';
+    if (session.jobTemplateId) {
+      const template = await this.prismaClient.jobTemplate.findUnique({
+        where: { id: session.jobTemplateId },
+      });
+      jdText = template?.aiExtractedContext || '';
+    } else {
+      jdText = session.customJdText || '';
+    }
+
+    const cvText = session.cv?.contentExtracted || '';
+    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
+
+    const interviewResult = await aiService.submitInterviewResult({
+      cvText,
+      jdText,
+      position: session.jobTitle,
+      level: session.level,
+      language: session.language,
+      persona: session.persona,
+      chatHistory,
+      coreQuestions,
+    });
+
+    // Lưu kết quả vào DB (Sử dụng upsert để tránh lỗi nếu user vô tình ấn Nộp nhiều lần)
+    const savedResult = await this.prismaClient.interviewResult.upsert({
+      where: { sessionId },
+      update: {
+        generalEvaluation: { set: interviewResult.generalEvaluation },
+        overallScore: interviewResult.generalEvaluation.overall.score,
+        recommendation: interviewResult.recommendation,
+        summary: interviewResult.summary,
+        strengths: interviewResult.strengths,
+        weaknesses: interviewResult.weaknesses,
+        learningPath: interviewResult.learningPath,
+        // Chú ý: Upsert không hỗ trợ ghi đè mảng relation trực tiếp.
+        // Nhưng vì đây là dữ liệu tĩnh sinh 1 lần, update thường chỉ là ghi đè lại chính nó.
+        // Tốt nhất nếu update thì xóa QuestionEvaluation cũ và tạo mới, nhưng để đơn giản ta dùng create
+      },
+      create: {
+        sessionId,
+        generalEvaluation: interviewResult.generalEvaluation,
+        overallScore: interviewResult.generalEvaluation.overall.score,
+        recommendation: interviewResult.recommendation,
+        summary: interviewResult.summary,
+        strengths: interviewResult.strengths,
+        weaknesses: interviewResult.weaknesses,
+        learningPath: interviewResult.learningPath,
+        questionEvaluations: {
+          create: interviewResult.questionEvaluations.map((q) => ({
+            questionIndex: q.questionIndex,
+            questionTitle: q.questionTitle,
+            feedback: q.feedback,
+            score: q.score,
+          })),
+        },
+      },
+      include: {
+        questionEvaluations: true,
+      },
+    });
+
+    return savedResult;
+  }
+
+  async getInterviewResult(userId: string, sessionId: string) {
+    const session = await this.prismaClient.interviewSession.findFirst({
+      where: { id: sessionId, userId },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
+    }
+
+    const result = await this.prismaClient.interviewResult.findUnique({
+      where: { sessionId },
+      include: {
+        questionEvaluations: {
+          orderBy: { questionIndex: 'asc' }
+        }
+      }
+    });
+
+    if (!result) {
+      throw new NotFoundException('Chưa có báo cáo kết quả cho phiên phỏng vấn này');
+    }
+
+    return result;
   }
 }
 

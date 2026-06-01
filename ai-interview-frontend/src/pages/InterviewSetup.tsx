@@ -245,9 +245,9 @@ const InterviewSetupPage: React.FC = () => {
         persona: formData.persona,
         focusSkills: formData.skills,
       }, {
-        onSuccess: () => {
+        onSuccess: (res: any) => {
           const targetRoute = formData.mode === InterviewMode.VIDEO ? '/interview/video' : '/interview/chat';
-          navigate(`${targetRoute}?cvId=${formData.selectedCvId}`);
+          navigate(`${targetRoute}?sessionId=${res.id}`);
         }
       });
     }

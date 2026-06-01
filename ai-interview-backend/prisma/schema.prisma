@@ -233,21 +233,53 @@ model InterviewMessage {
   @@index([sessionId]) 
 }
 
+type MetricScore {
+  score  Int
+  reason String
+}
+
+type GeneralEvaluation {
+  overall        MetricScore
+  domain         MetricScore
+  problemSolving MetricScore
+  clarity        MetricScore
+  confidence     MetricScore
+  relevance      MetricScore
+}
 // 6. BẢNG BÁO CÁO KẾT QUẢ
 model InterviewResult {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionId        String   @unique @db.ObjectId
   
-  overallScore     Int
-  clarityScore     Int      
-  confidenceScore  Int      
-  relevanceScore   Int      
+  overallScore     Int  
+  generalEvaluation GeneralEvaluation
+  
+  // Phân loại tổng quan phục vụ Query và hiển thị List/Dashboard nhanh chóng
+  recommendation   String   // Quyết định đề xuất (VD: "PASS", "FAIL", "CONSIDER") giúp dễ dàng filter lọc ứng viên
+  summary          String   // Một đoạn nhận xét ngắn gọn (1-2 câu) giúp nắm bắt kết quả tức thì mà không cần parser JSON
 
-  feedbackJson     Json
+  // Bóc tách chi tiết phân tích (Lưu dạng mảng String vì đang dùng MongoDB)
+  strengths        String[] // Danh sách các điểm mạnh nổi bật
+  weaknesses       String[] // Danh sách các điểm yếu hoặc cần cải thiện
+  learningPath     String[] // Các đề xuất, lời khuyên lộ trình phát triển tiếp theo
   
   createdAt        DateTime @default(now())
 
   session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionEvaluations QuestionEvaluation[]
+}
+
+// Bảng chứa nhận xét chi tiết cho từng câu hỏi (1-N với InterviewResult)
+model QuestionEvaluation {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  interviewResultId String   @db.ObjectId
+  
+  questionIndex     Int      // Thứ tự câu hỏi trong phiên
+  questionTitle     String   // Tiêu đề/Nội dung câu hỏi cốt lõi
+  feedback          String   // Nhận xét chi tiết của AI về cách trả lời của ứng viên cho câu này
+  score             Int      // Điểm đánh giá riêng cho câu này (Thang 0-100)
+
+  interviewResult   InterviewResult @relation(fields: [interviewResultId], references: [id], onDelete: Cascade)
 }
 
 enum TransactionType {

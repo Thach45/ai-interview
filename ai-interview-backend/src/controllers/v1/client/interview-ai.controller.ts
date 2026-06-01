@@ -18,8 +18,11 @@ class InterviewAIController {
   });
 
   getInterview = asyncHandler(async (req: Request, res: Response) => {
-    const cvId = req.query.cvId as string;
-    const interviewSession = await this.interviewAiService.getInterviewSession(req.user!.id, cvId);
+    const sessionId = req.params.id;
+    const interviewSession = await this.interviewAiService.getInterviewSession(
+      req.user!.id,
+      sessionId,
+    );
     sendResponse(res, 200, 'Lấy thông tin phiên phỏng vấn thành công', interviewSession);
   });
 
@@ -34,6 +37,18 @@ class InterviewAIController {
     const { message } = req.body;
     const result = await this.interviewAiService.sendChatMessage(req.user!.id, sessionId, message);
     sendResponse(res, 200, 'Phản hồi từ AI thành công', result);
+  });
+
+  submitInterviewResult = asyncHandler(async (req: Request, res: Response) => {
+    const sessionId = req.params.id;
+    const result = await this.interviewAiService.submitInterviewResult(req.user!.id, sessionId);
+    sendResponse(res, 200, 'Nộp kết quả phỏng vấn thành công', result);
+  });
+
+  getInterviewResult = asyncHandler(async (req: Request, res: Response) => {
+    const sessionId = req.params.id;
+    const result = await this.interviewAiService.getInterviewResult(req.user!.id, sessionId);
+    sendResponse(res, 200, 'Lấy báo cáo kết quả phỏng vấn thành công', result);
   });
 }
 

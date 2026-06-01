@@ -8,59 +8,9 @@ import {
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { ExperienceLevel, InterviewLanguage, InterviewPersona } from '../shared/types/interview';
-import { useInterviewSession, useStartInterview, useSendChatMessage } from '../features/interviews/hooks/useInterviewAI';
+import { useInterviewSession, useStartInterview, useSendChatMessage, useSubmitInterviewResult } from '../features/interviews/hooks/useInterviewAI';
 
-// Cấu hình thông tin chi tiết của từng Persona
-const PERSONA_DETAILS = {
-  [InterviewPersona.PROFESSIONAL]: {
-    name: 'Ms. Thảo Chi',
-    title: 'Chuyên gia Phỏng vấn Chuyên nghiệp',
-    role: 'Senior Technical Recruiter',
-    desc: 'Ms. Thảo Chi có hơn 10 năm kinh nghiệm tuyển dụng. Cô luôn đặt câu hỏi một cách hệ thống, tập trung cao vào cấu trúc trả lời STAR và tư duy thiết kế cốt lõi của ứng viên.',
-    avatar: '/avatars/thao-chi.png',
-    accent: 'bg-blue-600',
-    textAccent: 'text-blue-600',
-    bg: 'bg-blue-50/50',
-    border: 'border-blue-100',
-    welcomeTone: "Chào bạn. Tôi là Thảo Chi, chuyên viên phỏng vấn kỹ thuật của bạn ngày hôm nay. Chúng ta sẽ cùng trao đổi chuyên sâu về các kỹ năng, kiến thức chuyên môn cũng như tư duy lập trình của bạn thông qua một số câu hỏi có cấu trúc. Hãy cố gắng trả lời một cách mạch lạc, đúng trọng tâm và cấu trúc câu trả lời theo mô hình STAR nhé."
-  },
-  [InterviewPersona.FRIENDLY]: {
-    name: 'Mr. Nam Anh',
-    title: 'Người phỏng vấn Đồng hành',
-    role: 'Technical Mentor',
-    desc: 'Mr. Nam Anh có phong cách phỏng vấn thoải mái, lắng nghe và nâng đỡ ứng viên. Anh ấy luôn khích lệ bạn tự tin đưa ra giải pháp trước khi đi sâu vào kỹ thuật.',
-    avatar: '/avatars/nam-anh.png',
-    accent: 'bg-emerald-600',
-    textAccent: 'text-emerald-600',
-    bg: 'bg-emerald-50/50',
-    border: 'border-emerald-100',
-    welcomeTone: "Chào bạn nhé! Mình là Nam Anh. Bạn cứ bình tĩnh và thoải mái coi đây như một buổi trò chuyện trao đổi kinh nghiệm thông thường thôi nhé. Mình ở đây để giúp bạn thể hiện tốt nhất năng lực của bản thân, nên có gì cứ chia sẻ tự nhiên nha. Bạn đã sẵn sàng chưa nào?"
-  },
-  [InterviewPersona.STRICT]: {
-    name: 'Mr. Quốc Hùng',
-    title: 'Chuyên gia Kỹ thuật Áp lực',
-    role: 'Principal System Engineer',
-    desc: 'Mr. Quốc Hùng cực kỳ khắt khe về kỹ thuật. Anh thích xoáy sâu vào cốt lõi vấn đề, phát hiện nhanh các lỗi logic và thách thức ứng viên dưới áp lực thời gian.',
-    avatar: '/avatars/quoc-hung.png',
-    accent: 'bg-rose-600',
-    textAccent: 'text-rose-600',
-    bg: 'bg-rose-50/50',
-    border: 'border-rose-100',
-    welcomeTone: "Tôi là Quốc Hùng. Buổi phỏng vấn hôm nay sẽ đi thẳng vào các kiến thức kỹ thuật thực tế và tư duy giải quyết vấn đề hệ thống của bạn. Tôi hy vọng bạn sẽ trả lời ngắn gọn, thực tế, tránh nói lý thuyết suông và tập trung vào bản chất công nghệ. Chúng ta bắt đầu luôn nhé."
-  },
-  [InterviewPersona.CHEERFUL]: {
-    name: 'Ms. Linh San',
-    title: 'Người truyền năng lượng Tích cực',
-    role: 'Engineering Lead',
-    desc: 'Ms. Linh San luôn mang đến năng lượng vui tươi và nhiều nụ cười. Cô tin rằng một tinh thần thoải mái sẽ giúp lập trình viên bộc lộ tối đa sức sáng tạo.',
-    avatar: '/avatars/linh-san.png',
-    accent: 'bg-amber-600',
-    textAccent: 'text-amber-600',
-    bg: 'bg-amber-50/50',
-    border: 'border-amber-100',
-    welcomeTone: "Hi bạn! Mình là Linh San cực kỳ vui vẻ đây! Rất vui được gặp bạn trong phòng phỏng vấn hôm nay nha. Cứ thả lỏng tinh thần, chuẩn bị một ly nước ấm rồi chúng mình cùng nhau thảo luận những điều thú vị về công nghệ nhé. Bắt đầu nha!"
-  }
-};
+import { PERSONA_DETAILS } from '../shared/constants/personas';
 
 interface InterviewProgressCardProps {
   currentQuestionIdx: number;
@@ -169,10 +119,10 @@ const InterviewRoomTextPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const cvId = searchParams.get('cvId') || '';
-  const { data: session, isLoading } = useInterviewSession(cvId);
+  const sessionId = searchParams.get('sessionId') || '';
+  const { data: session, isLoading } = useInterviewSession(sessionId);
 
-  // Nhận thông tin cấu hình từ Session DB (nếu có) hoặc dùng mặc định
+  // Nhận thông tin cấu hình từ Session DB
   const config = session ? {
     jobTitle: session.jobTitle || 'Vị trí phỏng vấn',
     persona: (session.persona as InterviewPersona) || InterviewPersona.PROFESSIONAL,
@@ -216,7 +166,7 @@ const InterviewRoomTextPage: React.FC = () => {
   // Hooks gọi API thực tế
   const startInterviewMutation = useStartInterview(session?.id || '');
   const sendChatMutation = useSendChatMessage(session?.id || '');
-
+  const submitInterviewMutation = useSubmitInterviewResult(session?.id || '');
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
     if (scrollRef.current) {
@@ -235,6 +185,7 @@ const InterviewRoomTextPage: React.FC = () => {
   // Khi session tải xong, đồng bộ thời gian và gọi API start để nhận câu hỏi đầu tiên từ AI
   useEffect(() => {
     if (session && !isStarted) {
+    
       setTimeLeft(session.duration * 60);
       setIsStarted(true);
       setIsBotTyping(true);
@@ -260,7 +211,7 @@ const InterviewRoomTextPage: React.FC = () => {
     }
   }, [session]);
 
-  if (isLoading && cvId) {
+  if (isLoading && sessionId) {
     return (
       <div className="h-screen w-full bg-[#f6f5f4] flex flex-col items-center justify-center text-[#1a1a1a]">
         <div className="flex flex-col items-center gap-4">
@@ -304,7 +255,14 @@ const InterviewRoomTextPage: React.FC = () => {
         };
 
         setMessages(prev => [...prev, replyMessage]);
-        setCurrentQuestionIdx(qIdx);
+        
+        // Nếu backend trả về trạng thái COMPLETED, ép index lên max để hiển thị Hoàn tất
+        if (data.status === 'COMPLETED') {
+          setCurrentQuestionIdx(activeQuestions.length);
+        } else {
+          setCurrentQuestionIdx(qIdx);
+        }
+        
         setIsBotTyping(false);
       },
       onError: () => {
@@ -480,35 +438,54 @@ const InterviewRoomTextPage: React.FC = () => {
           
           {/* Bottom Chat Input Form Area */}
           <div className="p-6 border-t border-[#e5e3df] bg-white">
-            <div className="flex items-end gap-3 bg-[#f6f5f4] border border-[#e5e3df] p-2.5 rounded-2xl focus-within:bg-white focus-within:border-primary transition-all focus-within:ring-2 focus-within:ring-primary/10 shadow-inner">
-              <textarea 
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
-                placeholder={`Nhập câu trả lời bằng tiếng ${config.language === InterviewLanguage.ENGLISH ? 'Anh' : 'Việt'}... (Nhấn Enter để gửi)`} 
-                className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 py-3 px-4 resize-none min-h-[50px] max-h-[140px] custom-scrollbar leading-relaxed"
-                disabled={isBotTyping}
-              />
-              <button 
-                onClick={handleSend}
-                disabled={!inputText.trim() || isBotTyping}
-                className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-md group shrink-0 active:scale-95",
-                  inputText.trim() && !isBotTyping
-                    ? "bg-primary text-white shadow-primary/20 hover:bg-primary-deep hover:scale-[1.05]"
-                    : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
-                )}
-              >
-                <Send size={18} className={cn("group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform", inputText.trim() && "text-white")} />
-              </button>
-            </div>
+            {currentQuestionIdx >= activeQuestions.length || session?.status === 'COMPLETED' ? (
+              <div className="flex flex-col items-center justify-center p-4 bg-emerald-50 rounded-2xl border border-emerald-100/50">
+                <CheckCircle2 className="text-emerald-500 mb-2 size-8" />
+                <h4 className="text-sm font-bold text-emerald-900 mb-1">Hoàn tất buổi phỏng vấn</h4>
+                <p className="text-[11px] text-emerald-700/80 mb-4">Dữ liệu của bạn đã được ghi nhận. Hãy xem báo cáo chi tiết.</p>
+                <button 
+                  onClick={() => {
+                    submitInterviewMutation.mutate(undefined, {
+                      onSuccess: () => navigate(`/interviews/report?sessionId=${session?.id}`)
+                    });
+                  }} 
+                  disabled={submitInterviewMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  {submitInterviewMutation.isPending ? 'Đang phân tích dữ liệu...' : 'Xem Báo Cáo Phỏng Vấn'}
+                  {!submitInterviewMutation.isPending && <ChevronRight size={16} />}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-end gap-3 bg-[#f6f5f4] border border-[#e5e3df] p-2.5 rounded-2xl focus-within:bg-white focus-within:border-primary transition-all focus-within:ring-2 focus-within:ring-primary/10 shadow-inner">
+                <textarea 
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
+                  placeholder={`Nhập câu trả lời bằng tiếng ${config.language === InterviewLanguage.ENGLISH ? 'Anh' : 'Việt'}... (Nhấn Enter để gửi)`} 
+                  className="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 py-3 px-4 resize-none min-h-[50px] max-h-[140px] custom-scrollbar leading-relaxed"
+                  disabled={isBotTyping}
+                />
+                <button 
+                  onClick={handleSend}
+                  disabled={!inputText.trim() || isBotTyping}
+                  className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-md group shrink-0 active:scale-95",
+                    inputText.trim() && !isBotTyping
+                      ? "bg-primary text-white shadow-primary/20 hover:bg-primary-deep hover:scale-[1.05]"
+                      : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+                  )}
+                >
+                  <Send size={18} className={cn("group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform", inputText.trim() && "text-white")} />
+                </button>
+              </div>
+            )}
             
             <div className="mt-4 flex items-center justify-center gap-6 opacity-40">
               <div className="flex items-center gap-2">
                 <Shield size={13} className="text-slate-500" />
                 <span className="text-[9px] font-bold uppercase text-slate-600">Dữ liệu bảo mật</span>
               </div>
-        
             </div>
           </div>
         </div>
