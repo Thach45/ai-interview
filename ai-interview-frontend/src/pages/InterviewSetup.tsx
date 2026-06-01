@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MainLayout } from '../layouts/MainLayout';
 import {
-  Sparkles, Cpu, CheckCircle2,
+  Sparkles, CheckCircle2,
   ArrowRight, ArrowLeft, BrainCircuit,
-  Briefcase, Building2, FileText, Languages,
-  UserCircle, Settings2, Target, Clock,
-  ChevronRight, AlertCircle, Trash2, Plus,
-  Info, Rocket, Zap, ChevronDown, Upload,
+  Briefcase, Building2, FileText,
+  UserCircle, Settings2, Target, 
+  ChevronRight, Trash2, Plus,
+   Rocket, Zap, ChevronDown, Upload,
   Search, Check, Gauge, Video, MessageSquare,
   Smile, GraduationCap, Medal, Star, ShieldCheck, Trophy
 } from 'lucide-react';
@@ -16,6 +16,8 @@ import { cn } from '../shared/utils/cn';
 import { useCvs } from '../features/cvs/hooks/useCvs';
 import { ExperienceLevel, InterviewLanguage, InterviewMode, InterviewPersona } from '../shared/types/interview';
 import { useInterviewAi } from '../features/interviews/hooks/useInterviewAI';
+import { PERSONA_DETAILS } from '../shared/constants/personas';
+import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 
 const InterviewSetupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -63,50 +65,50 @@ const InterviewSetupPage: React.FC = () => {
     { id: ExperienceLevel.INTERN, name: 'Intern', icon: GraduationCap, color: 'text-blue-500', bg: 'bg-blue-50' },
     { id: ExperienceLevel.FRESHER, name: 'Fresher', icon: Star, color: 'text-emerald-500', bg: 'bg-emerald-50' },
     { id: ExperienceLevel.JUNIOR, name: 'Junior', icon: Medal, color: 'text-amber-500', bg: 'bg-amber-50' },
-    { id: ExperienceLevel.MIDDLE, name: 'Middle', icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+    { id: ExperienceLevel.MIDDLE, name: 'Middle', icon: Target, color: 'text-purple-500', bg: 'bg-purple-50' },
     { id: ExperienceLevel.SENIOR, name: 'Senior', icon: Trophy, color: 'text-rose-500', bg: 'bg-rose-50' },
   ];
 
   const personas = [
     {
       id: InterviewPersona.PROFESSIONAL,
-      name: 'Ms. Thảo Chi',
+      name: PERSONA_DETAILS[InterviewPersona.PROFESSIONAL].name,
       title: 'Chuyên nghiệp',
       desc: 'Nghiêm túc, tập trung vào phương pháp STAR và tư duy hệ thống.',
       icon: UserCircle,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
-      avatar: '/avatars/thao-chi.png'
+      avatar: PERSONA_DETAILS[InterviewPersona.PROFESSIONAL].avatar
     },
     {
       id: InterviewPersona.FRIENDLY,
-      name: 'Mr. Nam Anh',
+      name: PERSONA_DETAILS[InterviewPersona.FRIENDLY].name,
       title: 'Hỗ trợ',
       desc: 'Tông giọng khích lệ, giúp bạn xây dựng sự tự tin khi trả lời.',
       icon: Sparkles,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50',
-      avatar: '/avatars/nam-anh.png'
+      avatar: PERSONA_DETAILS[InterviewPersona.FRIENDLY].avatar
     },
     {
       id: InterviewPersona.STRICT,
-      name: 'Mr. Quốc Hùng',
+      name: PERSONA_DETAILS[InterviewPersona.STRICT].name,
       title: 'Áp lực',
       desc: 'Đặt câu hỏi dồn dập, xoáy sâu vào các điểm yếu và lỗi logic.',
       icon: Target,
       color: 'text-rose-600',
       bg: 'bg-rose-50',
-      avatar: '/avatars/quoc-hung.png'
+      avatar: PERSONA_DETAILS[InterviewPersona.STRICT].avatar
     },
     {
       id: InterviewPersona.CHEERFUL,
-      name: 'Ms. Linh San',
+      name: PERSONA_DETAILS[InterviewPersona.CHEERFUL].name,
       title: 'Vui vẻ',
       desc: 'Năng lượng tích cực, tạo không khí thoải mái như một buổi cafe.',
       icon: Smile,
       color: 'text-amber-600',
       bg: 'bg-amber-50',
-      avatar: '/avatars/linh-san.png'
+      avatar: PERSONA_DETAILS[InterviewPersona.CHEERFUL].avatar
     },
   ];
 
@@ -114,21 +116,6 @@ const InterviewSetupPage: React.FC = () => {
     { id: InterviewLanguage.VIETNAMESE, name: 'Tiếng Việt', flag: '🇻🇳' },
     { id: InterviewLanguage.ENGLISH, name: 'English', flag: '🇺🇸' },
     { id: InterviewLanguage.BILINGUAL, name: 'Song ngữ', flag: '🌍' },
-  ];
-
-  const difficulties = [
-    { id: 1, name: 'Người mới', desc: 'Câu hỏi căn bản, kiến thức nền tảng.' },
-    { id: 2, name: 'Junior', desc: 'Kỹ năng thực thi, xử lý tình huống đơn giản.' },
-    { id: 3, name: 'Middle', desc: 'Phân tích hệ thống, giải quyết vấn đề phức tạp.' },
-    { id: 4, name: 'Senior', desc: 'Tầm nhìn chiến lược, tối ưu hóa và dẫn dắt.' },
-    { id: 5, name: 'Chuyên gia', desc: 'Thách thức cực hạn, xử lý edge case khó nhất.' },
-  ];
-
-  const durations = [
-    { id: 15, name: '15 phút', desc: 'Phỏng vấn nhanh' },
-    { id: 30, name: '30 phút', desc: 'Phỏng vấn chuẩn' },
-    { id: 45, name: '45 phút', desc: 'Phỏng vấn sâu' },
-    { id: 60, name: '60 phút', desc: 'Phỏng vấn marathon' },
   ];
 
   const steps = [
@@ -140,91 +127,19 @@ const InterviewSetupPage: React.FC = () => {
 
   if (setupInterviewMutation.isPending) {
     return (
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden">
-        {/* Ambient Background Glows */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div
-            className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse"
-            style={{ animationDuration: '6s' }}
-          />
-          <div
-            className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[140px] animate-pulse"
-            style={{ animationDuration: '8s' }}
-          />
-        </div>
-
-        <div className="relative z-10 flex flex-col items-center max-w-md px-6 text-center">
-          {/* Rotating Outer Ring & Core Glowing AI Icon */}
-          <div className="relative w-32 h-32 mb-10 flex items-center justify-center">
-            {/* Outermost dotted orbit */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
-              className="absolute inset-0 border border-dashed border-white/10 rounded-full"
-            />
-            {/* Middle colored pulsing ring */}
-            <motion.div
-              animate={{ scale: [1, 1.08, 1] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-              className="absolute inset-2 border-2 border-indigo-500/30 rounded-full"
-            />
-            {/* Inner fast rotating gradient ring */}
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-              className="absolute inset-4 border-2 border-t-primary border-r-transparent border-b-indigo-400 border-l-transparent rounded-full"
-            />
-            {/* Central Brain Icon with deep pulse glow */}
-            <div className="w-18 h-18 bg-gradient-to-tr from-primary to-indigo-600 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.4)] relative z-20">
-              <BrainCircuit className="text-white animate-pulse" size={32} />
-            </div>
-          </div>
-
-          {/* Title & Micro-Status */}
-          <motion.h2
-            initial={{ y: 15, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-2xl font-bold tracking-tight mb-3"
-          >
-            Khởi tạo phòng phỏng vấn AI
-          </motion.h2>
-          <motion.p
-            initial={{ y: 15, opacity: 0 }}
-            animate={{ y: 0, opacity: 0.6 }}
-            transition={{ delay: 0.3 }}
-            className="text-xs text-slate-400 uppercase tracking-widest mb-8"
-          >
-            Đang kết nối với AI....
-          </motion.p>
-
-          {/* Animated Sliding Status Steps */}
-          <div className="h-[75px] flex items-center justify-center overflow-hidden w-full relative mb-12 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-4 min-h-[75px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={loadingStepIdx}
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -15, opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="text-sm font-medium text-slate-200"
-              >
-                {loadingSteps[loadingStepIdx]}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Tip / Quote */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.4 }}
-            transition={{ delay: 0.6 }}
-            className="text-xs text-slate-500 italic max-w-xs"
-          >
-            "Mẹo: Hãy hít một hơi thật sâu, bình tĩnh đọc kỹ câu hỏi và trả lời đúng trọng tâm để đạt điểm đánh giá cao nhất."
-          </motion.div>
-        </div>
-      </div>
+      <LoadingIndicator 
+        type="ai"
+        title="Khởi tạo phòng phỏng vấn AI"
+        subtitle="Mẹo: Hãy hít một hơi thật sâu, bình tĩnh đọc kỹ câu hỏi và trả lời đúng trọng tâm để đạt điểm đánh giá cao nhất."
+        fullScreen={true}
+        aiSteps={[
+          "Phân tích yêu cầu công việc (JD)...",
+          "Tổng hợp dữ liệu hồ sơ (CV)...",
+          "Khởi tạo hệ thống đánh giá theo thời gian thực...",
+          "Tải dữ liệu Persona phỏng vấn...",
+          "Thiết lập môi trường phỏng vấn thành công..."
+        ]}
+      />
     );
   }
 

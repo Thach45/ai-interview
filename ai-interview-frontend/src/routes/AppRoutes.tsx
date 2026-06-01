@@ -27,6 +27,7 @@ import CVAnalysisResultPage from '../pages/CVAnalysisResult';
 
 import MyCvsPage from '../pages/MyCvs';
 import SubscriptionPage from '../pages/SubscriptionPage';
+import { LoadingTestPage } from '../pages/LoadingTestPage';
 
 
 export const AppRoutes: React.FC = () => {
@@ -39,6 +40,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-otp" element={<VerifyOTPPage />} />
+        
+        {/* Test Route cho Component LoadingIndicator */}
+        <Route path="/test-loading/:type" element={<LoadingTestPage />} />
 
         {/* Private Routes (Bất kỳ user nào đăng nhập cũng vào được) */}
         <Route path="/" element={

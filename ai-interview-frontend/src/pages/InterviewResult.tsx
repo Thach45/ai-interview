@@ -3,13 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '../layouts/MainLayout';
 import { interviewAiApi } from '../features/interviews/api/interview-ai.api';
-import { 
-  CheckCircle, XCircle, AlertTriangle, 
-  ChevronLeft, Award, Lightbulb,
-  BrainCircuit, Target, ChevronRight, ChevronDown,
-  MessageSquare
-} from 'lucide-react';
+import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, BrainCircuit } from 'lucide-react';
 
 // CATEGORY LABELS for our 5-axis/6-axis radar
 const CATEGORY_LABELS: Record<string, string> = {
@@ -174,8 +170,6 @@ export default function InterviewResultPage() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('sessionId');
   const navigate = useNavigate();
-  const [showDetail, setShowDetail] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'recommendations'>('overview');
 
   const { data: response, isLoading, error } = useQuery({
     queryKey: ['interview-result', sessionId],
@@ -199,16 +193,12 @@ export default function InterviewResultPage() {
 
   if (isLoading) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true} className="bg-[#fafafa]">
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] animate-in fade-in zoom-in duration-500">
-           <div className="relative mb-8">
-             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
-             <BrainCircuit size={80} className="text-primary relative animate-bounce" />
-           </div>
-           <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-tight">AI đang tải báo cáo đánh giá...</h2>
-           <p className="text-gray-500 font-medium max-w-md text-center">Chúng tôi đang chuẩn bị dữ liệu phân tích buổi phỏng vấn của bạn.</p>
-        </div>
-      </MainLayout>
+      <LoadingIndicator 
+        type="ai" 
+        title="AI đang tải báo cáo đánh giá..." 
+        subtitle="Chúng tôi đang chuẩn bị dữ liệu phân tích buổi phỏng vấn của bạn." 
+        fullScreen={true} 
+      />
     );
   }
 
@@ -216,10 +206,10 @@ export default function InterviewResultPage() {
     return (
       <MainLayout hideSearch={true} fullHeight={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
-           <XCircle size={60} className="text-red-500 mb-4" />
-           <p className="text-xl font-bold text-gray-800">Không thể tải Báo cáo phỏng vấn</p>
-           <p className="text-gray-500 mt-2 mb-6">Bạn đã nộp kết quả phỏng vấn chưa?</p>
-           <button onClick={() => navigate(-1)} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
+           <span className="material-symbols-outlined text-red-500 text-6xl mb-4">error</span>
+           <p className="text-xl font-semibold text-text-primary">Không thể tải Báo cáo phỏng vấn</p>
+           <p className="text-text-secondary mt-2 mb-6">Bạn đã nộp kết quả phỏng vấn chưa?</p>
+           <button onClick={() => navigate(-1)} className="px-6 py-2 bg-bg-surface border border-border-hairline text-text-primary font-medium rounded-md hover:bg-gray-100 transition-colors">Quay lại</button>
         </div>
       </MainLayout>
     );
@@ -239,216 +229,136 @@ export default function InterviewResultPage() {
   ];
 
   return (
-    <MainLayout hideSearch={true} fullHeight={true} maxWidth="1600px" className="px-4 lg:px-8 pt-2 overflow-hidden bg-[#fafafa]">
-      <div className="flex flex-col gap-6 h-[calc(100vh-100px)] p-3">
-        {/* RIGHT COLUMN: AI Insights (We use full width since no PDF viewer for interviews usually, or a wide center container) */}
-        <div className="flex-1 flex flex-col bg-white rounded-3xl border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden max-w-5xl mx-auto w-full">
+    <MainLayout hideSearch={true} fullHeight={true} maxWidth="100%" className="px-4 lg:px-12 py-8 bg-bg-canvas">
+      <div className="flex flex-col gap-6 w-full mx-auto">
+        
+        {/* Top AI Banner */}
+        <div className="bg-bg-canvas p-8 rounded-xl border border-border-hairline flex flex-col md:flex-row gap-8 items-center md:items-start shadow-sm">
+          <CircularProgress score={evalData.overall.score} />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="material-symbols-outlined text-primary text-[28px]">verified</span>
+              <h2 className="text-[24px] font-semibold text-text-primary tracking-tight">
+                Đánh giá tổng quan: <span className={result.recommendation === 'PASS' ? 'text-emerald-600' : result.recommendation === 'FAIL' ? 'text-red-600' : 'text-amber-600'}>{result.recommendation}</span>
+              </h2>
+            </div>
+            <p className="text-text-secondary text-[15px] leading-relaxed">
+              {result.summary}
+            </p>
+          </div>
+        </div>
+
+        {/* Middle Section (Grid) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           
-          {/* AI Banner */}
-          <div className="bg-white p-6 shrink-0 border-b border-gray-100 flex gap-6 items-center">
-            <CircularProgress score={evalData.overall.score} />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <Award size={18} className="text-primary" />
-                  <h2 className="text-lg font-bold text-gray-900 tracking-tight">Kết quả phỏng vấn: <span className={result.recommendation === 'PASS' ? 'text-green-600' : result.recommendation === 'FAIL' ? 'text-red-600' : 'text-amber-600'}>{result.recommendation}</span></h2>
-                </div>
-              </div>
-              <p className="text-gray-600 text-[14px] leading-relaxed">
-                {result.summary}
-              </p>
-              <div className="mt-4 flex gap-3">
-                <button 
-                  onClick={() => setShowDetail(prev => !prev)}
-                  className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm flex items-center gap-1.5"
-                >
-                  {showDetail ? 'Thu gọn' : 'Xem chi tiết'}
-                  <ChevronDown size={14} className={`transition-transform duration-300 ${showDetail ? 'rotate-180' : ''}`} />
-                </button>
-              </div>
+          {/* Left: Radar Chart */}
+          <div className="lg:col-span-5 bg-bg-canvas p-6 rounded-xl border border-border-hairline shadow-sm flex flex-col items-center justify-center relative min-h-[400px]">
+            <div className="absolute top-6 left-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[20px]">radar</span>
+              <h3 className="text-[16px] font-semibold text-text-primary">Phân tích đa chiều</h3>
+            </div>
+            <p className="text-[12px] text-text-tertiary absolute top-12 left-6">Di chuột vào điểm để xem chi tiết</p>
+            <div className="mt-8 w-full flex justify-center">
+              <ScoringRadarChart data={radarData} />
             </div>
           </div>
 
-          {/* Scoring Detail Panel (default view) */}
-          <AnimatePresence>
-            {!showDetail && (
-              <motion.div
-                key="scoring"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/30 flex flex-col items-center"
-              >
-                <p className="text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2 w-full text-center">Đánh giá đa chiều</p>
-                <p className="text-[12px] text-gray-400 mb-4 w-full text-center">Di chuột vào từng điểm để xem nhận xét chi tiết</p>
-                <ScoringRadarChart data={radarData} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Navigation Tabs */}
-          <AnimatePresence>
-            {showDetail && (
-              <motion.div
-                key="detail"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="flex flex-col flex-1 overflow-hidden"
-              >
-          <div className="flex px-6 border-b border-gray-100 mt-2 shrink-0">
-            {[
-              { id: 'overview', label: 'Tổng quan điểm mạnh yếu', icon: Target },
-              { id: 'questions', label: 'Phân tích từng câu hỏi', icon: MessageSquare },
-              { id: 'recommendations', label: 'Lộ trình cải thiện', icon: Lightbulb }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-6 py-4 text-[14px] font-bold border-b-2 transition-all ${
-                    isActive 
-                      ? 'border-primary text-primary' 
-                      : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon size={18} className={isActive ? 'text-primary' : 'text-gray-400'} />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Tab Content */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-gray-50/30">
-            <AnimatePresence mode="wait">
-              {activeTab === 'overview' && (
-                <motion.div
-                  key="overview"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-2 gap-6">
-                    {/* Strengths */}
-                    <div className="bg-white p-5 rounded-2xl border border-green-100 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
-                      <h3 className="text-[15px] font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <CheckCircle size={18} className="text-green-500" /> Điểm mạnh
-                      </h3>
-                      <ul className="space-y-3">
-                        {result.strengths.map((item: string, i: number) => (
-                          <li key={i} className="flex items-start gap-2.5">
-                            <div className="mt-1 min-w-1.5 min-h-1.5 rounded-full bg-green-400"></div>
-                            <span className="text-[13px] text-gray-700 leading-snug">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Weaknesses */}
-                    <div className="bg-white p-5 rounded-2xl border border-red-100 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
-                      <h3 className="text-[15px] font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <XCircle size={18} className="text-red-500" /> Điểm cần cải thiện
-                      </h3>
-                      <ul className="space-y-3">
-                        {result.weaknesses.map((item: string, i: number) => (
-                          <li key={i} className="flex items-start gap-2.5">
-                            <div className="mt-1 min-w-1.5 min-h-1.5 rounded-full bg-red-400"></div>
-                            <span className="text-[13px] text-gray-700 leading-snug">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'questions' && (
-                <motion.div
-                  key="questions"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <p className="text-[14px] text-gray-600 mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    Dưới đây là điểm số và phản hồi từ AI dành cho từng câu hỏi cốt lõi mà bạn đã trả lời trong buổi phỏng vấn.
-                  </p>
-                  
-                  {result.questionEvaluations.map((qe: any, i: number) => (
-                    <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-primary/30 hover:shadow-md transition-all group">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-[15px] font-bold text-gray-900 group-hover:text-primary transition-colors">
-                              Câu hỏi {qe.questionIndex + 1}: {qe.questionTitle}
-                            </h4>
-                            <span className={`text-[12px] font-bold px-2.5 py-1 rounded-md ${
-                              qe.score >= 80 ? 'bg-green-100 text-green-700' : qe.score >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
-                            }`}>
-                              Điểm: {qe.score}/100
-                            </span>
-                          </div>
-                          <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative">
-                            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 rounded-l-xl"></div>
-                            <p className="text-[13px] text-gray-700 leading-relaxed italic">
-                              "{qe.feedback}"
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+          {/* Right: Strengths, Weaknesses, Learning Path */}
+          <div className="lg:col-span-7 flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+              {/* Strengths */}
+              <div className="bg-bg-canvas p-6 rounded-xl border border-border-hairline shadow-sm flex flex-col h-full">
+                <h3 className="text-[16px] font-semibold text-text-primary mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span> 
+                  Điểm mạnh
+                </h3>
+                <ul className="space-y-4 flex-1">
+                  {result.strengths.map((item: string, i: number) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></div>
+                      <span className="text-[14px] text-text-secondary leading-snug">{item}</span>
+                    </li>
                   ))}
-                </motion.div>
-              )}
+                </ul>
+              </div>
 
-              {activeTab === 'recommendations' && (
-                <motion.div
-                  key="recommendations"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-4"
-                >
-                  <p className="text-[14px] text-gray-600 mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    Dựa trên quá trình phân tích kỹ năng trả lời và kiến thức, AI của chúng tôi xây dựng lộ trình học tập để giúp bạn hoàn thiện hơn.
-                  </p>
-                  
-                  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                    <ul className="space-y-4">
-                      {result.learningPath.map((path: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3">
-                           <div className="mt-0.5 w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-bold text-[12px]">
-                             {i + 1}
-                           </div>
-                           <p className="text-[14px] text-gray-700 leading-relaxed pt-0.5">
-                             {path}
-                           </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              {/* Weaknesses */}
+              <div className="bg-bg-canvas p-6 rounded-xl border border-border-hairline shadow-sm flex flex-col h-full">
+                <h3 className="text-[16px] font-semibold text-text-primary mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-red-500 text-[20px]">cancel</span> 
+                  Cần cải thiện
+                </h3>
+                <ul className="space-y-4 flex-1">
+                  {result.weaknesses.map((item: string, i: number) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></div>
+                      <span className="text-[14px] text-text-secondary leading-snug">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Learning Path */}
+            <div className="bg-bg-canvas p-6 rounded-xl border border-border-hairline shadow-sm flex-1">
+              <h3 className="text-[16px] font-semibold text-text-primary mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-sky-500 text-[20px]">lightbulb</span> 
+                Lộ trình đề xuất
+              </h3>
+              <ul className="space-y-3">
+                {result.learningPath.map((path: string, i: number) => (
+                  <li key={i} className="flex items-start gap-3">
+                     <div className="w-6 h-6 rounded-full bg-bg-surface border border-border-hairline text-text-primary flex items-center justify-center shrink-0 font-medium text-[12px]">
+                       {i + 1}
+                     </div>
+                     <p className="text-[14px] text-text-secondary leading-relaxed pt-0.5">
+                       {path}
+                     </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-
-              </motion.div>
-            )}
-          </AnimatePresence>
 
         </div>
+
+        {/* Bottom Section: Question Analysis */}
+        <div className="bg-bg-canvas p-8 rounded-xl border border-border-hairline shadow-sm">
+          <div className="flex items-center gap-2 mb-6 border-b border-border-hairline pb-4">
+            <span className="material-symbols-outlined text-primary text-[22px]">forum</span>
+            <h3 className="text-[18px] font-semibold text-text-primary">Phân tích chi tiết từng câu hỏi</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {result.questionEvaluations.map((qe: any, i: number) => (
+              <div key={i} className="bg-bg-surface p-6 rounded-xl border border-border-hairline flex flex-col h-full hover:border-primary/50 transition-colors">
+                <div className="flex items-start justify-between mb-4 gap-4">
+                  <h4 className="text-[15px] font-medium text-text-primary flex-1 leading-snug">
+                    <span className="text-text-tertiary mr-2 text-[14px]">#{qe.questionIndex + 1}</span>
+                    {qe.questionTitle}
+                  </h4>
+                  <span className={`text-[13px] font-semibold px-2.5 py-1 rounded-md shrink-0 border ${
+                    qe.score >= 80 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                    qe.score >= 50 ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                    'bg-red-50 text-red-700 border-red-100'
+                  }`}>
+                    {qe.score}/100
+                  </span>
+                </div>
+                <div className="flex-1 mt-auto bg-white p-4 rounded-lg border border-border-hairline">
+                  <div className="flex items-center gap-1.5 mb-2">
+                     <span className="material-symbols-outlined text-primary text-[16px]">smart_toy</span>
+                     <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">AI Phản hồi</span>
+                  </div>
+                  <p className="text-[14px] text-text-secondary leading-relaxed">
+                    {qe.feedback}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>      
     </MainLayout>
   );

@@ -9,6 +9,7 @@ import {
 import { cn } from '../shared/utils/cn';
 import { ExperienceLevel, InterviewLanguage, InterviewPersona } from '../shared/types/interview';
 import { useInterviewSession, useStartInterview, useSendChatMessage, useSubmitInterviewResult } from '../features/interviews/hooks/useInterviewAI';
+import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 
 import { PERSONA_DETAILS } from '../shared/constants/personas';
 
@@ -213,12 +214,38 @@ const InterviewRoomTextPage: React.FC = () => {
 
   if (isLoading && sessionId) {
     return (
-      <div className="h-screen w-full bg-[#f6f5f4] flex flex-col items-center justify-center text-[#1a1a1a]">
-        <div className="flex flex-col items-center gap-4">
-          <BrainCircuit className="text-primary animate-pulse size-12" />
-          <p className="text-sm font-bold text-slate-500 uppercase tracking-wider animate-pulse">Đang tải phòng phỏng vấn...</p>
-        </div>
-      </div>
+      <LoadingIndicator 
+        type="ai" 
+        title="Đang khởi tạo phòng phỏng vấn..." 
+        subtitle="Hệ thống đang nạp hồ sơ của bạn và chuẩn bị các câu hỏi đánh giá chuyên sâu." 
+        fullScreen={true} 
+        aiSteps={[
+          "Kết nối với mô hình AI...",
+          "Tải thông tin ứng viên (Kinh nghiệm, Vị trí)...",
+          "Chuẩn bị bộ câu hỏi đánh giá cốt lõi...",
+          "Khởi tạo giao diện tương tác thời gian thực...",
+          "Sẵn sàng bắt đầu..."
+        ]}
+      />
+    );
+  }
+
+  if (submitInterviewMutation.isPending) {
+    return (
+      <LoadingIndicator 
+        type="ai" 
+        title="Đang tổng hợp Báo cáo Phỏng vấn..." 
+        subtitle="AI đang phân tích toàn bộ cuộc hội thoại và chấm điểm dựa trên các tiêu chí chuyên môn." 
+        fullScreen={true} 
+        aiSteps={[
+          "Đọc lại lịch sử toàn bộ cuộc phỏng vấn...",
+          "Đánh giá độ chính xác của các câu trả lời kỹ thuật...",
+          "Phân tích kỹ năng mềm và khả năng xử lý tình huống...",
+          "Đo lường sự tự tin và mạch lạc trong giao tiếp...",
+          "Tổng hợp kết quả và tính điểm trung bình...",
+          "Tạo lộ trình phát triển năng lực cá nhân..."
+        ]}
+      />
     );
   }
 

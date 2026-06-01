@@ -5,12 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { cvApi } from '../features/cvs/api/cv.api';
 import { useCvs } from '../features/cvs/hooks/useCvs';
 import { 
-  FileText, CheckCircle, XCircle, AlertTriangle, 
-  ChevronLeft, Download, Share2, ZoomIn, ZoomOut, Maximize,
-  Briefcase, GraduationCap, Award, Lightbulb, TrendingUp,
+  CheckCircle, XCircle, AlertTriangle, 
+  Lightbulb, TrendingUp,
   BrainCircuit, Target, Sparkles, ChevronRight, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 
 // PDF Viewer Imports
 import { Worker, Viewer } from '@react-pdf-viewer/core';
@@ -332,16 +332,21 @@ export default function CVAnalysisResultPage() {
 
   if (isLoading) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true} className="bg-[#fafafa]">
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)] animate-in fade-in zoom-in duration-500">
-           <div className="relative mb-8">
-             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
-             <BrainCircuit size={80} className="text-primary relative animate-bounce" />
-           </div>
-           <h2 className="text-2xl font-bold text-gray-800 mb-3 tracking-tight">AI đang phân tích CV của bạn...</h2>
-           <p className="text-gray-500 font-medium max-w-md text-center">Quá trình này có thể mất vài chục giây để hệ thống đọc hiểu, trích xuất dữ liệu và đối chiếu đa chiều với yêu cầu tuyển dụng.</p>
-        </div>
-      </MainLayout>
+      <LoadingIndicator 
+        type="ai"
+        title="AI đang phân tích CV của bạn..."
+        subtitle="Quá trình này có thể mất vài chục giây để hệ thống đọc hiểu, trích xuất dữ liệu và đối chiếu đa chiều với yêu cầu tuyển dụng."
+        fullScreen={true}
+        aiSteps={[
+          "Đang trích xuất văn bản từ file PDF...",
+          "Phân tích cấu trúc và nhận diện các vùng thông tin...",
+          "Trích xuất kỹ năng chuyên môn và kỹ năng mềm...",
+          "Đánh giá kinh nghiệm làm việc và học vấn...",
+          "So khớp dữ liệu với bản mô tả công việc (Job Description)...",
+          "Chấm điểm độ phù hợp và phân tích khoảng trống năng lực...",
+          "Tổng hợp nhận xét và đề xuất cải thiện..."
+        ]}
+      />
     );
   }
 
