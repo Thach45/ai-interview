@@ -198,6 +198,12 @@ export default function InterviewResultPage() {
         title="AI đang tải báo cáo đánh giá..." 
         subtitle="Chúng tôi đang chuẩn bị dữ liệu phân tích buổi phỏng vấn của bạn." 
         fullScreen={true} 
+        aiSteps={[
+          "Đang truy xuất lịch sử buổi phỏng vấn...",
+          "Đang phân tích cấu trúc câu trả lời...",
+          "Đang đối chiếu với tiêu chí đánh giá...",
+          "Đang tổng hợp báo cáo kết quả..."
+        ]}
       />
     );
   }
