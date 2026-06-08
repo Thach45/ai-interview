@@ -22,8 +22,41 @@ import {
   getSubmitInterviewResultUserPrompt,
   SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
 } from '../../prompts/submit-interview-result.prompt';
+import { AppException } from '../../exceptions';
 
 export class AiService {
+  async transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  data: audioBuffer.toString('base64'),
+                  mimeType,
+                },
+              },
+              {
+                text: 'Bạn là một chuyên gia nhận diện giọng nói tiếng Việt. Hãy chuyển đổi đoạn âm thanh này thành văn bản một cách chính xác nhất. Chỉ trả về văn bản được nói, không thêm bất kỳ nhận xét, chú thích hay văn bản nào khác. Nếu không nghe rõ, hãy trả về rỗng.',
+              },
+            ],
+          },
+        ],
+        config: {
+          temperature: 0.1, // Low temperature for factual transcription
+        },
+      });
+
+      return response.text?.trim() || '';
+    } catch (error) {
+      console.error('Lỗi khi transcribe audio với Gemini:', error);
+      throw new AppException('Lỗi chuyển đổi giọng nói thành văn bản', 500);
+    }
+  }
+
   async analysisCV(cvContent: string, jobDescription: string) {
     try {
       const userPrompt = getCVAnalysisUserPrompt(cvContent, jobDescription);

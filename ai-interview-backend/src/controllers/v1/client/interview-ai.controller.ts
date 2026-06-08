@@ -5,6 +5,7 @@ import {
   InterviewAiService,
 } from '../../../services/client/interview-ai.service';
 import { sendResponse } from '../../../utils/apiResponse';
+import { AppException } from '../../../exceptions';
 
 class InterviewAIController {
   constructor(private readonly interviewAiService: InterviewAiService) {}
@@ -49,6 +50,21 @@ class InterviewAIController {
     const sessionId = req.params.id;
     const result = await this.interviewAiService.getInterviewResult(req.user!.id, sessionId);
     sendResponse(res, 200, 'Lấy báo cáo kết quả phỏng vấn thành công', result);
+  });
+
+  sendChatMessageWithTTS = asyncHandler(async (req: Request, res: Response) => {
+    const sessionId = req.params.id;
+    if (!req.file) {
+      throw new AppException('Không tìm thấy file âm thanh đính kèm', 400);
+    }
+    // Gửi file cho Gemini nghe và chép chính tả
+    const result = await this.interviewAiService.sendChatMessageWithTTS(
+      req.user!.id,
+      sessionId,
+      req.file.buffer,
+      req.file.mimetype,
+    );
+    sendResponse(res, 200, 'Phản hồi từ AI thành công', result);
   });
 }
 

@@ -12,6 +12,7 @@ import interviewAIRoute from './client/interview-ai.route';
 import adminPackagesRoute from './admin/packages.route';
 import adminTransactionsRoute from './admin/transactions.route';
 import subscriptionRoutes from './client/subscription.routes';
+import ttsRoute from './shared/tts.route';
 
 const router: Router = Router();
 
@@ -26,6 +27,11 @@ router.use('/job-templates', jobTemplateRoute);
 router.use('/categories', jobCategoryRoute);
 router.use('/interview-ai', interviewAIRoute);
 router.use('/subscriptions', subscriptionRoutes);
+
+// ==========================
+// SHARED ROUTES (Dùng chung)
+// ==========================
+router.use('/tts', ttsRoute);
 
 // ==========================
 // ADMIN ROUTES (Quản trị)

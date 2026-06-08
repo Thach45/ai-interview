@@ -64,6 +64,19 @@ export const useSendChatMessage = (sessionId: string) => {
   });
 };
 
+export const useSendChatAudio = (sessionId: string) => {
+  return useMutation({
+    mutationFn: (audioBlob: Blob) => interviewAiApi.sendChatAudio(sessionId, audioBlob),
+    onError: (error: any) => {
+      const message =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Không thể xử lý âm thanh";
+      toast.error(message);
+    },
+  });
+};
+
 export const useSubmitInterviewResult = (sessionId: string) => {
   return useMutation({
     mutationFn: () => interviewAiApi.submitInterviewResult(sessionId),

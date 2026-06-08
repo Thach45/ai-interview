@@ -2,7 +2,10 @@ import express from 'express';
 import { interviewAIController } from '../../../controllers/v1/client/interview-ai.controller';
 import { auth } from '../../../middlewares/auth.middleware';
 import { validate } from '../../../middlewares/validate.middleware';
-import { interviewAISchema } from '../../../validations/interview-ai.validation';
+import { interviewAISchema, chatMessageWithTTSSchema } from '../../../validations/interview-ai.validation';
+import multer from 'multer';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -11,6 +14,13 @@ router.post('/setup', auth, validate(interviewAISchema), interviewAIController.s
 router.get('/:id', auth, interviewAIController.getInterview);
 router.post('/:id/start', auth, interviewAIController.startInterview);
 router.post('/:id/chat', auth, interviewAIController.sendChatMessage);
+router.post(
+  '/:id/chat-audio',
+  auth,
+  upload.single('audio'),
+  validate(chatMessageWithTTSSchema),
+  interviewAIController.sendChatMessageWithTTS
+);
 router.post('/:id/submit', auth, interviewAIController.submitInterviewResult);
 router.get('/:id/result', auth, interviewAIController.getInterviewResult);
 

@@ -39,6 +39,25 @@ export const interviewAiApi = {
   },
 
   /**
+   * Gửi tin nhắn của ứng viên qua file ghi âm âm thanh (Voice-to-Voice)
+   */
+  sendChatAudio: async (sessionId: string, audioBlob: Blob): Promise<any> => {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.webm');
+
+    const response = await apiClient.post<any, { success: boolean; data: any }>(
+      `/interview-ai/${sessionId}/chat-audio`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
+
+  /**
    * Yêu cầu AI nộp và tổng hợp kết quả phỏng vấn
    */
   submitInterviewResult: async (sessionId: string): Promise<any> => {
@@ -52,5 +71,13 @@ export const interviewAiApi = {
   getInterviewResult: async (sessionId: string): Promise<any> => {
     const response = await apiClient.get<any, { success: boolean; data: any }>(`/interview-ai/${sessionId}/result`);
     return response.data;
-  }
+  },
+
+  /**
+   * Chuyển đổi văn bản thành giọng nói (TTS)
+   */
+  synthesizeSpeech: async (text: string): Promise<{ audioBase64: string }> => {
+    const response = await apiClient.post<any, { success: boolean; data: { audioBase64: string } }>('/tts', { text });
+    return response.data;
+  },
 };

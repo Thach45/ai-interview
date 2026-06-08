@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { InterviewProgressCard } from '../features/interviews/components/InterviewProgressCard';
 import { 
   Send, BrainCircuit, Clock, X, Bot, User, Settings, Shield, PhoneOff, MessageSquare,
   CheckCircle2, Sparkles, AlertCircle, FileText, ChevronRight, Trophy, HelpCircle, Eye,
@@ -13,108 +14,7 @@ import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 
 import { PERSONA_DETAILS } from '../shared/constants/personas';
 
-interface InterviewProgressCardProps {
-  currentQuestionIdx: number;
-  questions: Array<{
-    title: string;
-    reason: string;
-  }>;
-}
 
-const InterviewProgressCard: React.FC<InterviewProgressCardProps> = ({
-  currentQuestionIdx,
-  questions,
-}) => {
-  return (
-    <div className="bg-white rounded-2xl border border-[#e5e3df] shadow-sm p-6 flex flex-col">
-      <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#ede9e4]">
-        <span className="text-[11px] font-bold text-slate-400 uppercase">Tiến trình phỏng vấn</span>
-        <span className="text-xs font-mono font-bold text-primary">
-          Đã xong {currentQuestionIdx} / {questions.length} câu
-        </span>
-      </div>
-
-      {/* Premium Minimal Progress Bar */}
-      <div className="w-full bg-[#f6f5f4] h-1.5 rounded-full overflow-hidden mb-6 border border-[#e5e3df]/40">
-        <div 
-          className="bg-primary h-full transition-all duration-500 rounded-full" 
-          style={{ width: `${(currentQuestionIdx / questions.length) * 100}%` }}
-        />
-      </div>
-
-      {/* Active Topic Spotlight (Beautiful soft card tint depending on index) */}
-      <div className={cn(
-        "rounded-xl p-4.5 mb-5 border transition-all duration-300",
-        currentQuestionIdx === 0 
-          ? "bg-[#e6e0f5]/40 border-[#d3c9ed] text-purple-950" 
-          : currentQuestionIdx === 1
-            ? "bg-[#dcecfa]/40 border-[#c4dbf2] text-blue-950"
-            : currentQuestionIdx === 2
-              ? "bg-[#ffe8d4]/40 border-[#f2d3bd] text-orange-950"
-              : "bg-[#d9f3e1]/40 border-[#bee8cb] text-emerald-950"
-      )}>
-        <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">
-          Chủ đề đang diễn ra
-        </span>
-        <h4 className="text-sm font-extrabold text-slate-900 leading-snug">
-          {currentQuestionIdx < questions.length 
-            ? `${currentQuestionIdx + 1}. ${questions[currentQuestionIdx].title}`
-            : "Hoàn tất phỏng vấn!"}
-        </h4>
-        {currentQuestionIdx < questions.length ? (
-          <p className="text-[11px] text-slate-500 mt-2 leading-relaxed font-normal">
-            {questions[currentQuestionIdx].reason}
-          </p>
-        ) : (
-          <p className="text-[11px] text-slate-500 mt-2 leading-relaxed font-normal">
-            Buổi phỏng vấn đã kết thúc thành công. Hãy bấm nút Kết thúc ở dưới để xem báo cáo đánh giá.
-          </p>
-        )}
-      </div>
-
-      {/* Upcoming topics in simple elegant timeline bullet list */}
-      <div className="space-y-3.5 mt-2">
-        <span className="text-[10px] font-bold text-slate-400 uppercase block mb-2">
-          Danh sách chủ đề đánh giá
-        </span>
-        {questions.map((q, idx) => {
-          const isPassed = currentQuestionIdx > idx;
-          const isCurrent = currentQuestionIdx === idx;
-          
-          return (
-            <div key={idx} className="flex items-center justify-between text-xs py-0.5">
-              <div className="flex items-center gap-2.5">
-                <div className={cn(
-                  "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                  isPassed 
-                    ? "bg-emerald-500" 
-                    : isCurrent 
-                      ? "bg-primary animate-pulse shadow-sm shadow-primary/40" 
-                      : "bg-slate-300"
-                )} />
-                <span className={cn(
-                  "font-medium transition-all duration-300",
-                  isCurrent 
-                    ? "text-slate-800 font-bold" 
-                    : isPassed 
-                      ? "text-slate-400 line-through decoration-slate-300" 
-                      : "text-slate-500"
-                )}>
-                  {idx + 1}. {q.title}
-                </span>
-              </div>
-              {isCurrent && (
-                <span className="text-[9px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10 uppercase">
-                  Đang hỏi
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
 
 const InterviewRoomTextPage: React.FC = () => {
   const location = useLocation();

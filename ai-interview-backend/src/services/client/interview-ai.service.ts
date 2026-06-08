@@ -2,14 +2,19 @@ import { InterviewSession, PrismaClient } from '@prisma/client';
 import prisma from '../../config/prisma';
 
 import { SetupInterviewBody } from '../../validations/interview-ai.validation';
-import { aiService } from '../core/ai.service';
+import { AiService, aiService } from '../core/ai.service';
 import { BadRequestException, NotFoundException } from '../../exceptions';
 import { creditsService } from '../../shared/services/credits.service';
+import { googleTtsService, GoogleTtsService } from '../core/google-tts.service';
 
 const CHAT_HISTORY_WINDOW_SIZE = 8;
 
 export class InterviewAiService {
-  constructor(private readonly prismaClient: PrismaClient) {}
+  constructor(
+    private readonly prismaClient: PrismaClient,
+    private readonly aiService: AiService,
+    private readonly googleTtsService: GoogleTtsService,
+  ) {}
 
   /**
    * Tạo phiên phỏng vấn mới (Interview Session)
@@ -396,9 +401,9 @@ export class InterviewAiService {
       where: { sessionId },
       include: {
         questionEvaluations: {
-          orderBy: { questionIndex: 'asc' }
-        }
-      }
+          orderBy: { questionIndex: 'asc' },
+        },
+      },
     });
 
     if (!result) {
@@ -407,6 +412,26 @@ export class InterviewAiService {
 
     return result;
   }
+
+  async sendChatMessageWithTTS(
+    userId: string,
+    sessionId: string,
+    buffer: Buffer,
+    mimeType: string,
+  ) {
+    const text = await this.aiService.transcribeAudio(buffer, mimeType);
+    console.log('debug text stt', text);
+    const responseAI = await this.sendChatMessage(userId, sessionId, text);
+    console.log('debug response ai', responseAI);
+    const audioText = responseAI.message.content;
+    const audioResponse = await this.googleTtsService.synthesizeSpeech(audioText);
+    console.log('debug audio response', audioResponse);
+    return {
+      ...responseAI,
+      userText: text,
+      audioBase64: audioResponse.toString('base64'),
+    };
+  }
 }
 
-export const interviewAiService = new InterviewAiService(prisma);
+export const interviewAiService = new InterviewAiService(prisma, aiService, googleTtsService);

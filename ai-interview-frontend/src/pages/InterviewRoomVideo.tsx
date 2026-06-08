@@ -1,23 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Mic, MicOff, Video as VideoIcon, VideoOff, 
   PhoneOff, MessageSquare, Settings, 
   Shield, Clock, BrainCircuit,
-  X, Zap, Bot, User, Moon, Sun, Circle
+  X, Zap, Bot, User, Moon, Sun, Circle, ListOrdered
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
+import { InterviewProgressCard } from '../features/interviews/components/InterviewProgressCard';
+import { useInterviewSession, useStartInterview, useSendChatAudio } from '../features/interviews/hooks/useInterviewAI';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const InterviewRoomVideoPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const config = location.state?.config || {
-    jobTitle: 'Backend developer',
-    persona: 'Professional',
-    language: 'Vietnamese',
-    duration: 30,
-    level: 'Senior'
+
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get('sessionId') || '';
+
+  const { data: sessionResponse } = useInterviewSession(sessionId);
+  const startInterviewMutation = useStartInterview(sessionId);
+  const sendChatAudioMutation = useSendChatAudio(sessionId);
+
+
+  const sessionData = sessionResponse || {};
+  
+  const formatPersona = (p?: string) => {
+    if (!p) return 'Professional';
+    return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
+  };
+
+  const currentConfig = {
+    jobTitle: sessionData.jobTitle || 'Loading...',
+    companyName: sessionData.companyName || 'Công ty ẩn danh',
+    persona: formatPersona(sessionData.persona),
+    duration: sessionData.duration || 30,
+    level: sessionData.level || 'Unknown',
+    difficulty: sessionData.difficulty || 1,
+    coreQuestions: sessionData.coreQuestions || []
   };
 
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -25,13 +45,150 @@ const InterviewRoomVideoPage: React.FC = () => {
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(config.duration * 60);
+  const [isProgressSidebarOpen, setIsProgressSidebarOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(sessionResponse?.duration);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'bot', content: `Chào bạn! Tôi là ${config.persona}. Rất vui được gặp bạn trong buổi phỏng vấn hôm nay. Chúng ta bắt đầu nhé?`, time: '14:00' }
-  ]);
+  useEffect(() => {
+    if (sessionData.duration) {
+      setTimeLeft(sessionData.duration * 60);
+    }
+  }, [sessionData.duration]);
+
+  // Mảng tin nhắn (xóa mock data, để mảng rỗng ban đầu)
+  const [messages, setMessages] = useState<any[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Refs cho Media Recorder & Stream
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Mở luồng Media khi Component mount hoặc isVideoOn thay đổi
+  useEffect(() => {
+    const initMedia = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true, // Lấy luôn Audio để ghi âm
+        });
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+
+        // Tắt track hình ảnh nếu isVideoOn = false
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.enabled = isVideoOn;
+        }
+        
+        // Tắt/bật track âm thanh (chỉ để mute local preview, không ảnh hưởng record nếu xử lý khéo, 
+        // nhưng thực ra ta thu âm trực tiếp từ stream)
+        const audioTrack = stream.getAudioTracks()[0];
+        if (audioTrack) {
+          audioTrack.enabled = !isMuted;
+        }
+
+      } catch (err) {
+        console.error("Lỗi khi truy cập camera/micro:", err);
+      }
+    };
+    initMedia();
+
+    return () => {
+      // Dọn dẹp stream khi unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  // Xử lý bật/tắt Video
+  useEffect(() => {
+    if (streamRef.current) {
+      const videoTrack = streamRef.current.getVideoTracks()[0];
+      if (videoTrack) videoTrack.enabled = isVideoOn;
+    }
+  }, [isVideoOn]);
+
+  // Xử lý Ghi âm khi isRecording thay đổi
+  useEffect(() => {
+    if (isRecording && streamRef.current) {
+      // Lấy riêng track âm thanh để ghi âm (tránh lỗi NotSupportedError do dính track video)
+      const audioTrack = streamRef.current.getAudioTracks()[0];
+      if (!audioTrack) {
+        console.error("Không tìm thấy micro!");
+        setIsRecording(false);
+        return;
+      }
+      
+      const audioStream = new MediaStream([audioTrack]);
+
+      // Bắt đầu ghi âm
+      audioChunksRef.current = [];
+      
+      // Để trống options để trình duyệt tự quyết định định dạng tối ưu nhất cho audio-only
+      const recorder = new MediaRecorder(audioStream);
+      
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        // Lấy đúng mimeType mà trình duyệt đã dùng để encode
+        const mimeType = recorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        
+        // Gọi Mutation gửi Audio lên Backend
+        sendChatAudioMutation.mutate(audioBlob, {
+          onSuccess: (res: any) => {
+            const data = res.data || res;
+            if (data) {
+              // Thêm tin nhắn của User
+              const userMsg = {
+                role: 'user',
+                content: data.userText,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                questionIndex: data.message?.questionIndex || 0
+              };
+              // Thêm tin nhắn của AI
+              const aiMsg = {
+                role: 'bot',
+                content: data.message?.content || '',
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                questionIndex: data.message?.questionIndex || 0
+              };
+              
+              setMessages(prev => [...prev, userMsg, aiMsg]);
+
+              // Phát lại audio từ AI
+              if (data.audioBase64) {
+                setIsSpeaking(true);
+                const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
+                audio.onended = () => setIsSpeaking(false);
+                audio.play().catch(e => {
+                  console.error("Lỗi phát audio:", e);
+                  setIsSpeaking(false);
+                });
+              }
+            }
+          }
+        });
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+    } else {
+      // Dừng ghi âm
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    }
+  }, [isRecording]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -46,6 +203,52 @@ const InterviewRoomVideoPage: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Tự động gọi startInterview khi đã load được thông tin session
+  useEffect(() => {
+    if (sessionData.id && messages.length === 0 && !startInterviewMutation.isPending && !startInterviewMutation.isSuccess) {
+      startInterviewMutation.mutate(undefined, {
+        onSuccess: (res: any) => {
+          // Xử lý cả trường hợp API trả về mảng trực tiếp hoặc bọc trong .data
+          const messagesData = Array.isArray(res) ? res : (res.data || []);
+          
+          // res có thể chứa toàn bộ lịch sử chat nếu đã bắt đầu từ trước
+          const chatHistory = messagesData.map((m: any) => ({
+            role: m.role === 'AI' || m.role === 'model' ? 'bot' : 'user',
+            content: m.content,
+            time: new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            questionIndex: m.questionIndex || 0
+          }));
+
+          if (chatHistory.length > 0) {
+            setMessages(chatHistory);
+            
+            // // Tìm câu nói gần nhất của AI để phát âm thanh
+            // const lastAiMessage = chatHistory.filter((m: any) => m.role === 'bot').pop();
+            // if (lastAiMessage && lastAiMessage.content) {
+            //   setIsSpeaking(true);
+            //   interviewAiApi.synthesizeSpeech(lastAiMessage.content).then((ttsRes) => {
+            //     if (ttsRes.audioBase64) {
+            //       const audio = new Audio(`data:audio/mp3;base64,${ttsRes.audioBase64}`);
+            //       audio.onended = () => setIsSpeaking(false);
+            //       audio.play().catch(e => {
+            //         console.error("Lỗi phát âm thanh (có thể do trình duyệt chặn autoplay):", e);
+            //         setIsSpeaking(false);
+            //       });
+            //     } else {
+            //       setIsSpeaking(false);
+            //     }
+            //   }).catch(e => {
+            //     console.error("Lỗi gọi API TTS:", e);
+            //     setIsSpeaking(false);
+            //   });
+            // }
+          }
+          
+        }
+      });
+    }
+  }, [sessionData.id, messages.length]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -59,7 +262,7 @@ const InterviewRoomVideoPage: React.FC = () => {
     'Cheerful': { name: 'Ms. Linh San', avatar: '/avatars/linh-san.png', theme: 'from-amber-100 to-orange-100', glow: 'shadow-amber-200', accent: 'text-amber-600', darkTheme: 'from-amber-900/20 to-orange-900/20' },
   };
 
-  const currentPersona = (personas as any)[config.persona] || personas.Professional;
+  const currentPersona = (personas as any)[currentConfig.persona] || personas.Professional;
 
   return (
     <div className={cn(
@@ -85,8 +288,12 @@ const InterviewRoomVideoPage: React.FC = () => {
               <BrainCircuit size={16} className="text-white" />
            </div>
            <div className="flex flex-col">
-              <h1 className={cn("text-[13px] font-bold leading-none", isDarkMode ? "text-gray-100" : "text-gray-800")}>{config.jobTitle}</h1>
-              <span className="text-[9px] font-bold text-gray-400 mt-0.5 uppercase tracking-wide">Video Interview Session</span>
+              <h1 className={cn("text-[13px] font-bold leading-none", isDarkMode ? "text-gray-100" : "text-gray-800")}>
+                {currentConfig.jobTitle}
+              </h1>
+              <span className="text-[9px] font-bold text-gray-400 mt-0.5 uppercase tracking-wide">
+                {currentConfig.companyName} • {currentConfig.level} • {currentConfig.coreQuestions.length} Câu hỏi
+              </span>
            </div>
         </div>
 
@@ -102,6 +309,17 @@ const InterviewRoomVideoPage: React.FC = () => {
            <div className={cn("h-6 w-px", isDarkMode ? "bg-white/10" : "bg-gray-200")} />
 
            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsProgressSidebarOpen(!isProgressSidebarOpen)}
+                title="Tiến trình phỏng vấn"
+                className={cn(
+                  "p-2 rounded-xl transition-all",
+                  isDarkMode ? "bg-white/5 text-gray-400 hover:text-white" : "bg-gray-100 text-gray-500 hover:text-gray-900",
+                  isProgressSidebarOpen && (isDarkMode ? "bg-white/10 text-white" : "bg-gray-200 text-gray-900")
+                )}
+              >
+                <ListOrdered size={18} />
+              </button>
               <button 
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className={cn(
@@ -129,6 +347,28 @@ const InterviewRoomVideoPage: React.FC = () => {
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex overflow-hidden p-4 pb-0 gap-4 relative">
+        
+        {/* PROGRESS SIDEBAR (LEFT) */}
+        <AnimatePresence>
+          {isProgressSidebarOpen && (
+            <motion.div 
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 340, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="h-full shrink-0 flex flex-col"
+            >
+               <div className="w-[340px] h-full pb-4">
+                 <InterviewProgressCard 
+                   currentQuestionIdx={Math.max(0, ...messages.map(m => m.questionIndex || 0))} 
+                   questions={currentConfig.coreQuestions} 
+                   isDarkMode={isDarkMode} 
+                 />
+               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex-1 flex flex-col min-w-0 relative h-full">
           <div className={cn(
             "flex-1 relative rounded-t-[32px] overflow-hidden border-t border-x transition-all duration-500 h-full flex items-center justify-center",
@@ -193,7 +433,13 @@ const InterviewRoomVideoPage: React.FC = () => {
                    </div>
                  ) : (
                    <div className={cn("w-full h-full flex items-center justify-center relative", isDarkMode ? "bg-gray-800" : "bg-gray-300")}>
-                      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Camera Feed</span>
+                      <video 
+                        ref={videoRef} 
+                        autoPlay 
+                        muted 
+                        playsInline
+                        className="w-full h-full object-cover scale-x-[-1]"
+                      />
                       <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/5">
                         <span className="text-[8px] font-bold text-white uppercase leading-none">You</span>
                       </div>
@@ -257,8 +503,7 @@ const InterviewRoomVideoPage: React.FC = () => {
                     "p-4 rounded-xl border flex items-center gap-3 transition-colors",
                     isDarkMode ? "bg-black/20 border-white/5" : "bg-white border-gray-200"
                   )}>
-                     <Shield size={14} className="text-emerald-500" />
-                     <p className="text-[10px] font-bold text-gray-400 uppercase leading-none">End-to-end Encrypted</p>
+       
                   </div>
                </div>
             </motion.div>
@@ -272,7 +517,7 @@ const InterviewRoomVideoPage: React.FC = () => {
         isDarkMode ? "bg-[#0a0a0b] border-white/5" : "bg-white border-gray-200"
       )}>
         <div className="flex items-center gap-4 min-w-[200px]">
-           <span className="text-[11px] font-bold text-gray-400">{formatTime(timeLeft)} | Session for {config.jobTitle}</span>
+           <span className="text-[11px] font-bold text-gray-400">{formatTime(timeLeft)} | Session for {currentConfig.jobTitle}</span>
         </div>
 
         <div className="flex items-center gap-6">

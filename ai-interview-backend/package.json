@@ -15,6 +15,7 @@
     "prepare": "cd .. && husky install ai-interview-backend/.husky"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.4.1",
     "@google/genai": "^2.2.0",
     "@prisma/client": "^5.22.0",
     "axios": "^1.7.7",
@@ -30,6 +31,7 @@
     "jwt-decode": "^4.0.0",
     "md5": "^2.3.0",
     "multer": "^2.1.1",
+    "openai": "^6.42.0",
     "pdf-parse": "^2.4.5",
     "react-router-dom": "^6.28.0",
     "rimraf": "^6.0.1",
