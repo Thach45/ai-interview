@@ -9,8 +9,10 @@ import {
   UserCircle, Settings2, Target, 
   ChevronRight, Trash2, Plus,
    Rocket, Zap, ChevronDown, Upload,
-  Search, Check, Gauge, Video, MessageSquare,
-  Smile, GraduationCap, Medal, Star, ShieldCheck, Trophy
+  Smile, GraduationCap, Medal, Star, ShieldCheck, Trophy, Volume2,
+  Check,
+  Video,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { useCvs } from '../features/cvs/hooks/useCvs';
@@ -78,7 +80,8 @@ const InterviewSetupPage: React.FC = () => {
       icon: UserCircle,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
-      avatar: PERSONA_DETAILS[InterviewPersona.PROFESSIONAL].avatar
+      avatar: PERSONA_DETAILS[InterviewPersona.PROFESSIONAL].avatar,
+      previewAudio: PERSONA_DETAILS[InterviewPersona.PROFESSIONAL].previewAudio
     },
     {
       id: InterviewPersona.FRIENDLY,
@@ -88,7 +91,8 @@ const InterviewSetupPage: React.FC = () => {
       icon: Sparkles,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50',
-      avatar: PERSONA_DETAILS[InterviewPersona.FRIENDLY].avatar
+      avatar: PERSONA_DETAILS[InterviewPersona.FRIENDLY].avatar,
+      previewAudio: PERSONA_DETAILS[InterviewPersona.FRIENDLY].previewAudio
     },
     {
       id: InterviewPersona.STRICT,
@@ -98,7 +102,8 @@ const InterviewSetupPage: React.FC = () => {
       icon: Target,
       color: 'text-rose-600',
       bg: 'bg-rose-50',
-      avatar: PERSONA_DETAILS[InterviewPersona.STRICT].avatar
+      avatar: PERSONA_DETAILS[InterviewPersona.STRICT].avatar,
+      previewAudio: PERSONA_DETAILS[InterviewPersona.STRICT].previewAudio
     },
     {
       id: InterviewPersona.CHEERFUL,
@@ -108,7 +113,8 @@ const InterviewSetupPage: React.FC = () => {
       icon: Smile,
       color: 'text-amber-600',
       bg: 'bg-amber-50',
-      avatar: PERSONA_DETAILS[InterviewPersona.CHEERFUL].avatar
+      avatar: PERSONA_DETAILS[InterviewPersona.CHEERFUL].avatar,
+      previewAudio: PERSONA_DETAILS[InterviewPersona.CHEERFUL].previewAudio
     },
   ];
 
@@ -591,9 +597,22 @@ const InterviewSetupPage: React.FC = () => {
                                 )}>
                                   {isActive ? <Check size={16} /> : <p.icon size={16} />}
                                 </div>
-                                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-                                  <p className="text-white font-bold text-sm">{p.name}</p>
-                                  <p className="text-white/70 text-[10px]">{p.title}</p>
+                                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between">
+                                  <div>
+                                    <p className="text-white font-bold text-sm">{p.name}</p>
+                                    <p className="text-white/70 text-[10px]">{p.title}</p>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const audio = new Audio(p.previewAudio);
+                                      audio.play();
+                                    }}
+                                    className="w-8 h-8 rounded-full bg-white/20 hover:bg-primary flex items-center justify-center backdrop-blur-md transition-all group/play border border-white/20"
+                                    title="Nghe thử giọng"
+                                  >
+                                    <Volume2 size={14} className="text-white group-hover:scale-110 transition-transform" />
+                                  </button>
                                 </div>
                               </div>
                               <div className="px-3 pb-4">

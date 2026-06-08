@@ -4,12 +4,16 @@ import {
   Mic, MicOff, Video as VideoIcon, VideoOff, 
   PhoneOff, MessageSquare, Settings, 
   Shield, Clock, BrainCircuit,
-  X, Zap, Bot, User, Moon, Sun, Circle, ListOrdered
+  X, Zap, Bot, User, Moon, Sun, Circle, ListOrdered, ChevronRight
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { InterviewProgressCard } from '../features/interviews/components/InterviewProgressCard';
-import { useInterviewSession, useStartInterview, useSendChatAudio } from '../features/interviews/hooks/useInterviewAI';
+import { useInterviewSession, useStartInterview, useSendChatAudio, useSubmitInterviewResult } from '../features/interviews/hooks/useInterviewAI';
 import { AnimatePresence, motion } from 'framer-motion';
+import { LoadingIndicator } from '../shared/components/LoadingIndicator';
+import { interviewAiApi } from '../features/interviews/api/interview-ai.api';
+import { PERSONA_DETAILS } from '../shared/constants/personas';
+import { InterviewPersona } from '../shared/types/interview';
 
 const InterviewRoomVideoPage: React.FC = () => {
   const location = useLocation();
@@ -21,7 +25,7 @@ const InterviewRoomVideoPage: React.FC = () => {
   const { data: sessionResponse } = useInterviewSession(sessionId);
   const startInterviewMutation = useStartInterview(sessionId);
   const sendChatAudioMutation = useSendChatAudio(sessionId);
-
+  const submitInterviewMutation = useSubmitInterviewResult(sessionId);
 
   const sessionData = sessionResponse || {};
   
@@ -33,7 +37,7 @@ const InterviewRoomVideoPage: React.FC = () => {
   const currentConfig = {
     jobTitle: sessionData.jobTitle || 'Loading...',
     companyName: sessionData.companyName || 'Công ty ẩn danh',
-    persona: formatPersona(sessionData.persona),
+    persona: (sessionData.persona),
     duration: sessionData.duration || 30,
     level: sessionData.level || 'Unknown',
     difficulty: sessionData.difficulty || 1,
@@ -222,7 +226,7 @@ const InterviewRoomVideoPage: React.FC = () => {
           if (chatHistory.length > 0) {
             setMessages(chatHistory);
             
-            // // Tìm câu nói gần nhất của AI để phát âm thanh
+            // Tìm câu nói gần nhất của AI để phát âm thanh
             // const lastAiMessage = chatHistory.filter((m: any) => m.role === 'bot').pop();
             // if (lastAiMessage && lastAiMessage.content) {
             //   setIsSpeaking(true);
@@ -255,14 +259,36 @@ const InterviewRoomVideoPage: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const personas = {
-    'Professional': { name: 'Ms. Thảo Chi', avatar: '/avatars/thao-chi.png', theme: 'from-blue-100 to-indigo-100', glow: 'shadow-blue-200', accent: 'text-blue-600', darkTheme: 'from-blue-900/20 to-indigo-900/20' },
-    'Friendly': { name: 'Mr. Nam Anh', avatar: '/avatars/nam-anh.png', theme: 'from-emerald-100 to-teal-100', glow: 'shadow-emerald-200', accent: 'text-emerald-600', darkTheme: 'from-emerald-900/20 to-teal-900/20' },
-    'Strict': { name: 'Mr. Quốc Hùng', avatar: '/avatars/quoc-hung.png', theme: 'from-rose-100 to-orange-100', glow: 'shadow-rose-200', accent: 'text-rose-600', darkTheme: 'from-rose-900/20 to-orange-900/20' },
-    'Cheerful': { name: 'Ms. Linh San', avatar: '/avatars/linh-san.png', theme: 'from-amber-100 to-orange-100', glow: 'shadow-amber-200', accent: 'text-amber-600', darkTheme: 'from-amber-900/20 to-orange-900/20' },
+  const currentPersona = PERSONA_DETAILS[currentConfig.persona as InterviewPersona] || PERSONA_DETAILS[InterviewPersona.PROFESSIONAL];
+  const currentQuestionIdx = Math.max(0, ...messages.map(m => m.questionIndex || 0));
+  const isCompleted = currentQuestionIdx >= currentConfig.coreQuestions.length || sessionData?.status === 'COMPLETED';
+
+  const handleEndInterview = () => {
+    if (window.confirm('Bạn có chắc chắn muốn kết thúc buổi phỏng vấn ngay bây giờ?')) {
+      submitInterviewMutation.mutate(undefined, {
+        onSuccess: () => navigate(`/interviews/report?sessionId=${sessionData.id}`)
+      });
+    }
   };
 
-  const currentPersona = (personas as any)[currentConfig.persona] || personas.Professional;
+  if (submitInterviewMutation.isPending) {
+    return (
+      <LoadingIndicator 
+        type="ai" 
+        title="Đang tổng hợp Báo cáo Phỏng vấn..." 
+        subtitle="AI đang phân tích toàn bộ cuộc hội thoại và chấm điểm dựa trên các tiêu chí chuyên môn." 
+        fullScreen={true} 
+        aiSteps={[
+          "Đọc lại lịch sử toàn bộ cuộc phỏng vấn...",
+          "Đánh giá độ chính xác của các câu trả lời kỹ thuật...",
+          "Phân tích kỹ năng mềm và khả năng xử lý tình huống...",
+          "Đo lường sự tự tin và mạch lạc trong giao tiếp...",
+          "Tổng hợp kết quả và tính điểm trung bình...",
+          "Tạo lộ trình phát triển năng lực cá nhân..."
+        ]}
+      />
+    );
+  }
 
   return (
     <div className={cn(
@@ -336,8 +362,9 @@ const InterviewRoomVideoPage: React.FC = () => {
                 <Settings size={18} />
               </button>
               <button 
-                onClick={() => navigate('/interviews/setup')}
-                className="flex items-center gap-2 px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl transition-all font-bold text-[11px] uppercase shadow-lg shadow-rose-500/10"
+                onClick={handleEndInterview}
+                disabled={submitInterviewMutation.isPending}
+                className="flex items-center gap-2 px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl transition-all font-bold text-[11px] uppercase shadow-lg shadow-rose-500/10 disabled:opacity-50"
               >
                 <PhoneOff size={16} /> Kết thúc
               </button>
@@ -546,18 +573,33 @@ const InterviewRoomVideoPage: React.FC = () => {
             
             <div className={cn("w-px h-8 mx-2", isDarkMode ? "bg-white/10" : "bg-gray-200")} />
 
-            <button 
-              onClick={() => setIsRecording(!isRecording)}
-              className={cn(
-                "flex items-center gap-3 px-6 h-12 rounded-2xl transition-all border shadow-sm font-bold text-[11px] uppercase",
-                isRecording 
-                  ? "bg-rose-50 border-rose-200 text-rose-500 animate-pulse" 
-                  : (isDarkMode ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100")
-              )}
-            >
-              <Circle size={16} fill={isRecording ? "currentColor" : "none"} />
-              {isRecording ? 'Đang ghi âm...' : 'Bắt đầu ghi âm'}
-            </button>
+            {isCompleted ? (
+              <button 
+                onClick={() => {
+                  submitInterviewMutation.mutate(undefined, {
+                    onSuccess: () => navigate(`/interviews/report?sessionId=${sessionData.id}`)
+                  });
+                }}
+                disabled={submitInterviewMutation.isPending}
+                className="flex items-center gap-3 px-6 h-12 rounded-2xl transition-all border shadow-lg font-bold text-[11px] uppercase bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-400 shadow-emerald-500/20 disabled:opacity-50"
+              >
+                {submitInterviewMutation.isPending ? 'Đang xử lý...' : 'Xem báo cáo'}
+                {!submitInterviewMutation.isPending && <ChevronRight size={16} />}
+              </button>
+            ) : (
+              <button 
+                onClick={() => setIsRecording(!isRecording)}
+                className={cn(
+                  "flex items-center gap-3 px-6 h-12 rounded-2xl transition-all border shadow-sm font-bold text-[11px] uppercase",
+                  isRecording 
+                    ? "bg-rose-50 border-rose-200 text-rose-500 animate-pulse" 
+                    : (isDarkMode ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100")
+                )}
+              >
+                <Circle size={16} fill={isRecording ? "currentColor" : "none"} />
+                {isRecording ? 'Đang ghi âm...' : 'Bắt đầu ghi âm'}
+              </button>
+            )}
 
             <div className={cn("w-px h-8 mx-2", isDarkMode ? "bg-white/10" : "bg-gray-200")} />
 

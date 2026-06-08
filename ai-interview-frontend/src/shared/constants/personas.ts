@@ -11,7 +11,11 @@ export const PERSONA_DETAILS = {
     textAccent: 'text-blue-600',
     bg: 'bg-blue-50/50',
     border: 'border-blue-100',
-    welcomeTone: "Chào bạn. Tôi là Thảo Chi, chuyên viên phỏng vấn kỹ thuật của bạn ngày hôm nay. Chúng ta sẽ cùng trao đổi chuyên sâu về các kỹ năng, kiến thức chuyên môn cũng như tư duy lập trình của bạn thông qua một số câu hỏi có cấu trúc. Hãy cố gắng trả lời một cách mạch lạc, đúng trọng tâm và cấu trúc câu trả lời theo mô hình STAR nhé."
+    theme: 'from-blue-100 to-indigo-100',
+    glow: 'shadow-blue-200',
+    darkTheme: 'from-blue-900/20 to-indigo-900/20',
+    previewAudio: '/audio/thao-chi-preview.mp3',
+    welcomeTone: "Chào bạn. Tôi là Thảo Chi, chuyên viên phỏng vấn của bạn ngày hôm nay. Chúng ta sẽ cùng trao đổi chuyên sâu về các kỹ năng, kiến thức chuyên môn cũng như kinh nghiệm làm việc của bạn thông qua một số câu hỏi có cấu trúc. Hãy cố gắng trả lời một cách mạch lạc, đúng trọng tâm theo mô hình STAR nhé."
   },
   [InterviewPersona.FRIENDLY]: {
     name: 'Mr. Nam Anh',
@@ -23,6 +27,10 @@ export const PERSONA_DETAILS = {
     textAccent: 'text-emerald-600',
     bg: 'bg-emerald-50/50',
     border: 'border-emerald-100',
+    theme: 'from-emerald-100 to-teal-100',
+    glow: 'shadow-emerald-200',
+    darkTheme: 'from-emerald-900/20 to-teal-900/20',
+    previewAudio: '/audio/nam-anh-preview.mp3',
     welcomeTone: "Chào bạn nhé! Mình là Nam Anh. Bạn cứ bình tĩnh và thoải mái coi đây như một buổi trò chuyện trao đổi kinh nghiệm thông thường thôi nhé. Mình ở đây để giúp bạn thể hiện tốt nhất năng lực của bản thân, nên có gì cứ chia sẻ tự nhiên nha. Bạn đã sẵn sàng chưa nào?"
   },
   [InterviewPersona.STRICT]: {
@@ -35,7 +43,11 @@ export const PERSONA_DETAILS = {
     textAccent: 'text-rose-600',
     bg: 'bg-rose-50/50',
     border: 'border-rose-100',
-    welcomeTone: "Tôi là Quốc Hùng. Buổi phỏng vấn hôm nay sẽ đi thẳng vào các kiến thức kỹ thuật thực tế và tư duy giải quyết vấn đề hệ thống của bạn. Tôi hy vọng bạn sẽ trả lời ngắn gọn, thực tế, tránh nói lý thuyết suông và tập trung vào bản chất công nghệ. Chúng ta bắt đầu luôn nhé."
+    theme: 'from-rose-100 to-orange-100',
+    glow: 'shadow-rose-200',
+    darkTheme: 'from-rose-900/20 to-orange-900/20',
+    previewAudio: '/audio/quoc-hung-preview.mp3',
+    welcomeTone: "Tôi là Quốc Hùng. Buổi phỏng vấn hôm nay sẽ đi thẳng vào các kiến thức thực tế và năng lực giải quyết vấn đề của bạn. Tôi hy vọng bạn sẽ trả lời ngắn gọn, thực tế, tránh nói lý thuyết suông và tập trung vào bản chất công việc. Chúng ta bắt đầu luôn nhé."
   },
   [InterviewPersona.CHEERFUL]: {
     name: 'Ms. Linh San',
@@ -47,6 +59,10 @@ export const PERSONA_DETAILS = {
     textAccent: 'text-amber-600',
     bg: 'bg-amber-50/50',
     border: 'border-amber-100',
-    welcomeTone: "Hi bạn! Mình là Linh San cực kỳ vui vẻ đây! Rất vui được gặp bạn trong phòng phỏng vấn hôm nay nha. Cứ thả lỏng tinh thần, chuẩn bị một ly nước ấm rồi chúng mình cùng nhau thảo luận những điều thú vị về công nghệ nhé. Bắt đầu nha!"
+    theme: 'from-amber-100 to-orange-100',
+    glow: 'shadow-amber-200',
+    darkTheme: 'from-amber-900/20 to-orange-900/20',
+    previewAudio: '/audio/linh-san-preview.mp3',
+    welcomeTone: "Hi bạn! Mình là Linh San cực kỳ vui vẻ đây! Rất vui được gặp bạn trong phòng phỏng vấn hôm nay nha. Cứ thả lỏng tinh thần, chuẩn bị một ly nước ấm rồi chúng mình cùng nhau thảo luận những điều thú vị về chuyên môn của bạn nhé. Bắt đầu nha!"
   }
 };
