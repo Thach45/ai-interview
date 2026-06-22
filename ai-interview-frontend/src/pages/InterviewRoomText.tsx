@@ -62,6 +62,8 @@ const InterviewRoomTextPage: React.FC = () => {
     questionIndex?: number;
   }>>([]);
 
+  const isCompleted = currentQuestionIdx >= activeQuestions.length || session?.status === 'COMPLETED';
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Hooks gọi API thực tế
@@ -223,6 +225,23 @@ const InterviewRoomTextPage: React.FC = () => {
             <Clock size={14} className="text-slate-400" />
             <span className="text-xs font-mono font-bold text-slate-700">{formatTime(timeLeft)}</span>
           </div>
+          
+          {!isCompleted && (
+            <button 
+              onClick={() => {
+                if (window.confirm('Bạn có chắc chắn muốn kết thúc phỏng vấn sớm? Kết quả sẽ được đánh giá dựa trên những câu đã trả lời.')) {
+                  submitInterviewMutation.mutate(undefined, {
+                    onSuccess: () => navigate(`/interviews/report?sessionId=${session?.id}`)
+                  });
+                }
+              }}
+              disabled={submitInterviewMutation.isPending}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 font-bold text-xs transition-colors"
+            >
+              {submitInterviewMutation.isPending ? 'Đang nộp...' : 'Kết thúc'}
+            </button>
+          )}
+
           <button 
             onClick={() => navigate('/interviews/setup')} 
             className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all border border-transparent hover:border-[#e5e3df]"
@@ -364,18 +383,21 @@ const InterviewRoomTextPage: React.FC = () => {
           </div>
           
           {/* Bottom Chat Input Form Area */}
-          <div className="p-6 border-t border-[#e5e3df] bg-white">
-            {currentQuestionIdx >= activeQuestions.length || session?.status === 'COMPLETED' ? (
-              <div className="flex flex-col items-center justify-center p-4 bg-emerald-50 rounded-2xl border border-emerald-100/50">
-                <CheckCircle2 className="text-emerald-500 mb-2 size-8" />
-                <h4 className="text-sm font-bold text-emerald-900 mb-1">Hoàn tất buổi phỏng vấn</h4>
-                <p className="text-[11px] text-emerald-700/80 mb-4">Dữ liệu của bạn đã được ghi nhận. Hãy xem báo cáo chi tiết.</p>
+          <div className="p-4 bg-white border-t border-[#e5e3df]">
+            {isCompleted ? (
+              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-center">
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-1">
+                  <CheckCircle2 size={24} />
+                </div>
+                <h3 className="text-emerald-800 font-bold text-lg">Buổi phỏng vấn đã hoàn tất</h3>
+                <p className="text-emerald-600/80 text-sm max-w-sm mb-2">Bạn đã hoàn thành xuất sắc tất cả các câu hỏi của phiên phỏng vấn này.</p>
+                
                 <button 
                   onClick={() => {
                     submitInterviewMutation.mutate(undefined, {
                       onSuccess: () => navigate(`/interviews/report?sessionId=${session?.id}`)
                     });
-                  }} 
+                  }}
                   disabled={submitInterviewMutation.isPending}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                 >

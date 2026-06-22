@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import DashboardPage from '../pages/Dashboard';
 import JobsPage from '../pages/Jobs';
 import InterviewSetupPage from '../pages/InterviewSetup';
-import InterviewPracticePage from '../pages/InterviewPractice';
+
 import InterviewResultPage from '../pages/InterviewResult';
 import InterviewRoomVideoPage from '../pages/InterviewRoomVideo';
 import InterviewRoomTextPage from '../pages/InterviewRoomText';
@@ -70,11 +70,7 @@ export const AppRoutes: React.FC = () => {
             <InterviewSetupPage />
           </ProtectedRoute>
         } />
-        <Route path="/interviews/practice" element={
-          <ProtectedRoute>
-            <InterviewPracticePage />
-          </ProtectedRoute>
-        } />
+       
         <Route path="/interview/video" element={
           <ProtectedRoute>
             <InterviewRoomVideoPage />
