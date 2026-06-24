@@ -23,7 +23,7 @@ export class CreditsService {
 
     if (user.creditsBalance <= 0) {
       throw new BadRequestException(
-        'Tài khoản của bạn đã hết lượt phỏng vấn. Vui lòng nạp thêm credit!'
+        'Tài khoản của bạn đã hết lượt phỏng vấn. Vui lòng nạp thêm credit!',
       );
     }
 

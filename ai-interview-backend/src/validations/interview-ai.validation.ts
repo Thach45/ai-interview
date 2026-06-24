@@ -85,6 +85,6 @@ export const chatMessageWithTTSSchema = z.object({
   params: z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'sessionId không hợp lệ (phải là MongoDB ObjectId)'),
   }),
-  // Chú ý: Vì Endpoint này nhận file âm thanh qua form-data (req.file) 
+  // Chú ý: Vì Endpoint này nhận file âm thanh qua form-data (req.file)
   // nên chúng ta không validate req.body bằng Zod ở đây mà sẽ check req.file ở Controller.
 });

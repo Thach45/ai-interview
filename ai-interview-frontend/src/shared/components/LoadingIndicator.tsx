@@ -10,7 +10,7 @@ interface LoadingIndicatorProps {
   title?: string;
   subtitle?: string;
   fullScreen?: boolean;
-  aiSteps: string[];
+  aiSteps?: string[];
 }
 
 const DEFAULT_AI_STEPS = [

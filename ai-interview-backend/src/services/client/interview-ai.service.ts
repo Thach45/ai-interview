@@ -37,7 +37,7 @@ export class InterviewAiService {
     }
 
     // 3. Lấy nội dung JD (Job Description) từ Template hoặc Custom Text tự điền
-    let jdText = '';
+    let jdText: string;
     if (body.jobDescriptionId) {
       const template = await this.prismaClient.jobTemplate.findUnique({
         where: { id: body.jobDescriptionId },
@@ -126,7 +126,7 @@ export class InterviewAiService {
     }
 
     // Lấy JD
-    let jdText = '';
+    let jdText: string;
     if (session.jobTemplateId) {
       const template = await this.prismaClient.jobTemplate.findUnique({
         where: { id: session.jobTemplateId },
@@ -228,7 +228,7 @@ export class InterviewAiService {
     const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
 
     // Lấy JD
-    let jdText = '';
+    let jdText: string;
     if (session.jobTemplateId) {
       const template = await this.prismaClient.jobTemplate.findUnique({
         where: { id: session.jobTemplateId },
@@ -299,6 +299,7 @@ export class InterviewAiService {
       status: newStatus,
     };
   }
+
   async submitInterviewResult(userId: string, sessionId: string) {
     const session = await this.prismaClient.interviewSession.findFirst({
       where: { id: sessionId, userId },
@@ -323,7 +324,7 @@ export class InterviewAiService {
       content: msg.content,
     }));
 
-    let jdText = '';
+    let jdText: string;
     if (session.jobTemplateId) {
       const template = await this.prismaClient.jobTemplate.findUnique({
         where: { id: session.jobTemplateId },

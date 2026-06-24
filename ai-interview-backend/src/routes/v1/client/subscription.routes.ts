@@ -7,8 +7,6 @@ const router = Router();
 // Route công khai lấy danh sách gói hoạt động
 router.get('/packages', subscriptionController.getPackages);
 
-
-
 // Các route cần đăng nhập và xác thực
 router.use(auth);
 

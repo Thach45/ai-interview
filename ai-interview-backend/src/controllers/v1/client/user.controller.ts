@@ -96,6 +96,19 @@ class UserController {
     const result = await this.userService.getMyCvs(userId);
     return sendResponse(res, 200, 'Lấy danh sách CV thành công', result);
   });
+
+  /**
+   * Lấy dữ liệu cho trang dashboard (thống kê, biểu đồ, hoạt động gần đây, gợi ý việc làm)
+   */
+  getDashboardData = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException('Vui lòng đăng nhập');
+    }
+
+    const result = await this.userService.getDashboardData(userId);
+    return sendResponse(res, 200, 'Lấy dữ liệu trang Dashboard thành công', result);
+  });
 }
 
 // Khởi tạo instance duy nhất

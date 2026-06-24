@@ -17,7 +17,7 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['node_modules/', 'dist/', '.env', 'commitlint.config.js'],
+    ignores: ['node_modules/', 'dist/', '.env', 'commitlint.config.js', 'prisma/*.js'],
   },
   prettierConfig,
 );

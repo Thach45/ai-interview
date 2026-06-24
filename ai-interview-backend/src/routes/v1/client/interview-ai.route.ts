@@ -2,7 +2,10 @@ import express from 'express';
 import { interviewAIController } from '../../../controllers/v1/client/interview-ai.controller';
 import { auth } from '../../../middlewares/auth.middleware';
 import { validate } from '../../../middlewares/validate.middleware';
-import { interviewAISchema, chatMessageWithTTSSchema } from '../../../validations/interview-ai.validation';
+import {
+  interviewAISchema,
+  chatMessageWithTTSSchema,
+} from '../../../validations/interview-ai.validation';
 import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -19,7 +22,7 @@ router.post(
   auth,
   upload.single('audio'),
   validate(chatMessageWithTTSSchema),
-  interviewAIController.sendChatMessageWithTTS
+  interviewAIController.sendChatMessageWithTTS,
 );
 router.post('/:id/submit', auth, interviewAIController.submitInterviewResult);
 router.get('/:id/result', auth, interviewAIController.getInterviewResult);
