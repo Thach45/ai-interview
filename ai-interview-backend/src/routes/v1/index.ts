@@ -13,6 +13,7 @@ import adminPackagesRoute from './admin/packages.route';
 import adminTransactionsRoute from './admin/transactions.route';
 import subscriptionRoutes from './client/subscription.routes';
 import ttsRoute from './shared/tts.route';
+import dashboardAdminRoute from './admin/dashboard.route';
 
 const router: Router = Router();
 
@@ -41,5 +42,6 @@ router.use('/admin/job-templates', adminJobTemplateRoute);
 router.use('/admin/users', adminUserRoute);
 router.use('/admin/packages', adminPackagesRoute);
 router.use('/admin/transactions', adminTransactionsRoute);
+router.use('/admin/dashboard', dashboardAdminRoute);
 
 export default router;

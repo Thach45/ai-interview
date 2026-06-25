@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../shared/utils/cn';
 
 const MENU_ITEMS = [
-  // { id: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/admin' },
+  { id: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/admin/dashboard' },
   { id: 'users', label: 'Người dùng', icon: 'group', path: '/admin/users' },
   { id: 'jobs', label: 'Mẫu JD', icon: 'description', path: '/admin/jobs' },
   { id: 'categories', label: 'Ngành nghề', icon: 'category', path: '/admin/categories' },

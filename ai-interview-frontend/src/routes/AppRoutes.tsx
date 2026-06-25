@@ -10,6 +10,7 @@ import InterviewRoomTextPage from '../pages/InterviewRoomText';
 import NotFoundPage from '../pages/NotFound';
 
 
+import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AdminJobsPage } from '../pages/admin/AdminJobsPage';
 import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
 import { AdminCategoriesPage } from '../pages/admin/AdminCategoriesPage';
@@ -100,7 +101,12 @@ export const AppRoutes: React.FC = () => {
         } />
 
         {/* Admin Routes (Chỉ ADMIN mới vào được) */}
-        <Route path="/admin" element={<Navigate to="/admin/jobs" replace />} />
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminDashboardPage />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/jobs" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminJobsPage />

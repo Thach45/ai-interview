@@ -20,10 +20,7 @@ export const JobCard: React.FC<JobCardProps> = ({ id, title, company, location, 
         isSelected ? 'border-primary ring-1 ring-primary/20 shadow-md' : 'border-gray-100'
       }`}
     >
-      {/* Heart Action */}
-      <button className="absolute top-4 right-4 material-symbols-outlined text-gray-300 hover:text-red-500 transition-colors text-[20px]">
-        favorite
-      </button>
+      
 
       <div className="flex gap-4">
         {/* Company Logo/Icon */}
