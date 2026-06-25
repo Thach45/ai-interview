@@ -14,6 +14,7 @@ import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
 import { AdminJobsPage } from '../pages/admin/AdminJobsPage';
 import { AdminUsersPage } from '../pages/admin/AdminUsersPage';
 import { AdminCategoriesPage } from '../pages/admin/AdminCategoriesPage';
+import { AdminCvTemplatesPage } from '../pages/admin/AdminCvTemplatesPage';
 import { AdminTransactionsPage } from '../pages/admin/AdminTransactionsPage';
 import { AdminPackagesPage } from '../pages/admin/AdminPackagesPage';
 import { LoginPage } from '../pages/auth/LoginPage';
@@ -127,6 +128,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/admin/categories" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminCategoriesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/cv-templates" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminCvTemplatesPage />
           </ProtectedRoute>
         } />
         <Route path="/admin/transactions" element={

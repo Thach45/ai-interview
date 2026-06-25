@@ -14,6 +14,7 @@ import adminTransactionsRoute from './admin/transactions.route';
 import subscriptionRoutes from './client/subscription.routes';
 import ttsRoute from './shared/tts.route';
 import dashboardAdminRoute from './admin/dashboard.route';
+import adminCvTemplateRoute from './admin/cv-template.route';
 
 const router: Router = Router();
 
@@ -43,5 +44,6 @@ router.use('/admin/users', adminUserRoute);
 router.use('/admin/packages', adminPackagesRoute);
 router.use('/admin/transactions', adminTransactionsRoute);
 router.use('/admin/dashboard', dashboardAdminRoute);
+router.use('/admin/cv-templates', adminCvTemplateRoute);
 
 export default router;

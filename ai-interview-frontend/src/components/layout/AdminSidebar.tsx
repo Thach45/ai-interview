@@ -9,6 +9,7 @@ const MENU_ITEMS = [
   { id: 'users', label: 'Người dùng', icon: 'group', path: '/admin/users' },
   { id: 'jobs', label: 'Mẫu JD', icon: 'description', path: '/admin/jobs' },
   { id: 'categories', label: 'Ngành nghề', icon: 'category', path: '/admin/categories' },
+  { id: 'cv-templates', label: 'Mẫu CV', icon: 'web', path: '/admin/cv-templates' },
   { id: 'transactions', label: 'Giao dịch & Credit', icon: 'toll', path: '/admin/transactions' },
   { id: 'packages', label: 'Gói dịch vụ', icon: 'inventory_2', path: '/admin/packages' },
   // { id: 'interviews', label: 'Phiên phỏng vấn', icon: 'history', path: '/admin/interviews' },

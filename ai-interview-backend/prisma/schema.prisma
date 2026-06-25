@@ -486,6 +486,7 @@ model OptimizedCv {
   
   optimizedData  OptimizedCvData
   modifications  AiModification[]
+  finalHtml      String?
 
   createdAt      DateTime        @default(now())
 
@@ -524,4 +525,17 @@ model VerificationCode {
 type CoreQuestion {
   title        String    // Chủ đề hoặc kỹ năng tương ứng (ví dụ: Security, Database...)
   reason       String    // Lý do hỏi câu hỏi này
+}
+
+// 11. BẢNG MẪU CV (Template)
+model CvTemplate {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String   
+  thumbnailUrl  String   
+  htmlStructure String   
+  cssStyles     String?   
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

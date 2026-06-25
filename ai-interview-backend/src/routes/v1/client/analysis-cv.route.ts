@@ -10,5 +10,6 @@ const router = express.Router();
 
 router.post('/analyze', auth, validate(analyzeCvSchema), analysisCVController.analyzeCV);
 router.post('/optimize', auth, cvOptimizationController.optimizeCV); // Tạm thời chưa có validate schema để test nhanh
+router.post('/export-pdf', auth, cvOptimizationController.exportPdf);
 
 export default router;

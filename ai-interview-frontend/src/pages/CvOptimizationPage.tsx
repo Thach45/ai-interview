@@ -9,7 +9,8 @@ import { useCvs } from '../features/cvs/hooks/useCvs';
 import { useQuery } from '@tanstack/react-query';
 import { cvApi } from '../features/cvs/api/cv.api';
 import { generateCvHtml } from '../features/cvs/utils/cvTemplateGenerator';
-
+import Handlebars from 'handlebars';
+import { useCvTemplatesClient } from '../features/cvs/hooks/useCvTemplatesClient';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { LoadingIndicator } from '../shared/components/LoadingIndicator';
@@ -26,6 +27,10 @@ const CvOptimizationPage: React.FC = () => {
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60,
   });
+
+  const { templates, isLoading: isLoadingTemplates } = useCvTemplatesClient();
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('mock-1');
+  const [isExporting, setIsExporting] = useState<boolean>(false);
 
   if (!analysisId) {
     return (
@@ -67,8 +72,25 @@ const CvOptimizationPage: React.FC = () => {
     );
   }
 
-  const generatedHtml = generateCvHtml(optimizedResult.optimizedData);
   const aiModifications = optimizedResult.modifications || [];
+
+  // Xác định Template được chọn
+  const selectedTemplate = templates.find(t => t.id === selectedTemplateId) || templates[0];
+
+  // Compile HTML với Handlebars
+  let generatedHtml = '';
+  if (selectedTemplate && selectedTemplate.htmlStructure) {
+    try {
+      const templateFn = Handlebars.compile(selectedTemplate.htmlStructure);
+      generatedHtml = templateFn(optimizedResult.optimizedData);
+    } catch (err) {
+      console.error("Lỗi khi render Handlebars:", err);
+      generatedHtml = `<div class="p-10 text-red-500 font-bold">Lỗi Render Template CV!</div>`;
+    }
+  } else {
+    // Fallback về cái cứng nếu chưa có DB template (mock-1)
+    // generatedHtml = generateCvHtml(optimizedResult.optimizedData);
+  }
 
   return (
     <MainLayout hideSearch={true} fullHeight={true} maxWidth="1600px" className="px-4 lg:px-8 py-4 bg-[#f8fafc]">
@@ -78,12 +100,14 @@ const CvOptimizationPage: React.FC = () => {
           <div className="flex-1 overflow-auto custom-scrollbar pb-10 pt-10">
             <div className="flex items-start justify-center min-w-max px-10 gap-10 mx-auto">
               
-              {/* Khung giấy A4 - Render từ chuỗi HTML */}
-              <div 
-                className="bg-white w-[800px] min-w-[800px] shadow-xl relative overflow-hidden shrink-0 border border-gray-200 rounded-sm"
-                style={{ minHeight: '1131px' }}
-                dangerouslySetInnerHTML={{ __html: generatedHtml }}
-              />
+              {/* Khung giấy A4 - Render từ chuỗi HTML qua iFrame để cách ly CSS và chạy Tailwind CDN */}
+              <div className="flex flex-col gap-4 shrink-0 bg-white shadow-xl relative overflow-hidden border border-gray-200 rounded-sm w-[800px]">
+                <iframe 
+                  title="CV Preview"
+                  srcDoc={generatedHtml}
+                  style={{ width: '100%', height: '1131px', border: 'none' }}
+                />
+              </div>
 
               {/* Vertical Divider */}
               <div className="w-[2px] bg-gray-200 self-stretch rounded-full"></div>
@@ -136,11 +160,85 @@ const CvOptimizationPage: React.FC = () => {
                         Thay đổi <ChevronRight size={14} />
                       </button>
                     </div>
-                    <button className="w-full bg-[#1c385c] text-white px-5 py-3 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 hover:bg-[#152a45] shadow-lg shadow-indigo-900/20 hover:shadow-xl transition-all">
-                      <span className="material-symbols-outlined text-[20px]">file_download</span> Xuất PDF
+                    {/* Export PDF Button */}
+                    <button 
+                      disabled={isExporting}
+                      className={`w-full text-white px-5 py-3 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all ${
+                        isExporting 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-[#1c385c] hover:bg-[#152a45] shadow-indigo-900/20'
+                      }`}
+                      onClick={async () => {
+                        if (!analysisId) return;
+                        setIsExporting(true);
+                        try {
+                          const blob = await cvApi.exportPdf(analysisId, generatedHtml);
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `CV_Optimized_${optimizedResult.optimizedData?.fullName?.replace(/\s+/g, '_') || 'Export'}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                          document.body.removeChild(a);
+                        } catch (err) {
+                          console.error("Lỗi khi xuất PDF:", err);
+                          alert("Đã có lỗi xảy ra khi xuất PDF. Vui lòng thử lại!");
+                        } finally {
+                          setIsExporting(false);
+                        }
+                      }}
+                    >
+                      {isExporting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          Đang tạo PDF...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-symbols-outlined text-[20px]">file_download</span> 
+                          Lưu & Xuất PDF
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
+
+                {/* Template Selector Panel */}
+                <div className="mt-6 bg-white rounded-2xl shadow-xl border border-gray-200 p-5 overflow-hidden flex flex-col">
+                  <h3 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                    <Sparkles size={18} className="text-blue-500" />
+                    Đổi giao diện CV
+                  </h3>
+                  
+                  {isLoadingTemplates ? (
+                    <div className="text-center py-4 text-sm text-gray-500">Đang tải mẫu...</div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 overflow-y-auto max-h-[300px] custom-scrollbar p-1">
+                      {templates.map(tpl => (
+                        <div 
+                          key={tpl.id}
+                          onClick={() => setSelectedTemplateId(tpl.id)}
+                          className={`cursor-pointer rounded-xl border-2 overflow-hidden transition-all ${
+                            selectedTemplateId === tpl.id 
+                              ? 'border-primary ring-2 ring-primary/20 shadow-md' 
+                              : 'border-gray-100 hover:border-gray-300'
+                          }`}
+                        >
+                          <img 
+                            src={tpl.thumbnailUrl || 'https://via.placeholder.com/150'} 
+                            alt={tpl.name}
+                            className="w-full h-32 object-cover bg-gray-50" 
+                          />
+                          <div className="p-2 text-center bg-gray-50 border-t border-gray-100">
+                            <span className="text-[11px] font-bold text-gray-700 block truncate">{tpl.name}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
           </div>

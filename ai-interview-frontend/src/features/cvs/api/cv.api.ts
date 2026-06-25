@@ -48,4 +48,17 @@ export const cvApi = {
     });
     return response.data;
   },
+
+  /**
+   * Xuất PDF CV
+   */
+  exportPdf: async (analysisId: string, html: string): Promise<Blob> => {
+    const data = await apiClient.post<any, Blob>('/analysis-cv/export-pdf', {
+      analysisId,
+      html
+    }, {
+      responseType: 'blob'
+    });
+    return data;
+  },
 };

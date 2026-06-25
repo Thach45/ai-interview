@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import prisma from '../../config/prisma';
+import puppeteer from 'puppeteer';
 import { AiService, aiService } from '../core/ai.service';
 import { NotFoundException } from '../../exceptions';
 
@@ -33,14 +34,16 @@ export class CvOptimizationService {
     });
 
     if (!analysis) {
-      throw new NotFoundException('Không tìm thấy bản phân tích CV hoặc bạn không có quyền truy cập');
+      throw new NotFoundException(
+        'Không tìm thấy bản phân tích CV hoặc bạn không có quyền truy cập',
+      );
     }
 
     // 3. Gọi AI phân tích (Truyền CV gốc, từ khóa thiếu và đề xuất)
     const aiResult = await this._aiService.optimizeCV(
       analysis.cv.contentExtracted,
       analysis.missingKeywords,
-      analysis.improvementSuggestions
+      analysis.improvementSuggestions,
     );
 
     // 4. Lưu kết quả vào DB
@@ -54,6 +57,42 @@ export class CvOptimizationService {
     });
 
     return savedOptimizedCv;
+  }
+
+  async exportPdf(userId: string, analysisId: string, html: string): Promise<Uint8Array> {
+    // 1. Lưu html vào DB (cột finalHtml)
+    await this._prisma.optimizedCv.update({
+      where: {
+        cvAnalysisId: analysisId, // wait, is the id primary key or cvAnalysisId?
+      },
+      data: {
+        finalHtml: html,
+      },
+    });
+
+    // 2. Chạy Puppeteer để render
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    try {
+      const page = await browser.newPage();
+
+      // Đặt content và chờ mạng tĩnh để Tailwind CDN render
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      // Xuất PDF
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true, // Render background colors/images
+        margin: { top: '0', right: '0', bottom: '0', left: '0' },
+      });
+
+      return pdfBuffer;
+    } finally {
+      await browser.close();
+    }
   }
 }
 
