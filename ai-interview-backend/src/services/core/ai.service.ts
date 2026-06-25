@@ -5,6 +5,11 @@ import {
   getCVAnalysisUserPrompt,
 } from '../../prompts/cv-analysis.prompt';
 import {
+  CV_OPTIMIZATION_SYSTEM_PROMPT,
+  CV_OPTIMIZATION_RESPONSE_SCHEMA,
+  getCVOptimizationUserPrompt,
+} from '../../prompts/cv-optimization.prompt';
+import {
   CREATE_QUESTIONS_SYSTEM_PROMPT,
   getCreateQuestionsUserPrompt,
   CREATE_QUESTIONS_RESPONSE_SCHEMA,
@@ -78,6 +83,34 @@ export class AiService {
     } catch (error: any) {
       console.error('AI Service Error:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI.', { cause: error });
+    }
+  }
+
+  async optimizeCV(cvContent: string, missingKeywords: string[], improvementSuggestions: any[]) {
+    try {
+      const userPrompt = getCVOptimizationUserPrompt(
+        cvContent,
+        missingKeywords,
+        improvementSuggestions,
+      );
+
+      const response = await ai.models.generateContent({
+        model: AI_MODEL_CONFIG.model,
+        contents: userPrompt,
+        config: {
+          ...AI_MODEL_CONFIG.config,
+          systemInstruction: CV_OPTIMIZATION_SYSTEM_PROMPT,
+          responseSchema: CV_OPTIMIZATION_RESPONSE_SCHEMA,
+        },
+      });
+
+      if (!response.text) {
+        throw new Error('AI không trả về nội dung tối ưu.');
+      }
+      return JSON.parse(response.text);
+    } catch (error: any) {
+      console.error('AI Service Error:', error);
+      throw new (Error as any)('Lỗi khi kết nối với bộ não AI (optimizeCV).', { cause: error });
     }
   }
 

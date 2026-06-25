@@ -38,4 +38,14 @@ export const cvApi = {
     });
     return response.data;
   },
+
+  /**
+   * Tối ưu CV dựa trên bản phân tích
+   */
+  optimizeCv: async (analysisId: string): Promise<any> => {
+    const response = await apiClient.post<any, { success: boolean; data: any }>('/analysis-cv/optimize', {
+      analysisId,
+    });
+    return response.data;
+  },
 };

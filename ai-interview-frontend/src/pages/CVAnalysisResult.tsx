@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { cvApi } from '../features/cvs/api/cv.api';
 import { useCvs } from '../features/cvs/hooks/useCvs';
 import { 
@@ -318,6 +318,25 @@ export default function CVAnalysisResultPage() {
 
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
+  const optimizeMutation = useMutation({
+    mutationFn: (analysisId: string) => cvApi.optimizeCv(analysisId),
+    onSuccess: () => {
+      if (analysisResponse?.id) {
+        navigate(`/jobs/cv-analysis/${id}/optimize?cvId=${cvId}&analysisId=${analysisResponse.id}`);
+      }
+    },
+    onError: (err) => {
+      console.error(err);
+      alert('Có lỗi xảy ra khi tối ưu CV. Vui lòng thử lại sau.');
+    }
+  });
+
+  const handleOptimize = () => {
+    if (analysisResponse?.id) {
+      optimizeMutation.mutate(analysisResponse.id);
+    }
+  };
+
   if (!cvId || !id) {
     return (
       <MainLayout hideSearch={true} fullHeight={true}>
@@ -345,6 +364,24 @@ export default function CVAnalysisResultPage() {
           "So khớp dữ liệu với bản mô tả công việc (Job Description)...",
           "Chấm điểm độ phù hợp và phân tích khoảng trống năng lực...",
           "Tổng hợp nhận xét và đề xuất cải thiện..."
+        ]}
+      />
+    );
+  }
+
+  if (optimizeMutation.isPending) {
+    return (
+      <LoadingIndicator 
+        type="ai"
+        title="AI đang viết lại CV của bạn..."
+        subtitle="Hệ thống đang cấu trúc lại CV dựa trên các đề xuất cải thiện và bổ sung từ khóa tối ưu cho ATS."
+        fullScreen={true}
+        aiSteps={[
+          "Đang tải ngữ cảnh và các đề xuất cải thiện...",
+          "Bổ sung các từ khóa chuyên môn còn thiếu...",
+          "Viết lại mục tiêu nghề nghiệp...",
+          "Cấu trúc lại kinh nghiệm làm việc theo phương pháp STAR...",
+          "Đang tối ưu hóa định dạng và tạo bản xem trước..."
         ]}
       />
     );
@@ -409,8 +446,9 @@ export default function CVAnalysisResultPage() {
                   <ChevronDown size={14} className={`transition-transform duration-300 ${showDetail ? 'rotate-180' : ''}`} />
                 </button>
                 <button 
-                  onClick={() => navigate(`/jobs/cv-analysis/${id}/optimize?cvId=${cvId}`)}
-                  className="px-4 py-2 bg-primary text-white rounded-lg text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5"
+                  onClick={handleOptimize}
+                  disabled={optimizeMutation.isPending}
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-70"
                 >
                   <BrainCircuit size={16} />
                   Tối ưu CV với AI
@@ -658,7 +696,11 @@ export default function CVAnalysisResultPage() {
                     <p className="text-[13px] text-gray-600 mb-5 max-w-sm mx-auto">
                       Để AI của chúng tôi tự động viết lại CV của bạn dựa trên các đề xuất trên và yêu cầu công việc.
                     </p>
-                    <button className="px-6 py-2.5 bg-primary text-white text-[14px] font-bold rounded-xl shadow-lg shadow-primary/30 hover:-translate-y-1 hover:shadow-xl transition-all">
+                    <button 
+                      onClick={handleOptimize}
+                      disabled={optimizeMutation.isPending}
+                      className="px-6 py-2.5 bg-primary text-white text-[14px] font-bold rounded-xl shadow-lg shadow-primary/30 hover:-translate-y-1 hover:shadow-xl transition-all disabled:opacity-70"
+                    >
                       Cập nhật CV tự động
                     </button>
                   </div>

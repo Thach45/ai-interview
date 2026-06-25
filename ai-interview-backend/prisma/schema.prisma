@@ -103,6 +103,7 @@ model User {
   cvAnalyses       CvAnalysis[]
   recruiterRooms   RecruiterRoom[]  
   transactions     Transaction[]
+  optimizedCvs     OptimizedCv[]
 }
 
 // 2. BẢNG HỒ SƠ CV
@@ -395,6 +396,101 @@ model CvAnalysis {
   user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   cv                     UserCv      @relation(fields: [cvId], references: [id], onDelete: Cascade)
   jobTemplate            JobTemplate @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade)
+  
+  optimizedCv            OptimizedCv?
+}
+
+// 8.5 BẢNG CV ĐÃ TỐI ƯU (Sau phân tích)
+type AiModification {
+  id     Int
+  type   String   // Ví dụ: ADD_KEYWORD, REWRITE, EXPAND
+  title  String
+  desc   String
+}
+
+type OptimizedContact {
+  phone    String?
+  email    String?
+  birthday String?
+  address  String?
+}
+
+type OptimizedExperience {
+  company String
+  period  String
+  role    String
+  details String[]
+}
+
+type OptimizedProject {
+  name    String
+  period  String
+  role    String
+  details String[]
+}
+
+type OptimizedSkill {
+  name  String
+  level String?
+}
+
+type OptimizedEducation {
+  period   String
+  school   String
+  degree   String?
+  details  String[]
+}
+
+type OptimizedCertification {
+  name    String
+  issuer  String
+  year    String?
+}
+
+type OptimizedActivity {
+  name    String
+  period  String
+  role    String
+  details String[]
+}
+
+type OptimizedReference {
+  name    String
+  role    String
+  phone   String
+}
+
+type OptimizedCvData {
+  fullName        String
+  jobTitle        String
+  objective       String?
+  contact         OptimizedContact
+  
+  experiences     OptimizedExperience[]
+  projects        OptimizedProject[]
+  
+  hardSkills      String[]
+  computerSkills  OptimizedSkill[]
+  languages       OptimizedSkill[]
+  
+  education       OptimizedEducation[]
+  certifications  OptimizedCertification[]
+  activities      OptimizedActivity[]
+  references      OptimizedReference[]
+}
+
+model OptimizedCv {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String          @db.ObjectId
+  cvAnalysisId   String          @unique @db.ObjectId // Liên kết 1-1 với phân tích
+  
+  optimizedData  OptimizedCvData
+  modifications  AiModification[]
+
+  createdAt      DateTime        @default(now())
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cvAnalysis     CvAnalysis      @relation(fields: [cvAnalysisId], references: [id], onDelete: Cascade)
 }
 
 // 9. BẢNG PHÒNG TUYỂN DỤNG (Recruiter Mode)
