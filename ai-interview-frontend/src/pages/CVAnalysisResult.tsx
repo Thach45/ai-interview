@@ -408,7 +408,10 @@ export default function CVAnalysisResultPage() {
                   {showDetail ? 'Thu gọn' : 'Xem chi tiết'}
                   <ChevronDown size={14} className={`transition-transform duration-300 ${showDetail ? 'rotate-180' : ''}`} />
                 </button>
-                <button className="px-4 py-2 bg-primary text-white rounded-lg text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5">
+                <button 
+                  onClick={() => navigate(`/jobs/cv-analysis/${id}/optimize?cvId=${cvId}`)}
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5"
+                >
                   <BrainCircuit size={16} />
                   Tối ưu CV với AI
                 </button>

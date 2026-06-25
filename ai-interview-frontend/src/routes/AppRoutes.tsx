@@ -29,6 +29,7 @@ import CVAnalysisResultPage from '../pages/CVAnalysisResult';
 import MyCvsPage from '../pages/MyCvs';
 import SubscriptionPage from '../pages/SubscriptionPage';
 import { LoadingTestPage } from '../pages/LoadingTestPage';
+import CvOptimizationPage from '../pages/CvOptimizationPage.tsx';
 
 
 export const AppRoutes: React.FC = () => {
@@ -97,6 +98,12 @@ export const AppRoutes: React.FC = () => {
         <Route path="/jobs/cv-analysis/:id" element={
           <ProtectedRoute>
             <CVAnalysisResultPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/jobs/cv-analysis/:id/optimize" element={
+          <ProtectedRoute>
+            <CvOptimizationPage />
           </ProtectedRoute>
         } />
 
