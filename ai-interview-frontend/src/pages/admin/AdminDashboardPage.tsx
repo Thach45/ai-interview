@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { AdminLayout } from '../../layouts/AdminLayout';
+import { useDashboardStats } from '../../features/dashboard/hooks/useDashboardStats';
+import dayjs from 'dayjs';
 
 export const AdminDashboardPage: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [dateRange, setDateRange] = useState('7days'); // '7days', 'this_month', 'last_month', 'custom'
+  const [dateRange, setDateRange] = useState<'7days' | 'this_month' | 'last_month' | 'custom'>('7days');
+  const [startDate, setStartDate] = useState(dayjs().subtract(7, 'day').format('YYYY-MM-DD'));
+  const [endDate, setEndDate] = useState(dayjs().format('YYYY-MM-DD'));
 
-  useEffect(() => {
-    setIsLoading(true);
-    // Giả lập call API mỗi khi đổi ngày
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [dateRange]);
+  const { data: stats, isLoading } = useDashboardStats({
+    dateRange,
+    ...(dateRange === 'custom' ? { startDate, endDate } : {}),
+  });
 
   return (
     <AdminLayout title="Tổng quan hệ thống">
@@ -31,8 +30,9 @@ export const AdminDashboardPage: React.FC = () => {
             <div className="relative group">
               <input 
                 type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
                 className="pl-9 pr-3 py-2 text-[13px] border border-border-hairline rounded-lg text-text-secondary outline-none focus:border-primary focus:ring-1 focus:ring-primary w-[140px] transition-all bg-bg-canvas"
-                defaultValue="2026-04-25"
               />
               <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-text-tertiary group-focus-within:text-primary transition-colors">event</span>
             </div>
@@ -40,8 +40,9 @@ export const AdminDashboardPage: React.FC = () => {
             <div className="relative group">
               <input 
                 type="date" 
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
                 className="pl-9 pr-3 py-2 text-[13px] border border-border-hairline rounded-lg text-text-secondary outline-none focus:border-primary focus:ring-1 focus:ring-primary w-[140px] transition-all bg-bg-canvas"
-                defaultValue="2026-06-25"
               />
               <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-text-tertiary group-focus-within:text-primary transition-colors">event</span>
             </div>
@@ -55,29 +56,29 @@ export const AdminDashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard 
             title="Doanh thu" 
-            value="24,500,000 đ" 
-            trend={dateRange === 'last_month' ? "-5%" : "+15%"} 
+            value={stats?.cards?.revenue?.value ? `${stats.cards.revenue.value.toLocaleString()} đ` : "0 đ"} 
+            trend={stats?.cards?.revenue?.trend || "0%"} 
             icon="payments" 
             color="green" 
           />
           <StatCard 
             title="Người dùng mới" 
-            value="342" 
-            trend="+5%" 
+            value={stats?.cards?.newUsers?.value?.toLocaleString() || "0"} 
+            trend={stats?.cards?.newUsers?.trend || "0%"} 
             icon="group_add" 
             color="primary" 
           />
           <StatCard 
             title="Phỏng vấn hoàn thành" 
-            value="1,204" 
-            trend="+22%" 
+            value={stats?.cards?.completedInterviews?.value?.toLocaleString() || "0"} 
+            trend={stats?.cards?.completedInterviews?.trend || "0%"} 
             icon="task_alt" 
             color="blue" 
           />
           <StatCard 
             title="Chi phí AI (Ước tính)" 
-            value="1,250,000 đ" 
-            trend="+8%" 
+            value={stats?.cards?.aiCost?.value ? `${stats.cards.aiCost.value.toLocaleString()} đ` : "0 đ"} 
+            trend={stats?.cards?.aiCost?.trend || "0%"} 
             icon="smart_toy" 
             color="orange" 
           />
@@ -93,7 +94,9 @@ export const AdminDashboardPage: React.FC = () => {
                 <p className="text-[13px] text-text-secondary mt-1">Tổng doanh thu theo thời gian thực tế</p>
               </div>
               <div className="text-right">
-                <div className="text-[24px] font-bold text-green-600">24,500,000 đ</div>
+                <div className="text-[24px] font-bold text-green-600">
+                  {stats?.cards?.revenue?.value ? `${stats.cards.revenue.value.toLocaleString()} đ` : "0 đ"}
+                </div>
                 <div className="text-[12px] font-medium text-text-tertiary">Tổng kỳ này</div>
               </div>
             </div>
@@ -104,27 +107,37 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             ) : (
               <div className="flex-1 relative flex items-center justify-center min-h-[300px] mt-4">
-                {/* Dùng SVG cơ bản để vẽ đường biểu đồ to hơn */}
                 <svg className="w-full h-full" viewBox="0 0 100 40" preserveAspectRatio="none">
-                  {/* Background Fill */}
-                  <path 
-                    d="M 0 35 Q 10 30, 20 25 T 40 15 T 60 20 T 80 5 T 100 10 L 100 40 L 0 40 Z" 
-                    fill="url(#greenGradient)" 
-                  />
-                  {/* Line */}
-                  <path 
-                    d="M 0 35 Q 10 30, 20 25 T 40 15 T 60 20 T 80 5 T 100 10" 
-                    fill="none" 
-                    stroke="#1aae39" 
-                    strokeWidth="2" 
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  {/* Points */}
-                  <circle cx="20" cy="25" r="2" fill="#fff" stroke="#1aae39" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-                  <circle cx="40" cy="15" r="2" fill="#fff" stroke="#1aae39" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-                  <circle cx="60" cy="20" r="2" fill="#fff" stroke="#1aae39" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-                  <circle cx="80" cy="5" r="2" fill="#fff" stroke="#1aae39" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-                  <circle cx="100" cy="10" r="2" fill="#fff" stroke="#1aae39" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                  {stats?.revenueChart && stats.revenueChart.length > 0 && (() => {
+                    const maxAmt = Math.max(...stats.revenueChart.map(c => c.amount), 1);
+                    const len = stats.revenueChart.length;
+                    
+                    const points = stats.revenueChart.map((c, i) => {
+                      const x = len === 1 ? 50 : (i / (len - 1)) * 100;
+                      // y in range 5 to 35 (inverted: 35 is bottom, 5 is top)
+                      const y = 35 - ((c.amount / maxAmt) * 30);
+                      return { x, y };
+                    });
+
+                    // Build path
+                    let d = `M 0 35 L ${points[0].x} ${points[0].y}`;
+                    for(let i=1; i<points.length; i++) {
+                      d += ` L ${points[i].x} ${points[i].y}`;
+                    }
+
+                    // Fill path
+                    const fillD = `${d} L 100 40 L 0 40 Z`;
+
+                    return (
+                      <>
+                        <path d={fillD} fill="url(#greenGradient)" />
+                        <path d={d} fill="none" stroke="#1aae39" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
+                        {points.map((p, i) => (
+                          <circle key={i} cx={p.x} cy={p.y} r="2" fill="#fff" stroke="#1aae39" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                        ))}
+                      </>
+                    );
+                  })()}
 
                   <defs>
                     <linearGradient id="greenGradient" x1="0" x2="0" y1="0" y2="1">
@@ -144,12 +157,13 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             )}
             <div className="flex items-center justify-between mt-4 px-2">
-              <span className="text-[12px] font-medium text-text-tertiary">Ngày 1</span>
-              <span className="text-[12px] font-medium text-text-tertiary">Ngày 5</span>
-              <span className="text-[12px] font-medium text-text-tertiary">Ngày 10</span>
-              <span className="text-[12px] font-medium text-text-tertiary">Ngày 15</span>
-              <span className="text-[12px] font-medium text-text-tertiary">Ngày 20</span>
-              <span className="text-[12px] font-medium text-text-tertiary">Ngày 25</span>
+              {stats?.revenueChart && stats.revenueChart.map((c, i, arr) => {
+                // Chỉ show 5-6 mốc ngày cho đỡ rối
+                if (arr.length <= 6 || i === 0 || i === arr.length - 1 || i % Math.floor(arr.length / 5) === 0) {
+                  return <span key={c.date} className="text-[12px] font-medium text-text-tertiary">{dayjs(c.date).format('DD/MM')}</span>
+                }
+                return null;
+              })}
             </div>
           </div>
 
@@ -164,9 +178,13 @@ export const AdminDashboardPage: React.FC = () => {
                  <div className="flex items-center justify-center h-full min-h-[200px]">
                    <div className="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                  </div>
+              ) : stats?.recentTransactions.length === 0 ? (
+                <div className="flex items-center justify-center text-sm text-gray-500 min-h-[200px]">
+                  Không có giao dịch nào
+                </div>
               ) : (
                 <div className="flex flex-col gap-1">
-                  {MOCK_TRANSACTIONS.map((tx) => (
+                  {stats?.recentTransactions.map((tx: any) => (
                     <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-bg-surface transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="size-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center font-bold border border-green-100">
@@ -199,27 +217,36 @@ export const AdminDashboardPage: React.FC = () => {
                 <div className="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="h-40 flex items-end gap-3 justify-between pt-4">
-                {[
-                  { day: 'T2', voice: 40, text: 60 },
-                  { day: 'T3', voice: 55, text: 45 },
-                  { day: 'T4', voice: 30, text: 70 },
-                  { day: 'T5', voice: 60, text: 40 },
-                  { day: 'T6', voice: 80, text: 20 },
-                  { day: 'T7', voice: 90, text: 10 },
-                  { day: 'CN', voice: 75, text: 25 },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col justify-end items-center gap-2 h-full group">
-                    <div className="flex w-full gap-1 items-end justify-center h-full relative">
-                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                        V: {item.voice}% | T: {item.text}%
+              <div className="h-40 flex items-end gap-3 justify-center pt-4">
+                {(() => {
+                  const voiceCount = stats?.interviewStats?.voice || 0;
+                  const textCount = stats?.interviewStats?.text || 0;
+                  const total = voiceCount + textCount;
+                  
+                  if (total === 0) {
+                    return <div className="text-sm text-gray-500 mb-10">Chưa có dữ liệu</div>
+                  }
+
+                  const voicePct = Math.round((voiceCount / total) * 100);
+                  const textPct = 100 - voicePct;
+
+                  return (
+                    <div className="flex gap-8 items-end h-full">
+                      <div className="flex flex-col justify-end items-center gap-2 h-full group">
+                        <div className="w-16 bg-primary/80 rounded-t-sm relative flex items-end justify-center" style={{ height: `${Math.max(voicePct, 5)}%` }}>
+                          <span className="absolute -top-6 text-[12px] font-bold">{voicePct}%</span>
+                        </div>
+                        <span className="text-[12px] font-medium text-text-tertiary">Voice ({voiceCount})</span>
                       </div>
-                      <div className="w-[45%] bg-primary/80 rounded-t-sm hover:bg-primary transition-colors" style={{ height: `${item.voice}%` }} />
-                      <div className="w-[45%] bg-blue-300 rounded-t-sm hover:bg-blue-400 transition-colors" style={{ height: `${item.text}%` }} />
+                      <div className="flex flex-col justify-end items-center gap-2 h-full group">
+                        <div className="w-16 bg-blue-300 rounded-t-sm relative flex items-end justify-center" style={{ height: `${Math.max(textPct, 5)}%` }}>
+                          <span className="absolute -top-6 text-[12px] font-bold">{textPct}%</span>
+                        </div>
+                        <span className="text-[12px] font-medium text-text-tertiary">Text ({textCount})</span>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-medium text-text-tertiary">{item.day}</span>
-                  </div>
-                ))}
+                  );
+                })()}
               </div>
             )}
             <div className="flex items-center justify-center gap-4 mt-4">
@@ -235,28 +262,38 @@ export const AdminDashboardPage: React.FC = () => {
               <div className="flex items-center justify-center h-40">
                 <div className="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
               </div>
+            ) : !stats?.tokenChart || stats.tokenChart.length === 0 ? (
+              <div className="flex items-center justify-center text-sm text-gray-500 h-40">
+                Chưa có dữ liệu
+              </div>
             ) : (
               <div className="h-40 flex items-end gap-3 justify-between pt-4">
-                {[
-                  { day: 'T2', input: 45, output: 25 },
-                  { day: 'T3', input: 60, output: 35 },
-                  { day: 'T4', input: 30, output: 15 },
-                  { day: 'T5', input: 80, output: 50 },
-                  { day: 'T6', input: 95, output: 60 },
-                  { day: 'T7', input: 50, output: 30 },
-                  { day: 'CN', input: 40, output: 20 },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col justify-end items-center gap-2 h-full group">
-                    <div className="flex flex-col w-full gap-[1px] items-center justify-end h-full relative">
-                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                        In: {item.input}k | Out: {item.output}k
+                {(() => {
+                  const maxToken = Math.max(...stats.tokenChart.map(t => t.input + t.output), 1);
+                  return stats.tokenChart.map((item, idx, arr) => {
+                    const inputPct = (item.input / maxToken) * 100;
+                    const outputPct = (item.output / maxToken) * 100;
+                    // Only show ~7 labels max to avoid crowding
+                    const showLabel = arr.length <= 7 || idx === 0 || idx === arr.length - 1 || idx % Math.floor(arr.length / 5) === 0;
+
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col justify-end items-center gap-2 h-full group">
+                        <div className="flex flex-col w-full gap-[1px] items-center justify-end h-full relative">
+                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                            In: {(item.input / 1000).toFixed(1)}k | Out: {(item.output / 1000).toFixed(1)}k
+                          </div>
+                          <div className="w-[80%] bg-purple-300 rounded-t-sm transition-colors" style={{ height: `${outputPct}%` }} />
+                          <div className="w-[80%] bg-purple-600 rounded-b-sm transition-colors" style={{ height: `${inputPct}%` }} />
+                        </div>
+                        {showLabel ? (
+                          <span className="text-[10px] font-medium text-text-tertiary">{dayjs(item.date).format('DD/MM')}</span>
+                        ) : (
+                          <span className="text-[10px]">&nbsp;</span>
+                        )}
                       </div>
-                      <div className="w-[80%] bg-purple-300 rounded-t-sm transition-colors" style={{ height: `${item.output}%` }} />
-                      <div className="w-[80%] bg-purple-600 rounded-b-sm transition-colors" style={{ height: `${item.input}%` }} />
-                    </div>
-                    <span className="text-[10px] font-medium text-text-tertiary">{item.day}</span>
-                  </div>
-                ))}
+                    );
+                  });
+                })()}
               </div>
             )}
             <div className="flex items-center justify-center gap-4 mt-4">
@@ -275,9 +312,13 @@ export const AdminDashboardPage: React.FC = () => {
                  <div className="flex items-center justify-center h-full min-h-[150px]">
                    <div className="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                  </div>
+              ) : stats?.recentInterviews?.length === 0 ? (
+                <div className="flex items-center justify-center text-sm text-gray-500 min-h-[150px]">
+                  Chưa có phiên phỏng vấn nào
+                </div>
               ) : (
                 <div className="flex flex-col gap-1">
-                  {MOCK_INTERVIEWS.map((interview) => (
+                  {stats?.recentInterviews?.map((interview) => (
                     <div key={interview.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-bg-surface transition-colors">
                       <div className="flex items-center gap-3 min-w-0">
                          <div className={`shrink-0 inline-flex items-center justify-center size-8 rounded-full border ${
@@ -290,8 +331,7 @@ export const AdminDashboardPage: React.FC = () => {
                         <div className="min-w-0 pr-2">
                           <div className="text-[13px] font-bold text-text-primary truncate">{interview.user}</div>
                           <div className="text-[11px] text-text-secondary truncate flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[12px]">{interview.type === 'Voice' ? 'mic' : 'chat'}</span>
-                            {interview.job}
+                            {interview.jobTitle}
                           </div>
                         </div>
                       </div>
@@ -354,18 +394,4 @@ const StatCard = ({ title, value, trend, icon, color }: { title: string, value: 
   );
 };
 
-// Mock Data
-const MOCK_TRANSACTIONS = [
-  { id: 1, user: 'Nguyen Van A', amount: '200,000 đ', credits: 50, date: '10:30 25/06/2026' },
-  { id: 2, user: 'Tran Thi B', amount: '500,000 đ', credits: 150, date: '09:15 25/06/2026' },
-  { id: 3, user: 'Le Minh C', amount: '1,000,000 đ', credits: 350, date: '18:45 24/06/2026' },
-  { id: 4, user: 'Pham D', amount: '200,000 đ', credits: 50, date: '14:20 24/06/2026' },
-  { id: 5, user: 'Hoang E', amount: '1,000,000 đ', credits: 350, date: '11:00 23/06/2026' },
-];
 
-const MOCK_INTERVIEWS = [
-  { id: 1, user: 'Hoang E', job: 'Senior Frontend Developer', type: 'Voice', score: 85, date: 'Vừa xong' },
-  { id: 2, user: 'Ngo F', job: 'Product Manager', type: 'Text', score: 92, date: '2 giờ trước' },
-  { id: 3, user: 'Vu G', job: 'Data Scientist', type: 'Voice', score: 65, date: '5 giờ trước' },
-  { id: 4, user: 'Bui H', job: 'Backend Engineer (NodeJS)', type: 'Text', score: 78, date: 'Hôm qua' },
-];
