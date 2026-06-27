@@ -3,9 +3,8 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InterviewProgressCard } from '../features/interviews/components/InterviewProgressCard';
 import { 
-  Send, BrainCircuit, Clock, X, Bot, User, Settings, Shield, PhoneOff, MessageSquare,
-  CheckCircle2, Sparkles, AlertCircle, FileText, ChevronRight, Trophy, HelpCircle, Eye,
-  LayoutDashboard, ShieldAlert, Cpu
+  Send, BrainCircuit, Clock, X, Shield,
+  CheckCircle2, Sparkles,  FileText, ChevronRight
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { ExperienceLevel, InterviewLanguage, InterviewPersona } from '../shared/types/interview';
@@ -65,6 +64,7 @@ const InterviewRoomTextPage: React.FC = () => {
   const isCompleted = currentQuestionIdx >= activeQuestions.length || session?.status === 'COMPLETED';
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isSendingRef = useRef(false);
 
   // Hooks gọi API thực tế
   const startInterviewMutation = useStartInterview(session?.id || '');
@@ -159,8 +159,9 @@ const InterviewRoomTextPage: React.FC = () => {
 
   // Gửi tin nhắn thực tế tới API backend
   const handleSend = () => {
-    if (!inputText.trim() || isBotTyping || sendChatMutation.isPending) return;
+    if (!inputText.trim() || isBotTyping || sendChatMutation.isPending || isSendingRef.current) return;
 
+    isSendingRef.current = true; // Khóa UI đồng bộ ngay lập tức
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const trimmedInput = inputText.trim();
     const userMessage = { role: 'user' as const, content: trimmedInput, time: now, isQuestion: false };
@@ -193,9 +194,11 @@ const InterviewRoomTextPage: React.FC = () => {
         }
         
         setIsBotTyping(false);
+        isSendingRef.current = false; // Mở khóa
       },
       onError: () => {
         setIsBotTyping(false);
+        isSendingRef.current = false; // Mở khóa
       },
     });
   };
