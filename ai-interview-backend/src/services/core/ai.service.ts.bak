@@ -171,7 +171,6 @@ export class AiService {
       for await (const chunk of responseStream) {
         if (chunk.text) {
           fullText += chunk.text;
-          console.log('RAW CHUNK:', chunk.text);
 
           if (onStream) {
             // Regex bóc tách chữ nằm trong field "reply": "..."
@@ -187,8 +186,7 @@ export class AiService {
               // Chỉ gửi xuống khi có sự thay đổi
               if (currentReply !== lastExtractedReply) {
                 lastExtractedReply = currentReply;
-                console.log('STREAMING:', currentReply);
-                onStream(currentReply);
+                console.log("STREAMING:", currentReply); onStream(currentReply);
               }
             }
           }

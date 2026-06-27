@@ -113,7 +113,7 @@ export class InterviewAiService {
       where: { sessionId },
       orderBy: { createdAt: 'asc' },
     });
-    
+
     return messages;
   }
 
@@ -196,7 +196,12 @@ export class InterviewAiService {
   /**
    * Xử lý tin nhắn chat của ứng viên gửi lên, gọi AI phản hồi và lưu vào DB
    */
-  async sendChatMessage(userId: string, sessionId: string, messageContent: string) {
+  async sendChatMessage(
+    userId: string,
+    sessionId: string,
+    messageContent: string,
+    enableStream: boolean = true,
+  ) {
     const session = await this.prismaClient.interviewSession.findFirst({
       where: { id: sessionId, userId },
       include: { cv: true },
@@ -254,21 +259,29 @@ export class InterviewAiService {
 
     const cvText = session.cv?.contentExtracted || '';
 
-    // 3. Gọi AI phản hồi
-    const aiResponse = await aiService.chatInterview({
-      cvText,
-      jdText,
-      position: session.jobTitle,
-      level: session.level,
-      language: session.language,
-      persona: session.persona,
-      currentQuestion: coreQuestions[currIdx],
-      nextQuestion: coreQuestions[currIdx + 1] || null,
-      currentQuestionIndex: currIdx + 1,
-      totalQuestions: coreQuestions.length,
-      chatHistory,
-      userResponse: messageContent,
-    });
+    // 3. Gọi AI phản hồi (kèm callback để bắn SSE stream)
+    const aiResponse = await aiService.chatInterview(
+      {
+        cvText,
+        jdText,
+        position: session.jobTitle,
+        level: session.level,
+        language: session.language,
+        persona: session.persona,
+        currentQuestion: coreQuestions[currIdx],
+        nextQuestion: coreQuestions[currIdx + 1] || null,
+        currentQuestionIndex: currIdx + 1,
+        totalQuestions: coreQuestions.length,
+        chatHistory,
+        userResponse: messageContent,
+      },
+      enableStream
+        ? (chunkText) => {
+            // Mỗi khi có text mới, bắn sự kiện stream xuống client
+            eventEmitter.emit(`chat_stream_${sessionId}`, chunkText);
+          }
+        : undefined,
+    );
 
     // 4. Tính toán questionIndex và isFollowUp dựa trên suggestedAction của AI
     let nextQuestionIndex = currIdx;
@@ -325,8 +338,6 @@ export class InterviewAiService {
     if (!session) {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
-
-    
 
     const allMessages = await this.prismaClient.interviewMessage.findMany({
       where: { sessionId },
@@ -442,7 +453,7 @@ export class InterviewAiService {
   ) {
     const text = await this.aiService.transcribeAudio(buffer, mimeType);
     console.log('debug text stt', text);
-    const responseAI = await this.sendChatMessage(userId, sessionId, text);
+    const responseAI = await this.sendChatMessage(userId, sessionId, text, false);
     console.log('debug response ai', responseAI);
     const audioText = responseAI.message.content;
     const audioResponse = await this.googleTtsService.synthesizeSpeech(audioText);

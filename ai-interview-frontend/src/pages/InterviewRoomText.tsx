@@ -63,6 +63,9 @@ const InterviewRoomTextPage: React.FC = () => {
     questionTitle?: string;
     questionIndex?: number;
   }>>([]);
+  
+  // State chứa text đang được stream từ AI
+  const [streamingText, setStreamingText] = useState("");
 
   const isCompleted = currentQuestionIdx >= activeQuestions.length || session?.status === 'COMPLETED';
 
@@ -70,7 +73,7 @@ const InterviewRoomTextPage: React.FC = () => {
   const isSendingRef = useRef(false);
 
   // Khởi tạo kết nối SSE để lắng nghe tin nhắn mới
-  useInterviewSSE(session?.id || '');
+  useInterviewSSE(session?.id || '', setStreamingText);
 
   // Hooks gọi API thực tế
   const startInterviewMutation = useStartInterview(session?.id || '');
@@ -394,8 +397,29 @@ const InterviewRoomTextPage: React.FC = () => {
               })}
             </AnimatePresence>
 
-            {/* Simulated Bot Typing Animation */}
-            {isBotTyping && (
+            {/* AI Streaming Chat Bubble */}
+            {streamingText && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex gap-3 max-w-[85%]"
+              >
+                <img 
+                  src={activePersona.avatar} 
+                  alt={activePersona.name} 
+                  className="w-10 h-10 rounded-xl object-cover shrink-0 border border-[#e5e3df] bg-slate-50 shadow-sm" 
+                />
+                <div className="flex flex-col min-w-0">
+                  <div className="px-5 py-3.5 bg-white text-slate-800 border-[#e5e3df] rounded-2xl rounded-tl-none shadow-sm whitespace-pre-wrap leading-relaxed">
+                    {streamingText}
+                    <span className="inline-block w-1.5 h-4 ml-1 bg-slate-400 animate-pulse align-middle"></span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Simulated Bot Typing Animation (Chỉ hiện khi chưa có streamingText) */}
+            {isBotTyping && !streamingText && (
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}

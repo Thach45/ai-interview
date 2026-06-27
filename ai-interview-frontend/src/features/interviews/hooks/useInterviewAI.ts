@@ -53,7 +53,7 @@ export const useInterviewMessages = (sessionId: string) => {
   });
 };
 
-export const useInterviewSSE = (sessionId: string) => {
+export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: string) => void) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -67,12 +67,24 @@ export const useInterviewSSE = (sessionId: string) => {
       `${API_URL}/interview-ai/${sessionId}/stream?token=${token}`
     );
 
+    let lastChunkTime = Date.now();
+
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === "SYNC_SESSION") {
+          // Xóa stream text khi quá trình stream kết thúc
+          if (onStreamUpdate) onStreamUpdate("");
           // Invalidate cache -> React Query tự động trigger fetch data mới!
           queryClient.invalidateQueries({ queryKey: ["interviewMessages", sessionId] });
+        } else if (data.type === "STREAM_CHUNK") {
+          const now = Date.now();
+          const delta = now - lastChunkTime;
+          lastChunkTime = now;
+          
+          // Cập nhật text đang stream
+          console.log(`[+${delta}ms] FE RECEIVED CHUNK:`, data.text);
+          if (onStreamUpdate) onStreamUpdate(data.text);
         }
       } catch (error) {
         console.error("Lỗi parse SSE message:", error);

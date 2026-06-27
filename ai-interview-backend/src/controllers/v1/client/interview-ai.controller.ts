@@ -80,29 +80,40 @@ class InterviewAIController {
     // Thiết lập headers bắt buộc cho SSE
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-transform', // no-transform bắt buộc Nginx/Compression không được ôm buffer
       Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no', // Chống buffer trên Nginx
     });
 
     const eventName = `chat_updated_${sessionId}`;
+    const streamEventName = `chat_stream_${sessionId}`;
 
     // Callback được gọi khi có sự kiện
     const sendEvent = () => {
       res.write(`data: ${JSON.stringify({ type: 'SYNC_SESSION', sessionId })}\n\n`);
+      (res as any).flush?.(); // Ép gửi dữ liệu ngay lập tức nếu server có cài compression
+    };
+
+    const sendStreamEvent = (text: string) => {
+      res.write(`data: ${JSON.stringify({ type: 'STREAM_CHUNK', sessionId, text })}\n\n`);
+      (res as any).flush?.();
     };
 
     // Đăng ký lắng nghe
     eventEmitter.on(eventName, sendEvent);
+    eventEmitter.on(streamEventName, sendStreamEvent);
 
     // Gửi một tin nhắn ping để giữ connection luôn mở
     const keepAlive = setInterval(() => {
       res.write(':\n\n'); // Ký tự comment chuẩn của SSE
+      (res as any).flush?.();
     }, 30000);
 
     // Dọn dẹp khi client ngắt kết nối (tắt tab)
     req.on('close', () => {
       clearInterval(keepAlive);
       eventEmitter.off(eventName, sendEvent);
+      eventEmitter.off(streamEventName, sendStreamEvent);
     });
   });
 }
