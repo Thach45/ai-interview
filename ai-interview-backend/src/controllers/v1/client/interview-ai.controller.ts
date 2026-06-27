@@ -6,6 +6,7 @@ import {
 } from '../../../services/client/interview-ai.service';
 import { sendResponse } from '../../../utils/apiResponse';
 import { AppException } from '../../../exceptions';
+import { eventEmitter } from '../../../utils/eventEmitter';
 
 class InterviewAIController {
   constructor(private readonly interviewAiService: InterviewAiService) {}
@@ -65,6 +66,44 @@ class InterviewAIController {
       req.file.mimetype,
     );
     sendResponse(res, 200, 'Phản hồi từ AI thành công', result);
+  });
+
+  getInterviewMessages = asyncHandler(async (req: Request, res: Response) => {
+    const sessionId = req.params.id;
+    const messages = await this.interviewAiService.getInterviewMessages(req.user!.id, sessionId);
+    sendResponse(res, 200, 'Lấy lịch sử tin nhắn thành công', messages);
+  });
+
+  streamInterviewEvents = asyncHandler(async (req: Request, res: Response) => {
+    const sessionId = req.params.id;
+
+    // Thiết lập headers bắt buộc cho SSE
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+
+    const eventName = `chat_updated_${sessionId}`;
+
+    // Callback được gọi khi có sự kiện
+    const sendEvent = () => {
+      res.write(`data: ${JSON.stringify({ type: 'SYNC_SESSION', sessionId })}\n\n`);
+    };
+
+    // Đăng ký lắng nghe
+    eventEmitter.on(eventName, sendEvent);
+
+    // Gửi một tin nhắn ping để giữ connection luôn mở
+    const keepAlive = setInterval(() => {
+      res.write(':\n\n'); // Ký tự comment chuẩn của SSE
+    }, 30000);
+
+    // Dọn dẹp khi client ngắt kết nối (tắt tab)
+    req.on('close', () => {
+      clearInterval(keepAlive);
+      eventEmitter.off(eventName, sendEvent);
+    });
   });
 }
 

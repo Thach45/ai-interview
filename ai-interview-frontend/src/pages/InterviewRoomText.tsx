@@ -8,7 +8,10 @@ import {
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { ExperienceLevel, InterviewLanguage, InterviewPersona } from '../shared/types/interview';
-import { useInterviewSession, useStartInterview, useSendChatMessage, useSubmitInterviewResult } from '../features/interviews/hooks/useInterviewAI';
+import { 
+  useInterviewSession, useStartInterview, useSendChatMessage, 
+  useSubmitInterviewResult, useInterviewMessages, useInterviewSSE 
+} from '../features/interviews/hooks/useInterviewAI';
 import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 
 import { PERSONA_DETAILS } from '../shared/constants/personas';
@@ -66,10 +69,42 @@ const InterviewRoomTextPage: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isSendingRef = useRef(false);
 
+  // Khởi tạo kết nối SSE để lắng nghe tin nhắn mới
+  useInterviewSSE(session?.id || '');
+
   // Hooks gọi API thực tế
   const startInterviewMutation = useStartInterview(session?.id || '');
   const sendChatMutation = useSendChatMessage(session?.id || '');
   const submitInterviewMutation = useSubmitInterviewResult(session?.id || '');
+
+  // Query để kéo tin nhắn mới nhất khi bị invalidate bởi SSE
+  const { data: serverMessages } = useInterviewMessages(session?.id || '');
+
+  // Đồng bộ tin nhắn từ server về state cục bộ khi có thay đổi (khi SSE bắn tín hiệu)
+  useEffect(() => {
+    if (serverMessages && serverMessages.length > 0) {
+      // Map định dạng từ API trả về sang định dạng UI đang dùng
+      const mappedMessages = serverMessages.map((msg: any) => ({
+        role: msg.role === 'AI' ? 'bot' : 'user',
+        content: msg.content,
+        time: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isQuestion: msg.role === 'AI' && !msg.isFollowUp,
+        questionTitle: activeQuestions[msg.questionIndex]?.title,
+        questionIndex: msg.questionIndex != null ? msg.questionIndex + 1 : undefined,
+      }));
+      setMessages(mappedMessages);
+      
+      // Xác định câu hỏi hiện tại dựa vào tin nhắn mới nhất
+      const aiMainMessages = serverMessages.filter((m: any) => m.role === 'AI' && !m.isFollowUp);
+      const currIdx = Math.max(0, aiMainMessages.length - 1);
+      
+      if (session?.status === 'COMPLETED') {
+        setCurrentQuestionIdx(activeQuestions.length);
+      } else {
+        setCurrentQuestionIdx(currIdx);
+      }
+    }
+  }, [serverMessages, activeQuestions, session?.status]);
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
     if (scrollRef.current) {

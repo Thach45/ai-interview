@@ -16,6 +16,8 @@ const router = express.Router();
 // Upload CV (Dùng middleware upload.single('file'))
 router.post('/setup', auth, validate(interviewAISchema), interviewAIController.setupInterview);
 router.get('/:id', auth, interviewAIController.getInterview);
+router.get('/:id/messages', auth, interviewAIController.getInterviewMessages); // Bổ sung API lấy lịch sử tin nhắn
+router.get('/:id/stream', auth, interviewAIController.streamInterviewEvents); // Bổ sung API SSE stream
 router.post('/:id/start', auth, interviewAIController.startInterview);
 router.post('/:id/chat', auth, chatRateLimiter, interviewAIController.sendChatMessage);
 router.post(

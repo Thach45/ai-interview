@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useEffect } from "react";
 import { interviewAiApi } from "../api/interview-ai.api";
 import type { SetupInterviewRequest } from "../types/interview-ai.type";
 
@@ -36,6 +37,57 @@ export const useInterviewSession = (sessionId: string) => {
     enabled: !!sessionId,
     staleTime: 0,
   });
+};
+
+export const useInterviewMessages = (sessionId: string) => {
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: ["interviewMessages", sessionId],
+    queryFn: async () => {
+      const response = await interviewAiApi.getInterviewMessages(sessionId);
+      return response;
+    },
+    enabled: !!sessionId,
+    staleTime: Infinity, // Dữ liệu chỉ stale khi bị invalidate (SSE bắn tín hiệu)
+  });
+};
+
+export const useInterviewSSE = (sessionId: string) => {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const token = localStorage.getItem("token");
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+    
+    // Gắn token vào query string để đi qua auth middleware
+    const eventSource = new EventSource(
+      `${API_URL}/interview-ai/${sessionId}/stream?token=${token}`
+    );
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "SYNC_SESSION") {
+          // Invalidate cache -> React Query tự động trigger fetch data mới!
+          queryClient.invalidateQueries({ queryKey: ["interviewMessages", sessionId] });
+        }
+      } catch (error) {
+        console.error("Lỗi parse SSE message:", error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("Lỗi kết nối SSE:", error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close(); // Dọn dẹp kết nối khi unmount (đóng tab)
+    };
+  }, [sessionId, queryClient]);
 };
 
 export const useStartInterview = (sessionId: string) => {

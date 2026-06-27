@@ -19,13 +19,19 @@ declare global {
  */
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   try {
-    // 1. Lấy token từ header Authorization
+    // 1. Lấy token từ header Authorization hoặc URL Query (dành cho SSE)
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Vui lòng đăng nhập để truy cập');
+    let token: string | undefined;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.query.token && typeof req.query.token === 'string') {
+      token = req.query.token;
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw new UnauthorizedException('Vui lòng đăng nhập để truy cập');
+    }
 
     // 2. Xác thực token
     const decoded = jwt.verify(

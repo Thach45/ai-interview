@@ -6,6 +6,7 @@ import { AiService, aiService } from '../core/ai.service';
 import { BadRequestException, NotFoundException } from '../../exceptions';
 import { creditsService } from '../../shared/services/credits.service';
 import { googleTtsService, GoogleTtsService } from '../core/google-tts.service';
+import { eventEmitter } from '../../utils/eventEmitter';
 
 const CHAT_HISTORY_WINDOW_SIZE = 8;
 
@@ -101,6 +102,19 @@ export class InterviewAiService {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
     return session;
+  }
+
+  async getInterviewMessages(userId: string, sessionId: string) {
+    // Đảm bảo user có quyền xem phiên này
+    await this.getInterviewSession(userId, sessionId);
+
+    // Lấy toàn bộ tin nhắn
+    const messages = await this.prismaClient.interviewMessage.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+    });
+    
+    return messages;
   }
 
   /**
@@ -292,6 +306,9 @@ export class InterviewAiService {
         data: { status: newStatus },
       });
     }
+
+    // 7. Bắn sự kiện SSE để thông báo có tin nhắn mới cho tất cả các tab
+    eventEmitter.emit(`chat_updated_${sessionId}`);
 
     return {
       message: botMessage,

@@ -19,6 +19,14 @@ export const interviewAiApi = {
   },
 
   /**
+   * Lấy lịch sử tin nhắn của phiên phỏng vấn
+   */
+  getInterviewMessages: async (sessionId: string): Promise<any[]> => {
+    const response = await apiClient.get<any, { success: boolean; data: any[] }>(`/interview-ai/${sessionId}/messages`);
+    return response.data;
+  },
+
+  /**
    * Khởi chạy buổi phỏng vấn — nhận câu hỏi đầu tiên từ AI
    */
   startInterview: async (sessionId: string): Promise<any[]> => {
