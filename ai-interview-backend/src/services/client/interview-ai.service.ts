@@ -309,9 +309,7 @@ export class InterviewAiService {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
 
-    if (session.status !== 'COMPLETED') {
-      throw new BadRequestException('Phiên phỏng vấn chưa hoàn thành');
-    }
+    
 
     const allMessages = await this.prismaClient.interviewMessage.findMany({
       where: { sessionId },
@@ -335,7 +333,13 @@ export class InterviewAiService {
 
     const cvText = session.cv?.contentExtracted || '';
     const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
-
+    // cập nhật trạng thái phiên phỏng vấn
+    if (session.status !== 'COMPLETED') {
+      await this.prismaClient.interviewSession.update({
+        where: { id: sessionId },
+        data: { status: 'COMPLETED' },
+      });
+    }
     const interviewResult = await aiService.submitInterviewResult({
       cvText,
       jdText,
