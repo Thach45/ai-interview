@@ -17,6 +17,7 @@ import { AdminCategoriesPage } from '../pages/admin/AdminCategoriesPage';
 import { AdminCvTemplatesPage } from '../pages/admin/AdminCvTemplatesPage';
 import { AdminTransactionsPage } from '../pages/admin/AdminTransactionsPage';
 import { AdminPackagesPage } from '../pages/admin/AdminPackagesPage';
+import { AdminNotificationsPage } from '../pages/admin/AdminNotificationsPage';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
@@ -143,6 +144,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/admin/packages" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminPackagesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/notifications" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminNotificationsPage />
           </ProtectedRoute>
         } />
 

@@ -16,6 +16,7 @@ import notificationRoutes from './client/notification.route';
 import ttsRoute from './shared/tts.route';
 import dashboardAdminRoute from './admin/dashboard.route';
 import adminCvTemplateRoute from './admin/cv-template.route';
+import adminNotificationRoute from './admin/notificationAdmin.route';
 
 const router: Router = Router();
 
@@ -47,5 +48,6 @@ router.use('/admin/packages', adminPackagesRoute);
 router.use('/admin/transactions', adminTransactionsRoute);
 router.use('/admin/dashboard', dashboardAdminRoute);
 router.use('/admin/cv-templates', adminCvTemplateRoute);
+router.use('/admin/notifications', adminNotificationRoute);
 
 export default router;

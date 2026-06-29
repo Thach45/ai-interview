@@ -12,6 +12,7 @@ const MENU_ITEMS = [
   { id: 'cv-templates', label: 'Mẫu CV', icon: 'web', path: '/admin/cv-templates' },
   { id: 'transactions', label: 'Giao dịch & Credit', icon: 'toll', path: '/admin/transactions' },
   { id: 'packages', label: 'Gói dịch vụ', icon: 'inventory_2', path: '/admin/packages' },
+  { id: 'notifications', label: 'Phát thông báo', icon: 'campaign', path: '/admin/notifications' },
   // { id: 'interviews', label: 'Phiên phỏng vấn', icon: 'history', path: '/admin/interviews' },
 ];
 

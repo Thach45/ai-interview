@@ -3,11 +3,11 @@ import type { GetNotificationsResponse } from '../type/notification.type';
 
 export const notificationApi = {
   getNotifications: (page = 1, limit = 20) => 
-    apiClient.get<any, { success: boolean; data: GetNotificationsResponse }>(`/client/notifications?page=${page}&limit=${limit}`),
+    apiClient.get<any, { success: boolean; data: GetNotificationsResponse }>(`/notifications?page=${page}&limit=${limit}`),
 
   markAsRead: (id: string) => 
-    apiClient.patch<any, { success: boolean }>(`/client/notifications/${id}/read`),
+    apiClient.patch<any, { success: boolean }>(`/notifications/${id}/read`),
 
   markAllAsRead: () => 
-    apiClient.patch<any, { success: boolean }>('/client/notifications/read-all'),
+    apiClient.patch<any, { success: boolean }>('/notifications/read-all'),
 };

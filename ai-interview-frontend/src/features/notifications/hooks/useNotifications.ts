@@ -48,12 +48,12 @@ export const useNotifications = () => {
 
   useEffect(() => {
     // Chỉ kết nối SSE nếu đã đăng nhập (có token)
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
     const API_URL = import.meta.env.VITE_API_URL
     if (!token) return;
 
     // Sử dụng URL SSE
-    const sseUrl = `${API_URL}/v1/client/notifications/stream`;
+    const sseUrl = `${API_URL}/notifications/stream`;
     const eventSource = new EventSource(`${sseUrl}?token=${token}`);
 
     eventSource.onmessage = (event) => {
