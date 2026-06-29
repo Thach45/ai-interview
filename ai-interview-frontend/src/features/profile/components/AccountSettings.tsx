@@ -37,25 +37,6 @@ export const AccountSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       
-      {/* Cài đặt ngôn ngữ */}
-      <div className="bg-bg-canvas rounded-lg border border-border-hairline shadow-[0_1px_2px_rgba(15,15,15,0.04)] overflow-hidden">
-        <button 
-          onClick={() => toggleAccordion('language')}
-          className="w-full px-6 py-5 flex items-center justify-between bg-bg-canvas hover:bg-bg-surface transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <Languages className="w-5 h-5 text-primary" />
-            <span className="text-[16px] font-medium text-text-primary">Cài đặt ngôn ngữ</span>
-          </div>
-          {openAccordion === 'language' ? <ChevronUp className="w-4 h-4 text-text-tertiary" /> : <ChevronDown className="w-4 h-4 text-text-tertiary" />}
-        </button>
-        {openAccordion === 'language' && (
-          <div className="px-6 pb-6 pt-2 border-t border-border-hairline">
-            <p className="text-[14px] text-text-tertiary font-normal">Chức năng đang được phát triển...</p>
-          </div>
-        )}
-      </div>
-
       {/* Đổi mật khẩu */}
       <div className="bg-bg-canvas rounded-lg border border-border-hairline shadow-[0_1px_2px_rgba(15,15,15,0.04)] overflow-hidden">
         <button 
@@ -101,25 +82,6 @@ export const AccountSettings: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        )}
-      </div>
-
-      {/* Tùy chọn thông báo */}
-      <div className="bg-bg-canvas rounded-lg border border-border-hairline shadow-[0_1px_2px_rgba(15,15,15,0.04)] overflow-hidden">
-        <button 
-          onClick={() => toggleAccordion('notifications')}
-          className="w-full px-6 py-5 flex items-center justify-between bg-bg-canvas hover:bg-bg-surface transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <Bell className="w-5 h-5 text-primary" />
-            <span className="text-[16px] font-medium text-text-primary">Tùy chọn thông báo</span>
-          </div>
-          {openAccordion === 'notifications' ? <ChevronUp className="w-4 h-4 text-text-tertiary" /> : <ChevronDown className="w-4 h-4 text-text-tertiary" />}
-        </button>
-        {openAccordion === 'notifications' && (
-          <div className="px-6 pb-6 pt-2 border-t border-border-hairline">
-             <p className="text-[14px] text-text-tertiary font-normal">Chức năng đang được phát triển...</p>
           </div>
         )}
       </div>

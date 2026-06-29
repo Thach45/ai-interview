@@ -3,9 +3,10 @@ import { MainLayout } from '../layouts/MainLayout';
 import { EditProfile } from '../features/profile/components/EditProfile';
 import { AccountSettings } from '../features/profile/components/AccountSettings';
 import { PurchaseHistory } from '../features/profile/components/PurchaseHistory';
+import { ProfileNotifications } from '../features/profile/components/ProfileNotifications';
 
 const ProfilePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'purchase'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'purchase' | 'notifications'>('profile');
 
   return (
     <MainLayout title="Quản lý tài khoản">
@@ -39,6 +40,16 @@ const ProfilePage: React.FC = () => {
           >
             Lịch sử mua hàng
           </button>
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className={`px-5 py-2 rounded-full text-[14px] font-bold transition-all whitespace-nowrap border ${
+              activeTab === 'notifications' 
+                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
+                : 'bg-transparent text-text-tertiary border-border-hairline hover:bg-primary/5 hover:text-primary hover:border-primary/20'
+            }`}
+          >
+            Thông báo
+          </button>
         </div>
 
         {/* Content */}
@@ -51,8 +62,10 @@ const ProfilePage: React.FC = () => {
               <AccountSettings />
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'purchase' ? (
           <PurchaseHistory />
+        ) : (
+          <ProfileNotifications />
         )}
 
       </>
