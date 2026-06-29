@@ -1,4 +1,5 @@
 import { ai, AI_MODEL_CONFIG } from '../../config/ai.config';
+import { InterviewLanguage } from '@prisma/client';
 import {
   CV_ANALYSIS_RESPONSE_SCHEMA,
   CV_ANALYSIS_SYSTEM_PROMPT,
@@ -30,7 +31,12 @@ import {
 import { AppException } from '../../exceptions';
 
 export class AiService {
-  async transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
+  async transcribeAudio(
+    audioBuffer: Buffer,
+    mimeType: string,
+    language: InterviewLanguage = InterviewLanguage.VIETNAMESE,
+  ): Promise<string> {
+    const langStr = language === InterviewLanguage.ENGLISH ? 'Tiếng Anh' : 'Tiếng Việt';
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -45,7 +51,7 @@ export class AiService {
                 },
               },
               {
-                text: 'Bạn là một chuyên gia nhận diện giọng nói tiếng Việt. Hãy chuyển đổi đoạn âm thanh này thành văn bản một cách chính xác nhất. Chỉ trả về văn bản được nói, không thêm bất kỳ nhận xét, chú thích hay văn bản nào khác. Nếu không nghe rõ, hãy trả về rỗng.',
+                text: `Bạn là một chuyên gia nhận diện giọng nói. Ngôn ngữ của đoạn hội thoại này là: ${langStr}. Hãy chuyển đổi đoạn âm thanh này thành văn bản một cách chính xác nhất. Chỉ trả về văn bản được nói, không thêm bất kỳ nhận xét, chú thích hay văn bản nào khác. Nếu không nghe rõ, hãy trả về rỗng.`,
               },
             ],
           },
@@ -171,8 +177,6 @@ export class AiService {
       for await (const chunk of responseStream) {
         if (chunk.text) {
           fullText += chunk.text;
-          console.log('RAW CHUNK:', chunk.text);
-
           if (onStream) {
             // Regex bóc tách chữ nằm trong field "reply": "..."
             // Hỗ trợ bắt chuỗi kể cả khi chưa có dấu ngoặc kép đóng (vì đang stream)
@@ -187,7 +191,6 @@ export class AiService {
               // Chỉ gửi xuống khi có sự thay đổi
               if (currentReply !== lastExtractedReply) {
                 lastExtractedReply = currentReply;
-                console.log('STREAMING:', currentReply);
                 onStream(currentReply);
               }
             }

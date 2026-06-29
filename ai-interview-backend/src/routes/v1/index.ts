@@ -12,6 +12,7 @@ import interviewAIRoute from './client/interview-ai.route';
 import adminPackagesRoute from './admin/packages.route';
 import adminTransactionsRoute from './admin/transactions.route';
 import subscriptionRoutes from './client/subscription.routes';
+import notificationRoutes from './client/notification.route';
 import ttsRoute from './shared/tts.route';
 import dashboardAdminRoute from './admin/dashboard.route';
 import adminCvTemplateRoute from './admin/cv-template.route';
@@ -29,6 +30,7 @@ router.use('/job-templates', jobTemplateRoute);
 router.use('/categories', jobCategoryRoute);
 router.use('/interview-ai', interviewAIRoute);
 router.use('/subscriptions', subscriptionRoutes);
+router.use('/notifications', notificationRoutes);
 
 // ==========================
 // SHARED ROUTES (Dùng chung)

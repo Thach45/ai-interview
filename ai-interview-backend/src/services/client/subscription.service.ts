@@ -132,10 +132,10 @@ export class SubscriptionService {
 
           if (response.ok) {
             const responseData = await response.json();
-            
+
             if (responseData && responseData.transactions) {
               const transactions = responseData.transactions as any[];
-              
+
               for (const sepayTx of transactions) {
                 const transactionContent: string | undefined = sepayTx.transaction_content;
                 const amountInStr: string | undefined = sepayTx.amount_in;
@@ -144,16 +144,18 @@ export class SubscriptionService {
                 if (!transactionContent || !amountInStr) continue;
 
                 // Kiểm tra nội dung chuyển khoản có chứa mã đối soát không
-                if (transactionContent.toLowerCase().includes(transaction.paymentRefId.toLowerCase())) {
+                if (
+                  transactionContent.toLowerCase().includes(transaction.paymentRefId.toLowerCase())
+                ) {
                   try {
                     const amountIn = parseFloat(amountInStr);
-                    
+
                     if (amountIn >= expectedAmount) {
                       // Kiểm tra xem sepayTransactionId này đã được xử lý chưa để tránh double processing
                       const alreadyProcessed = await prisma.transaction.findFirst({
                         where: { sepayTransactionId: sepayId.toString() },
                       });
-                      
+
                       if (!alreadyProcessed) {
                         // Cập nhật trạng thái giao dịch thành công và cộng credit
                         await prisma.$transaction([
@@ -169,14 +171,19 @@ export class SubscriptionService {
                             where: { id: transaction.userId },
                             data: {
                               creditsBalance: {
-                                increment: transaction.creditsAdded === -1 ? 999999 : transaction.creditsAdded,
+                                increment:
+                                  transaction.creditsAdded === -1
+                                    ? 999999
+                                    : transaction.creditsAdded,
                               },
                             },
                           }),
                         ]);
 
-                        console.log(`✅ Đã nạp ${transaction.creditsAdded} credits cho user ${transaction.user.email} qua Polling`);
-                        
+                        console.log(
+                          `✅ Đã nạp ${transaction.creditsAdded} credits cho user ${transaction.user.email} qua Polling`,
+                        );
+
                         // Lấy lại transaction mới nhất để trả về
                         transaction = await prisma.transaction.findUnique({
                           where: { id: transaction.id },

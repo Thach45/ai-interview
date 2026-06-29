@@ -1,20 +1,33 @@
 import { AppException } from '../../exceptions';
-
+import { InterviewPersona, InterviewLanguage } from '@prisma/client';
+import { PERSONA_VOICES } from '../../const/persona-tts';
 export class GoogleTtsService {
   private readonly apiKey = process.env.GOOGLE_TTS_API_KEY;
 
-  async synthesizeSpeech(text: string): Promise<Buffer> {
+  async synthesizeSpeech(
+    text: string,
+    language: InterviewLanguage = InterviewLanguage.VIETNAMESE,
+    persona: InterviewPersona = InterviewPersona.PROFESSIONAL,
+  ): Promise<Buffer> {
     if (!this.apiKey) {
       throw new AppException('Chưa cấu hình GOOGLE_TTS_API_KEY', 500);
     }
 
     const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${this.apiKey}`;
 
-    // Sử dụng giọng đọc WaveNet/Neural2 tiếng Việt chuẩn
+    // Fallback in case persona doesn't exist for some reason
+    const voiceConfig =
+      PERSONA_VOICES[language]?.[persona] ||
+      PERSONA_VOICES[InterviewLanguage.VIETNAMESE][InterviewPersona.PROFESSIONAL];
+
     const requestBody = {
       input: { text },
-      voice: { languageCode: 'vi-VN', name: 'vi-VN-Neural2-A' },
-      audioConfig: { audioEncoding: 'MP3' },
+      voice: { languageCode: voiceConfig.voiceId.slice(0, 5), name: voiceConfig.voiceId },
+      audioConfig: {
+        audioEncoding: 'MP3',
+        speakingRate: voiceConfig.speed,
+        pitch: voiceConfig.pitch,
+      },
     };
 
     const response = await fetch(url, {

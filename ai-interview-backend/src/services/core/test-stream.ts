@@ -2,16 +2,16 @@ import { ai, AI_MODEL_CONFIG } from '../../config/ai.config';
 
 async function test() {
   const schema = {
-    type: "OBJECT",
+    type: 'OBJECT',
     properties: {
-      reply: { type: "STRING" },
-      suggestedAction: { type: "STRING", enum: ["CONTINUE", "FINISH"] }
-    }
+      reply: { type: 'STRING' },
+      suggestedAction: { type: 'STRING', enum: ['CONTINUE', 'FINISH'] },
+    },
   };
 
   const responseStream = await ai.models.generateContentStream({
     model: AI_MODEL_CONFIG.model,
-    contents: "Nói xin chào khoảng 50 chữ",
+    contents: 'Nói xin chào khoảng 50 chữ',
     config: {
       ...AI_MODEL_CONFIG.config,
       responseSchema: schema,
@@ -19,7 +19,7 @@ async function test() {
   });
 
   for await (const chunk of responseStream) {
-    console.log("CHUNK ARRIVED:", chunk.text);
+    console.log('CHUNK ARRIVED:', chunk.text);
   }
 }
 

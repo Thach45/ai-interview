@@ -65,13 +65,15 @@ export const dashboardStatsResponseSchema = z.object({
     voice: z.number(),
     text: z.number(),
   }),
-  tokenChart: z.array(
-    z.object({
-      date: z.string(),
-      input: z.number(),
-      output: z.number(),
-    })
-  ).optional(),
+  tokenChart: z
+    .array(
+      z.object({
+        date: z.string(),
+        input: z.number(),
+        output: z.number(),
+      }),
+    )
+    .optional(),
 });
 
 export type DashboardStatsResponse = z.infer<typeof dashboardStatsResponseSchema>;

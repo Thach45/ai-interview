@@ -1,4 +1,9 @@
-import { InterviewSession, PrismaClient } from '@prisma/client';
+import {
+  InterviewLanguage,
+  InterviewPersona,
+  InterviewSession,
+  PrismaClient,
+} from '@prisma/client';
 import prisma from '../../config/prisma';
 
 import { SetupInterviewBody } from '../../validations/interview-ai.validation';
@@ -451,13 +456,23 @@ export class InterviewAiService {
     buffer: Buffer,
     mimeType: string,
   ) {
-    const text = await this.aiService.transcribeAudio(buffer, mimeType);
-    console.log('debug text stt', text);
+    const session = await this.prismaClient.interviewSession.findFirst({
+      where: { id: sessionId, userId },
+    });
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
+    }
+    const language = session.language || InterviewLanguage.VIETNAMESE;
+    const persona = session.persona || InterviewPersona.PROFESSIONAL;
+
+    const text = await this.aiService.transcribeAudio(buffer, mimeType, language);
     const responseAI = await this.sendChatMessage(userId, sessionId, text, false);
-    console.log('debug response ai', responseAI);
     const audioText = responseAI.message.content;
-    const audioResponse = await this.googleTtsService.synthesizeSpeech(audioText);
-    console.log('debug audio response', audioResponse);
+    const audioResponse = await this.googleTtsService.synthesizeSpeech(
+      audioText,
+      language,
+      persona,
+    );
     return {
       ...responseAI,
       userText: text,

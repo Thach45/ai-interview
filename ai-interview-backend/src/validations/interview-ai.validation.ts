@@ -21,12 +21,25 @@ export const interviewAISchema = z.object({
         .optional()
         .nullable(),
 
-      customJdText: z.string().optional().nullable(),
+      customJdText: z
+        .string()
+        .max(3000, 'Mô tả công việc không được vượt quá 3000 ký tự')
+        .optional()
+        .nullable(),
 
-      position: z.string().min(1, 'Vui lòng chọn vị trí phỏng vấn'),
+      position: z
+        .string()
+        .min(1, 'Vui lòng chọn vị trí phỏng vấn')
+        .max(100, 'Vị trí phỏng vấn không được vượt quá 100 ký tự')
+        .transform((val) => val.replace(/[\r\n]+/g, ' ').trim()),
 
       // Tên công ty là tùy chọn (Tương thích với "Tùy chọn" trên UI)
-      nameCompany: z.string().optional().nullable(),
+      nameCompany: z
+        .string()
+        .max(100, 'Tên công ty không được vượt quá 100 ký tự')
+        .optional()
+        .nullable()
+        .transform((val) => (val ? val.replace(/[\r\n]+/g, ' ').trim() : val)),
 
       // Preprocess giúp tự động chuyển từ 'Junior' / 'Junior' / 'junior' của Frontend thành 'JUNIOR' trong Prisma
       level: z.preprocess(
@@ -56,7 +69,15 @@ export const interviewAISchema = z.object({
         z.nativeEnum(InterviewPersona),
       ),
       // Cho phép mảng kỹ năng trống nếu ứng viên không điền (Tương thích UI)
-      focusSkills: z.array(z.string()).default([]),
+      focusSkills: z
+        .array(
+          z
+            .string()
+            .max(50, 'Mỗi kỹ năng không quá 50 ký tự')
+            .transform((val) => val.replace(/[\r\n]+/g, ' ').trim()),
+        )
+        .max(20, 'Tối đa 20 kỹ năng')
+        .default([]),
     })
     .refine((data) => data.jobDescriptionId || data.customJdText, {
       message: 'Vui lòng cung cấp jobDescriptionId hoặc customJdText',
@@ -85,6 +106,6 @@ export const chatMessageWithTTSSchema = z.object({
   params: z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'sessionId không hợp lệ (phải là MongoDB ObjectId)'),
   }),
-  // Chú ý: Vì Endpoint này nhận file âm thanh qua form-data (req.file) 
+  // Chú ý: Vì Endpoint này nhận file âm thanh qua form-data (req.file)
   // nên chúng ta không validate req.body bằng Zod ở đây mà sẽ check req.file ở Controller.
 });

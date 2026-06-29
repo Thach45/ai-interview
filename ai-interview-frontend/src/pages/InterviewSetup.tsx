@@ -200,12 +200,7 @@ const InterviewSetupPage: React.FC = () => {
 
           <div className="relative z-10 flex flex-col h-full p-6 lg:p-8">
             <div className="mb-10">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                  <Rocket className="text-white" size={20} />
-                </div>
-                <span className="text-lg font-bold text-gray-900">Smart Interview</span>
-              </div>
+              
               <h1 className="text-3xl font-bold text-gray-900 leading-tight">
                 Thiết lập <span className="text-primary">Phiên tập</span>
               </h1>
@@ -306,6 +301,7 @@ const InterviewSetupPage: React.FC = () => {
                           <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                           <input
                             type="text"
+                            maxLength={100}
                             className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-sm font-medium"
                             placeholder="Ví dụ: Senior Frontend Engineer"
                             value={formData.jobTitle}
@@ -319,6 +315,7 @@ const InterviewSetupPage: React.FC = () => {
                           <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                           <input
                             type="text"
+                            maxLength={100}
                             className="w-full h-14 pl-12 pr-4 rounded-2xl bg-gray-50 border border-gray-100 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-sm font-medium"
                             placeholder="Ví dụ: Google, TechCorp..."
                             value={formData.companyName}
@@ -334,6 +331,7 @@ const InterviewSetupPage: React.FC = () => {
                       </div>
                       <div className="relative">
                         <textarea
+                          maxLength={3000}
                           className="w-full p-8 rounded-3xl bg-gray-50 border border-gray-100 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-sm font-medium min-h-[300px] leading-relaxed"
                           placeholder="Dán nội dung JD vào đây để AI phân tích các yêu cầu, kỹ năng và trách nhiệm..."
                           value={formData.jdText}
@@ -341,7 +339,7 @@ const InterviewSetupPage: React.FC = () => {
                         />
                         <div className="absolute bottom-6 right-6">
                           <div className="px-3 py-1 bg-white border border-gray-100 rounded-lg text-[10px] font-bold text-gray-400 shadow-sm">
-                            {formData.jdText.length} ký tự
+                            {formData.jdText.length} / 3000 ký tự
                           </div>
                         </div>
                       </div>
@@ -547,6 +545,7 @@ const InterviewSetupPage: React.FC = () => {
                         <div className="flex items-center gap-2 px-4 py-2 bg-white/50 border border-dashed border-gray-300 rounded-xl focus-within:border-primary/50 focus-within:bg-white transition-all">
                           <input
                             type="text"
+                            maxLength={50}
                             placeholder="+ Thêm..."
                             className="bg-transparent outline-none text-[11px] font-bold w-20 text-gray-900 placeholder:text-gray-300"
                             value={formData.newSkill}
@@ -605,7 +604,9 @@ const InterviewSetupPage: React.FC = () => {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const audio = new Audio(p.previewAudio);
+                                      const isEn = formData.language === InterviewLanguage.ENGLISH || formData.language === InterviewLanguage.BILINGUAL;
+                                      const audioSrc = isEn ? p.previewAudio.replace('.mp3', '-en.mp3') : p.previewAudio;
+                                      const audio = new Audio(audioSrc);
                                       audio.play();
                                     }}
                                     className="w-8 h-8 rounded-full bg-white/20 hover:bg-primary flex items-center justify-center backdrop-blur-md transition-all group/play border border-white/20"

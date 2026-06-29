@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
 
 
 interface HeaderProps {
@@ -22,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 lg:px-10 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30 shrink-0 gap-6 overflow-hidden">
+    <header className="h-16 flex items-center justify-between px-6 lg:px-10 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shrink-0 gap-6">
       
       {/* Left: Brand & Navigation */}
       <div className="flex items-center shrink-0">
@@ -36,15 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
         </Link>
         
         {/* Toggle Nav Button */}
-        <button 
-          onClick={() => setIsNavCollapsed(!isNavCollapsed)}
-          className="hidden lg:flex size-9 items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all duration-300 z-10"
-          title={isNavCollapsed ? "Mở rộng Menu" : "Thu gọn Menu"}
-        >
-          <span className="material-symbols-outlined text-[20px] transition-all duration-500">
-            {isNavCollapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}
-          </span>
-        </button>
+        
 
         {/* Navigation Container (Animated Width) */}
         <div 
@@ -77,8 +70,8 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
 
       {/* Right: Search & Actions */}
       <div className="flex items-center gap-4 flex-1 justify-end transition-all duration-500">
-        
-        {/* Search Bar - Grows dynamically */}
+
+        {/* Search Bar - Grows dynamically
         {!hideSearch && (
           <div 
             className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-gray-100/60 hover:bg-gray-100 border border-transparent focus-within:bg-white focus-within:border-gray-200 focus-within:shadow-sm rounded-full transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
@@ -94,14 +87,12 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
               ⌘K
             </kbd>
           </div>
-        )}
+        )} */}
 
        
 
         {/* Notifications */}
-        <button className="size-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
-          <span className="material-symbols-outlined text-[20px]">notifications</span>
-        </button>
+        <NotificationDropdown />
 
         {/* Profile Avatar */}
         <Link to="/profile" className="ml-2 block rounded-full hover:ring-2 hover:ring-primary/20 transition-all">
