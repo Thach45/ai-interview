@@ -1,0 +1,52 @@
+name: Cypress E2E
+
+on:
+  push:
+    branches: [main, master, develop/version-0.0.1]
+  pull_request:
+    branches: [main, master, develop/version-0.0.1]
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ai-interview-frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ai-interview-frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build frontend app
+        run: npm run build || true
+
+      - name: Start Vite dev server
+        run: |
+          npm run dev -- --host 0.0.0.0 --port 5173 > /tmp/vite.log 2>&1 &
+          echo $! > /tmp/vite.pid
+
+      - name: Wait for app to be ready
+        run: |
+          for i in {1..60}; do
+            if curl -sf http://127.0.0.1:5173 >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Vite did not start in time";
+          cat /tmp/vite.log;
+          exit 1
+
+      - name: Run Cypress tests
+        run: npx cypress run --browser electron --headless
