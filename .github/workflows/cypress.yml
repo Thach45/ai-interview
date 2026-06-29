@@ -29,7 +29,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Build frontend app
-        run: npm run build || true
+        run: npm run dev
 
       - name: Start Vite dev server
         run: |
