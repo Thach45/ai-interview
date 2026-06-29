@@ -7,6 +7,7 @@ import { updateProfileSchema } from '../../../validations/user.validation';
 const router = express.Router();
 
 router.get('/', auth, userController.getCurrentProfile);
+router.get('/dashboard', auth, userController.getDashboardData);
 router.put('/me', auth, validate(updateProfileSchema), userController.updateProfile);
 
 export default router;

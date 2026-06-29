@@ -1,9 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export const PerformanceChart = () => {
-  const data = [45, 52, 48, 70, 65, 85, 80];
-  const labels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+interface PerformanceChartProps {
+  data?: number[];
+}
+
+export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data: propData }) => {
+  const data = propData && propData.length > 0 ? propData : [45, 52, 48, 70, 65, 85, 80];
+  const labels = data.length === 7 
+    ? ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
+    : data.map((_, i) => `Lần ${i + 1}`);
   
   const width = 800;
   const height = 200;

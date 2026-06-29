@@ -101,6 +101,119 @@ export class UserService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async getDashboardData(userId: string) {
+    // 1. Đếm tổng số phỏng vấn
+    const totalInterviews = await this._prisma.interviewSession.count({
+      where: { userId },
+    });
+
+    // 2. Đếm số phỏng vấn đã hoàn thành
+    const completedInterviews = await this._prisma.interviewSession.count({
+      where: { userId, status: 'COMPLETED' },
+    });
+
+    // 3. Đếm số CV đã phân tích/tải lên
+    const totalCvs = await this._prisma.userCv.count({
+      where: { userId },
+    });
+
+    // 4. Tính điểm trung bình phỏng vấn
+    const avgResult = await this._prisma.interviewResult.aggregate({
+      where: { session: { userId } },
+      _avg: { overallScore: true },
+    });
+    const averageScore = avgResult._avg.overallScore ? Math.round(avgResult._avg.overallScore) : 0;
+
+    // 5. Lấy xu hướng điểm số (tối đa 7 phiên phỏng vấn đã hoàn thành gần nhất, xếp theo thời gian tăng dần để vẽ biểu đồ)
+    const completedSessions = await this._prisma.interviewSession.findMany({
+      where: { userId, status: 'COMPLETED' },
+      include: { result: true },
+      orderBy: { createdAt: 'asc' },
+      take: 7,
+    });
+    const performanceTrend = completedSessions.map((s) => s.result?.overallScore || 0);
+
+    // 6. Lấy hoạt động gần đây (kết hợp CV và phỏng vấn)
+    const [recentCvs, recentSessions] = await Promise.all([
+      this._prisma.userCv.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+      this._prisma.interviewSession.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+    ]);
+
+    const activities: any[] = [];
+    recentCvs.forEach((cv) => {
+      activities.push({
+        id: cv.id,
+        type: 'CV_UPLOADED',
+        description: `Đã tải lên CV: ${cv.title}`,
+        createdAt: cv.createdAt,
+      });
+    });
+    recentSessions.forEach((session) => {
+      let description = `Bắt đầu phiên phỏng vấn vị trí: ${session.jobTitle}`;
+      if (session.status === 'COMPLETED') {
+        description = `Đã hoàn thành phỏng vấn vị trí: ${session.jobTitle}`;
+      } else if (session.status === 'IN_PROGRESS') {
+        description = `Đang phỏng vấn vị trí: ${session.jobTitle}`;
+      }
+      activities.push({
+        id: session.id,
+        type: 'INTERVIEW',
+        status: session.status,
+        description,
+        createdAt: session.createdAt,
+      });
+    });
+
+    // Sắp xếp hoạt động theo thời gian giảm dần và lấy 5 hoạt động mới nhất
+    activities.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const recentActivities = activities.slice(0, 5);
+
+    // 7. Gợi ý việc làm (Job Templates)
+    let suggestedJobs = await this._prisma.jobTemplate.findMany({
+      where: { isHotJob: true },
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        companyName: true,
+        companyLogo: true,
+      },
+    });
+
+    if (suggestedJobs.length < 3) {
+      const fallbackJobs = await this._prisma.jobTemplate.findMany({
+        take: 3 - suggestedJobs.length,
+        select: {
+          id: true,
+          title: true,
+          companyName: true,
+          companyLogo: true,
+        },
+      });
+      suggestedJobs = [...suggestedJobs, ...fallbackJobs];
+    }
+
+    return {
+      stats: {
+        totalInterviews,
+        completedInterviews,
+        totalCvs,
+        averageScore,
+      },
+      performanceTrend,
+      recentActivities,
+      suggestedJobs,
+    };
+  }
 }
 
 // Khởi tạo instance duy nhất
