@@ -353,7 +353,7 @@ const FilterButton = ({ children, active, onClick }: { children: React.ReactNode
     onClick={onClick}
     className={`px-4 py-2 text-[13px] font-bold rounded-lg transition-all whitespace-nowrap shrink-0 ${
       active 
-        ? 'bg-ink-deep text-white shadow-sm' 
+        ? 'bg-ink-deep text-black shadow-sm' 
         : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
     }`}
   >

@@ -145,7 +145,7 @@ const MyCvs: React.FC = () => {
           <div className="w-full lg:w-2/3 flex flex-col h-full bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden relative">
             {selectedCv ? (
               <div className="flex-1 overflow-hidden">
-                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                   <Viewer
                     fileUrl={selectedCv.fileUrl}
                     plugins={[defaultLayoutPluginInstance]}

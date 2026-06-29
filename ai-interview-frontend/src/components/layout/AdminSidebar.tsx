@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { authService } from '../../shared/services/auth.service';
+
 import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../shared/utils/cn';
 
@@ -18,7 +18,6 @@ const MENU_ITEMS = [
 
 
 const SECONDARY_ITEMS = [
-  { label: 'Cài đặt hệ thống', icon: 'settings', path: '/admin/settings' },
   { label: 'Trang người dùng', icon: 'open_in_new', path: '/' },
 ];
 

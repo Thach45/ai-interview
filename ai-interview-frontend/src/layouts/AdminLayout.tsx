@@ -20,13 +20,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, right
           <div className="flex items-center gap-4">
             <h2 className="text-[16px] font-semibold text-text-primary">{title || 'Admin Dashboard'}</h2>
           </div>
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             {rightAction && <div className="mr-2">{rightAction}</div>}
             <button className="material-symbols-outlined text-text-secondary hover:text-primary transition-colors">notifications</button>
             <div className="size-8 bg-primary/10 rounded-full border border-primary/20 flex items-center justify-center text-[12px] font-bold text-primary">
               AD
             </div>
-          </div>
+          </div> */}
         </header>
 
         {/* Nội dung trang */}

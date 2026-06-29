@@ -414,7 +414,7 @@ export default function CVAnalysisResultPage() {
         <div className="w-[45%] flex flex-col bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden relative">
           {/* Professional PDF Viewer using react-pdf-viewer */}
           <div className="flex-1 overflow-hidden relative">
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
               <Viewer
                 fileUrl={selectedCv?.fileUrl || ''}
                 plugins={[defaultLayoutPluginInstance]}

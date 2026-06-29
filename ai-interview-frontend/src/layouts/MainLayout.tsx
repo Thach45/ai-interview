@@ -66,10 +66,6 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
           {children}
         </div>
       </main>
-
-      
-
-      
     </div>
   );
 };
