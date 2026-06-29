@@ -7,6 +7,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import setupRoutes from './routes';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.config';
 
 import { apiLimiter } from './middlewares/rate-limit.middleware';
 
@@ -25,6 +27,9 @@ app.use(express.static('public'));
 app.use(cookieParser());
 
 setupRoutes(app);
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
 
 // Global Error Handler
 import { globalErrorHandler } from './middlewares/error.middleware';

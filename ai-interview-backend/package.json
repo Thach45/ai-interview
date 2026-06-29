@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "cd .. && husky install ai-interview-backend/.husky"
+    "prepare": "cd .. && husky install ai-interview-backend/.husky",
+    "export-docs": "tsx scripts/export-swagger.ts"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.4.1",
@@ -38,6 +39,8 @@
     "puppeteer": "^25.2.1",
     "react-router-dom": "^6.28.0",
     "rimraf": "^6.0.1",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^4.4.3"
   },
   "homepage": "https://github.com/Thach45/manage-task-typescript#readme",
@@ -55,11 +58,14 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^22.10.2",
     "@types/pdf-parse": "^1.1.5",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "express-list-endpoints": "^7.1.1",
     "husky": "^8.0.0",
     "nodemon": "^3.1.14",
     "prettier": "^3.8.3",
