@@ -169,10 +169,12 @@ describe("Profile Page", () => {
         });
 
         it("should NOT show error when fullName is filled", () => {
+            interceptUpdateProfile();
             fillFullName("Valid Name");
             getProfileForm().invoke("attr", "novalidate", "novalidate");
             submitEditForm();
 
+            cy.wait("@updateProfile");
             cy.get("p.text-semantic-error").should("not.exist");
         });
     });
