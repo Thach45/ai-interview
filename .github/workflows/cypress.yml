@@ -2,9 +2,9 @@ name: Cypress E2E
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, develop/version-0.0.1]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, develop/version-0.0.1]
 
 jobs:
   cypress:
@@ -21,12 +21,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: ai-interview-frontend/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build frontend app
         run: npm run build
