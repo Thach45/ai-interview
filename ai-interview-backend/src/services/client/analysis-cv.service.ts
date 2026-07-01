@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import prisma from '../../config/prisma';
 import { AiService, aiService } from '../core/ai.service';
+import { creditsService } from '../../shared/services/credits.service';
 
 export class AnalysisCVService {
   constructor(
@@ -28,6 +29,9 @@ export class AnalysisCVService {
       return existingAnalysis;
     }
 
+    // Kiểm tra số dư credit của user bằng Shared Service (3 credits cho phân tích CV)
+    await creditsService.checkCredits(userId, 3);
+
     // 1. Lấy nội dung CV của người dùng
     const userCv = await this._prisma.userCv.findFirstOrThrow({
       where: {
@@ -49,22 +53,27 @@ export class AnalysisCVService {
       jobTemplate.aiExtractedContext,
     );
 
-    // 4. Lưu kết quả vào bảng CvAnalysis
-    const savedAnalysis = await this._prisma.cvAnalysis.create({
-      data: {
-        userId: userId,
-        cvId: cvId,
-        jobTemplateId: jobTemplateId,
-        matchScore: analysisResult.matchScore,
-        summary: analysisResult.summary,
-        scoringDetails: analysisResult.scoringDetails,
-        strengths: analysisResult.strengths,
-        weaknesses: analysisResult.weaknesses,
-        skillsAnalysis: analysisResult.skillsAnalysis,
-        foundKeywords: analysisResult.foundKeywords,
-        missingKeywords: analysisResult.missingKeywords,
-        improvementSuggestions: analysisResult.improvementSuggestions,
-      },
+    // 4. Thực hiện Transaction: Trừ 3 credit của user và lưu phiên phân tích vào DB
+    const savedAnalysis = await this._prisma.$transaction(async (tx) => {
+      // Gọi shared service để trừ 3 credit, truyền tx client vào
+      await creditsService.decrementCredits(userId, 3, tx);
+
+      return tx.cvAnalysis.create({
+        data: {
+          userId: userId,
+          cvId: cvId,
+          jobTemplateId: jobTemplateId,
+          matchScore: analysisResult.matchScore,
+          summary: analysisResult.summary,
+          scoringDetails: analysisResult.scoringDetails,
+          strengths: analysisResult.strengths,
+          weaknesses: analysisResult.weaknesses,
+          skillsAnalysis: analysisResult.skillsAnalysis,
+          foundKeywords: analysisResult.foundKeywords,
+          missingKeywords: analysisResult.missingKeywords,
+          improvementSuggestions: analysisResult.improvementSuggestions,
+        },
+      });
     });
 
     return savedAnalysis;

@@ -91,6 +91,12 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
 
        
 
+        {/* Credit Balance */}
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100 font-semibold text-[13px] mr-2">
+          <span className="material-symbols-outlined text-[16px]">stars</span>
+          {user?.creditsBalance || 0} Credits
+        </div>
+
         {/* Notifications */}
         <NotificationDropdown />
 

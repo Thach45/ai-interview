@@ -12,7 +12,7 @@ export class CreditsService {
    * @throws NotFoundException nếu không tìm thấy người dùng
    * @throws BadRequestException nếu tài khoản hết lượt phỏng vấn (credits <= 0)
    */
-  async checkCredits(userId: string) {
+  async checkCredits(userId: string, credit: number) {
     const user = await this.prismaClient.user.findUnique({
       where: { id: userId },
     });
@@ -21,9 +21,9 @@ export class CreditsService {
       throw new NotFoundException('Không tìm thấy người dùng');
     }
 
-    if (user.creditsBalance <= 0) {
+    if (user.creditsBalance < credit) {
       throw new BadRequestException(
-        'Tài khoản của bạn đã hết lượt phỏng vấn. Vui lòng nạp thêm credit!',
+        `Tài khoản của bạn đã hết lượt phỏng vấn. Cần ít nhất ${credit} credits!`,
       );
     }
 
@@ -35,11 +35,11 @@ export class CreditsService {
    * @param userId ID của người dùng cần trừ credit
    * @param tx Prisma Transaction Client (nếu thực hiện trong transaction)
    */
-  async decrementCredits(userId: string, tx?: Prisma.TransactionClient) {
+  async decrementCredits(userId: string, credit: number, tx?: Prisma.TransactionClient) {
     const client = tx || this.prismaClient;
     return client.user.update({
       where: { id: userId },
-      data: { creditsBalance: { decrement: 1 } },
+      data: { creditsBalance: { decrement: credit } },
     });
   }
 }

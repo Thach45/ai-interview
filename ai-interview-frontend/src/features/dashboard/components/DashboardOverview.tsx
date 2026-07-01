@@ -76,7 +76,7 @@ export const DashboardOverview = () => {
                 <span className="material-symbols-outlined text-primary text-[24px]">history</span>
                 Hoạt động gần đây
               </h2>
-              <a href="#" className="text-[14px] font-medium text-primary hover:underline">Xem tất cả</a>
+         
             </div>
             
             {dashboardData?.recentActivities && dashboardData.recentActivities.length > 0 ? (

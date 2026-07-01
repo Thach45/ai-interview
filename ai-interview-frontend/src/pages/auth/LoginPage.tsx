@@ -88,10 +88,10 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <button className="w-full bg-white border border-border-hairline text-text-primary py-2.5 rounded-xl font-bold text-[13px] hover:bg-bg-surface transition-all flex items-center justify-center gap-2">
+        {/* <button className="w-full bg-white border border-border-hairline text-text-primary py-2.5 rounded-xl font-bold text-[13px] hover:bg-bg-surface transition-all flex items-center justify-center gap-2">
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="size-4" alt="Google" />
           Tiếp tục với Google
-        </button>
+        </button> */}
 
         <p className="mt-6 text-center text-[13px] text-text-secondary">
           Mới biết đến AI Interview?{' '}

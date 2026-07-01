@@ -114,7 +114,13 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
           Phân tích CV
         </button>
         <button 
-          onClick={() => navigate('/interviews/setup')}
+          onClick={() => navigate('/interviews/setup', {
+            state: {
+              jobTitle: job.title,
+              companyName: job.companyName,
+              jdText: `MÔ TẢ CÔNG VIỆC:\n${job.responsibilities}\n\nYÊU CẦU ỨNG VIÊN:\n${job.requirements}`
+            }
+          })}
           className="flex-1 border border-primary/20 bg-white text-primary py-3 rounded-xl font-bold text-[14px] hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined text-[20px]">mic</span>

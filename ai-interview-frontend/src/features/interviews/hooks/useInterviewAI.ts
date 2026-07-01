@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { interviewAiApi } from "../api/interview-ai.api";
 import type { SetupInterviewRequest } from "../types/interview-ai.type";
+import { useAuthStore } from "../../../store/authStore";
 
 export const useInterviewAi = () => {
   const queryClient = useQueryClient();
@@ -12,6 +13,12 @@ export const useInterviewAi = () => {
       interviewAiApi.setupInterview(data),
     onSuccess: () => {
       toast.success("Setup interview thành công! 🎉");
+      // Trừ thẳng 7 credit trên giao diện (Optimistic Update) cho nhanh
+      const authStore = useAuthStore.getState();
+      if (authStore.user) {
+        const currentCredits = authStore.user.creditsBalance || 0;
+        authStore.updateCredits(Math.max(0, currentCredits - 7));
+      }
     },
     onError: (error: any) => {
       const message =

@@ -13,7 +13,13 @@ export const useProfile = () => {
    */
   const { data: profileResponse, isLoading: isFetchingProfile, refetch: refreshUser } = useQuery({
     queryKey: ["profile"],
-    queryFn: () => profileApi.getProfile(),
+    queryFn: async () => {
+      const response = await profileApi.getProfile();
+      if (token && response.data) {
+        setAuth(response.data, token);
+      }
+      return response;
+    },
     staleTime: 5 * 60 * 1000, // 5 phút
   });
 

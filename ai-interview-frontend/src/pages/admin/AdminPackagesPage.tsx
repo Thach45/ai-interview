@@ -187,9 +187,9 @@ export const AdminPackagesPage: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-wrap gap-2 mb-6">
-                    <span className="text-[11px] font-bold bg-bg-surface px-2 py-1 rounded text-text-secondary">
+                    {/* <span className="text-[11px] font-bold bg-bg-surface px-2 py-1 rounded text-text-secondary">
                       {pkg.durationDays} ngày
-                    </span>
+                    </span> */}
                     <span className="text-[11px] font-bold bg-bg-surface px-2 py-1 rounded text-text-secondary">
                       {pkg.credits === -1 ? 'Vô hạn' : `${pkg.credits} Credit`}
                     </span>

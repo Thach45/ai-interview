@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MainLayout } from '../layouts/MainLayout';
 import {
@@ -23,6 +23,9 @@ import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 
 const InterviewSetupPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const jobState = location.state as { jobTitle?: string, companyName?: string, jdText?: string } | null;
+
   const { cvs, uploadCv, isUploading } = useCvs();
   const { setupInterviewMutation } = useInterviewAi();
   const [step, setStep] = useState(1);
@@ -49,9 +52,9 @@ const InterviewSetupPage: React.FC = () => {
   }, [setupInterviewMutation.isPending]);
 
   const [formData, setFormData] = useState({
-    jobTitle: '',
-    companyName: '',
-    jdText: '',
+    jobTitle: jobState?.jobTitle || '',
+    companyName: jobState?.companyName || '',
+    jdText: jobState?.jdText || '',
     selectedCvId: '',
     level: ExperienceLevel.JUNIOR,
     language: InterviewLanguage.VIETNAMESE,

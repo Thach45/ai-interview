@@ -31,7 +31,7 @@ export class InterviewAiService {
    */
   async createInterviewSession(userId: string, body: SetupInterviewBody) {
     // 1. Kiểm tra số dư lượt phỏng vấn (creditsBalance) của user bằng Shared Service
-    await creditsService.checkCredits(userId);
+    await creditsService.checkCredits(userId, 7);
 
     // 2. Lấy nội dung CV để làm ngữ cảnh cho AI
     const cv = await this.prismaClient.userCv.findUnique({
@@ -73,7 +73,7 @@ export class InterviewAiService {
     // 5. Thực hiện Transaction: Trừ 1 credit của user và lưu phiên phỏng vấn mới vào DB
     const session = await this.prismaClient.$transaction(async (tx) => {
       // Gọi shared service để trừ 1 credit, truyền tx client vào
-      await creditsService.decrementCredits(userId, tx);
+      await creditsService.decrementCredits(userId, 7, tx);
 
       // Tạo interview session mới
       return tx.interviewSession.create({

@@ -75,7 +75,7 @@ export const PricingCard: React.FC<Props> = ({ pkg, index, onBuy }) => {
         </div>
         <p className="text-[12px] text-primary font-semibold mb-5">
           <span className="material-symbols-outlined text-[14px] align-middle mr-1">schedule</span>
-          {durationLabel} · {creditsLabel}
+         {creditsLabel}
         </p>
 
         {/* Features */}

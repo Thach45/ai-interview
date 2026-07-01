@@ -107,7 +107,7 @@ export const AccountSettings: React.FC = () => {
       </div>
 
       {/* Xóa tài khoản */}
-      <div className="bg-bg-surface-soft rounded-lg border border-semantic-error/20 overflow-hidden mt-8">
+      {/* <div className="bg-bg-surface-soft rounded-lg border border-semantic-error/20 overflow-hidden mt-8">
         <div className="px-6 py-4 border-b border-semantic-error/20 flex items-center gap-2.5 bg-semantic-error/[0.03]">
           <AlertTriangle className="w-5 h-5 text-semantic-error" />
           <h2 className="text-[16px] font-semibold text-semantic-error">Hành động nguy hiểm</h2>
@@ -121,7 +121,7 @@ export const AccountSettings: React.FC = () => {
             Xóa tài khoản
           </button>
         </div>
-      </div>
+      </div> */}
 
     </div>
   );

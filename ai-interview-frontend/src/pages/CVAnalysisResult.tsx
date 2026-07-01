@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cvApi } from '../features/cvs/api/cv.api';
 import { useCvs } from '../features/cvs/hooks/useCvs';
+import { useAuthStore } from '../store/authStore';
 import { 
   CheckCircle, XCircle, AlertTriangle, 
   Lightbulb, TrendingUp,
@@ -308,9 +309,21 @@ export default function CVAnalysisResultPage() {
   const { cvs } = useCvs();
   const selectedCv = cvs.find(c => c.id === cvId);
 
+  const queryClient = useQueryClient();
+
   const { data: analysisResponse, isLoading, error } = useQuery({
     queryKey: ['analyze-cv', cvId, id],
-    queryFn: () => cvApi.analyzeCv(cvId!, id!),
+    queryFn: async () => {
+      const res = await cvApi.analyzeCv(cvId!, id!);
+      
+      // Trừ 3 credits trên UI (Optimistic Update)
+      const authStore = useAuthStore.getState();
+      if (authStore.user) {
+        const currentCredits = authStore.user.creditsBalance || 0;
+        authStore.updateCredits(Math.max(0, currentCredits - 3));
+      }
+      return res;
+    },
     enabled: !!cvId && !!id,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60,
