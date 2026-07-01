@@ -34,68 +34,68 @@ Dưới đây là toàn bộ giao diện của hệ thống:
 
 ### Authentication
 **Đăng nhập (Login)**
-![Login](data_preview/img/Login%20Page.png)
+![Login](./data_preview/img/Login-Page.png)
 
 **Đăng ký (Register)**
-![Register](data_preview/img/Register%20Page.png)
+![Register](./data_preview/img/Register-Page.png)
 
 ### User App
 **Trang chủ (Dashboard)**
-![Dashboard](data_preview/img/Dashboard%20Page.png)
+![Dashboard](./data_preview/img/Dashboard-Page.png)
 
 **Trang cá nhân (Profile)**
-![Profile](data_preview/img/Profile%20Page.png)
+![Profile](./data_preview/img/Profile-Page.png)
 
 **Tìm việc làm (Jobs)**
-![Jobs](data_preview/img/Jobs%20Page.png)
+![Jobs](./data_preview/img/Jobs-Page.png)
 
 **Gói cước (Subscription)**
-![Subscription](data_preview/img/Subcription%20Page.png)
+![Subscription](./data_preview/img/Subcription-Page.png)
 
 ### Quản lý và Phân tích CV
 **Danh sách CV (My CV)**
-![My CV](data_preview/img/My%20CV%20Page.png)
+![My CV](./data_preview/img/My-CV-Page.png)
 
 **Tối ưu CV (Optimize CV)**
-![Optimize CV](data_preview/img/Optimize%20CV%20Page.png)
+![Optimize CV](./data_preview/img/Optimize-CV-Page.png)
 
 **Đánh giá CV (Report CV)**
-![Report CV](data_preview/img/Report%20CV%20Page.png)
+![Report CV](./data_preview/img/Report-CV-Page.png)
 
 ### Phỏng vấn Trí tuệ Nhân tạo
 **Thiết lập phòng phỏng vấn (Setup)**
-![Setup](data_preview/img/Setup%20Page.png)
+![Setup](./data_preview/img/Setup-Page.png)
 
 **Phỏng vấn Video (Interview Video)**
-![Interview Video](data_preview/img/Interview%20Video%20Page.png)
+![Interview Video](./data_preview/img/Interview-Video-Page.png)
 
 **Phỏng vấn Chat (Interview Chat)**
-![Interview Chat](data_preview/img/Interview%20Chat%20Page.png)
+![Interview Chat](./data_preview/img/Interview-Chat-Page.png)
 
 **Kết quả phỏng vấn (Interview Report)**
-![Interview Report](data_preview/img/Interview%20Report%20Page.png)
+![Interview Report](./data_preview/img/Interview-Report-Page.png)
 
 ### Quản trị hệ thống (Admin)
 **Trang chủ Admin (Admin Dashboard)**
-![Admin Dashboard](data_preview/img/Admin%20Dashboard%20Page.png)
+![Admin Dashboard](./data_preview/img/Admin-Dashboard-Page.png)
 
 **Quản lý Danh mục (Admin Categories)**
-![Admin Categories](data_preview/img/Admin%20Categories%20Page.png)
+![Admin Categories](./data_preview/img/Admin-Categories-Page.png)
 
 **Quản lý Công việc (Admin Jobs)**
-![Admin Jobs](data_preview/img/Admin%20Jobs%20Page.png)
+![Admin Jobs](./data_preview/img/Admin-Jobs-Page.png)
 
 **Quản lý Mẫu CV (Admin CV-template)**
-![Admin CV-template](data_preview/img/Admin%20CV-template%20Page.png)
+![Admin CV-template](./data_preview/img/Admin-CV-template-Page.png)
 
 **Quản lý Người dùng (Admin Users)**
-![Admin Users](data_preview/img/Admin%20Users%20Page.png)
+![Admin Users](./data_preview/img/Admin-Users-Page.png)
 
 **Quản lý Gói cước (Admin Packages)**
-![Admin Packages](data_preview/img/Admin%20Packages%20Page.png)
+![Admin Packages](./data_preview/img/Admin-Packages-Page.png)
 
 **Quản lý Giao dịch (Admin Transaction)**
-![Admin Transaction](data_preview/img/Admin%20Transaction%20Page.png)
+![Admin Transaction](./data_preview/img/Admin-Transaction-Page.png)
 
 ---
 
