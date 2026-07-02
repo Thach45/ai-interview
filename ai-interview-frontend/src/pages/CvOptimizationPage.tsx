@@ -26,6 +26,8 @@ const CvOptimizationPage: React.FC = () => {
     enabled: !!analysisId,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 60,
+   
+    
   });
 
   const { templates, isLoading: isLoadingTemplates } = useCvTemplatesClient();

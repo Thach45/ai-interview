@@ -8,7 +8,7 @@ const router: Router = Router();
  * Các route cho client xem danh sách và chi tiết JD
  * Yêu cầu đăng nhập nhưng không yêu cầu quyền Admin
  */
-router.get('/', auth, jobTemplateController.getAll);
-router.get('/:id', auth, jobTemplateController.getById);
+router.get('/', jobTemplateController.getAll);
+router.get('/:id', jobTemplateController.getById);
 
 export default router;

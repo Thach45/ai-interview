@@ -133,7 +133,7 @@ const JobsPage: React.FC = () => {
                     location={job.location}
                     salary={job.salaryRange}
                     type={job.employmentType}
-                    postedAt="Vừa xong"
+                    // postedAt="Vừa xong"
                     isSelected={selectedJob?.id === job.id}
                     onClick={() => setSelectedJob(job)}
                   />

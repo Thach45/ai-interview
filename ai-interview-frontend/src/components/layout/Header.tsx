@@ -10,11 +10,11 @@ interface HeaderProps {
 
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Trang chủ', href: '/' },
-  { id: 'jobs', label: 'Việc làm', href: '/jobs' },
-  { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs' },
-  { id: 'interview', label: 'Phỏng vấn AI', href: '/interviews/setup' },
-  { id: 'subscription', label: 'Gói dịch vụ', href: '/subscription' },
+  { id: 'dashboard', label: 'Trang chủ', href: '/dashboard', isAuth: true },
+  { id: 'jobs', label: 'Việc làm', href: '/jobs', isAuth: false },
+  { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs', isAuth: true },
+  { id: 'interview', label: 'Phỏng vấn AI', href: '/interviews/setup', isAuth: true },
+  { id: 'subscription', label: 'Gói dịch vụ', href: '/subscription', isAuth: true },
 ];
 
 export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
       <div className="flex items-center shrink-0">
         <Link to="/" className="flex items-center gap-3 group mr-6">
           <div className="size-8 flex items-center justify-center transition-transform group-hover:scale-105">
-            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+            <img src="/favicon.svg" alt="Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-[17px] font-bold text-gray-900 hidden md:block tracking-tight whitespace-nowrap">
             AI Interview
@@ -48,20 +48,23 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
             {NAV_ITEMS.map((item) => {
               const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href));
               return (
-                <Link
-                  key={item.id}
-                  to={item.href}
-                  className={`relative py-5 text-[14px] font-medium transition-colors whitespace-nowrap ${
-                    isActive 
-                      ? 'text-gray-900' 
-                      : 'text-gray-500 hover:text-gray-900'
-                  }`}
-                >
-                  {item.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-900 rounded-t-full" />
+                <React.Fragment key={item.id}>
+                  {(user || !item.isAuth) && (
+                    <Link
+                      to={item.href}
+                      className={`relative py-5 text-[14px] font-medium transition-colors whitespace-nowrap ${
+                        isActive 
+                          ? 'text-gray-900' 
+                          : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      {item.label}
+                      {isActive && (
+                        <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-900 rounded-t-full" />
+                      )}
+                    </Link>
                   )}
-                </Link>
+                </React.Fragment>
               );
             })}
           </nav>
@@ -88,26 +91,36 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
             </kbd>
           </div>
         )} */}
+        {user ? (
+          <>
+            {/* Credit Balance */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100 font-semibold text-[13px] mr-2">
+              <span className="material-symbols-outlined text-[16px]">stars</span>
+              {user.creditsBalance || 0} Credits
+            </div>
 
-       
+            {/* Notifications */}
+            <NotificationDropdown />
 
-        {/* Credit Balance */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100 font-semibold text-[13px] mr-2">
-          <span className="material-symbols-outlined text-[16px]">stars</span>
-          {user?.creditsBalance || 0} Credits
-        </div>
-
-        {/* Notifications */}
-        <NotificationDropdown />
-
-        {/* Profile Avatar */}
-        <Link to="/profile" className="ml-2 block rounded-full hover:ring-2 hover:ring-primary/20 transition-all">
-          <img 
-            src={user?.avatarUrl || "https://i.pravatar.cc/100?u=admin"} 
-            alt="Avatar" 
-            className="size-9 rounded-full object-cover border border-gray-200" 
-          />
-        </Link>
+            {/* Profile Avatar */}
+            <Link to="/profile" className="ml-2 block rounded-full hover:ring-2 hover:ring-primary/20 transition-all">
+              <img 
+                src={user.avatarUrl || "https://i.pravatar.cc/100?u=admin"} 
+                alt="Avatar" 
+                className="size-9 rounded-full object-cover border border-gray-200" 
+              />
+            </Link>
+          </>
+        ) : (
+          <div className="flex items-center gap-3">
+            <Link to="/login" className="text-[13px] font-bold text-gray-700 hover:text-gray-900 px-4 py-2">
+              Đăng nhập
+            </Link>
+            <Link to="/register" className="text-[13px] font-bold text-white bg-primary hover:bg-primary/90 px-5 py-2 rounded-full transition-all shadow-sm shadow-primary/20">
+              Đăng ký
+            </Link>
+          </div>
+        )}
         
       </div>
     </header>

@@ -406,7 +406,7 @@ export default function CVAnalysisResultPage() {
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <XCircle size={60} className="text-red-500 mb-4" />
            <p className="text-xl font-bold text-gray-800">Lỗi khi phân tích CV</p>
-           <p className="text-gray-500 mt-2 mb-6">Không thể kết nối với AI hoặc CV không hợp lệ.</p>
+           <p className="text-gray-500 mt-2 mb-6">{error?.response?.data?.message}</p>
            <button onClick={() => navigate(-1)} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Thử lại</button>
         </div>
       </MainLayout>

@@ -32,6 +32,7 @@ import MyCvsPage from '../pages/MyCvs';
 import SubscriptionPage from '../pages/SubscriptionPage';
 import { LoadingTestPage } from '../pages/LoadingTestPage';
 import CvOptimizationPage from '../pages/CvOptimizationPage.tsx';
+import LandingPage from '../pages/LandingPage';
 
 
 export const AppRoutes: React.FC = () => {
@@ -48,15 +49,14 @@ export const AppRoutes: React.FC = () => {
         {/* Test Route cho Component LoadingIndicator */}
         <Route path="/test-loading/:type" element={<LoadingTestPage />} />
 
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/jobs" element={<JobsPage />} />
+        
         {/* Private Routes (Bất kỳ user nào đăng nhập cũng vào được) */}
-        <Route path="/" element={
+        <Route path="/dashboard" element={
           <ProtectedRoute>
             <DashboardPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/jobs" element={
-          <ProtectedRoute>
-            <JobsPage />
           </ProtectedRoute>
         } />
         <Route path="/my-cvs" element={

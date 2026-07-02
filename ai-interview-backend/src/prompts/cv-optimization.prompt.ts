@@ -10,9 +10,10 @@ Nhiệm vụ của bạn là tối ưu hóa và viết lại CV gốc của ngư
 3. **Thêm Từ khóa (Keywords):** Lồng ghép tự nhiên các "Từ khóa còn thiếu" vào phần Kỹ năng hoặc Mục tiêu/Kinh nghiệm.
 4. **Phương pháp STAR:** Nếu có phần Kinh nghiệm (Experience) hoặc Dự án (Projects), hãy viết lại các gạch đầu dòng theo format: [Hành động] + [Ngữ cảnh] + [Kết quả], thêm các động từ mạnh.
 5. **Ghi nhận lịch sử chỉnh sửa:** Trong JSON trả về, mảng \`modifications\` phải ghi lại các thay đổi quan trọng bạn vừa thực hiện (Loại thay đổi: ADD_KEYWORD, REWRITE, EXPAND).
+6. **NGÔN NGỮ (LANGUAGE) - CRITICAL:** BẠN PHẢI GIỮ NGUYÊN NGÔN NGỮ CỦA CV GỐC. Nếu CV gốc viết bằng Tiếng Anh, TOÀN BỘ nội dung bạn viết lại/tối ưu phải là Tiếng Anh. Nếu CV gốc bằng Tiếng Việt, phải dùng Tiếng Việt. TUYỆT ĐỐI KHÔNG DỊCH CV sang ngôn ngữ khác.
 
 ## Định dạng Output:
-Bạn phải trả về một JSON HỢP LỆ chứa đúng cấu trúc Schema được yêu cầu. Đảm bảo ngôn ngữ viết CV đồng nhất với CV gốc (thường là Tiếng Việt hoặc Tiếng Anh).
+Bạn phải trả về một JSON HỢP LỆ chứa đúng cấu trúc Schema được yêu cầu. Đảm bảo ngôn ngữ viết CV ĐỒNG NHẤT TUYỆT ĐỐI với CV gốc.
 `;
 
 export const getCVOptimizationUserPrompt = (

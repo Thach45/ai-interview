@@ -10,12 +10,12 @@ const router: Router = Router();
 // ==========================================
 
 // GET /api/v1/categories        → Lấy toàn bộ cây danh mục
-router.get('/', auth, jobCategoryController.getTree);
+router.get('/', jobCategoryController.getTree);
 
-// GET /api/v1/categories/flat   → Lấy danh sách phẳng (có hỗ trợ filter)
-router.get('/flat', auth, jobCategoryController.getAll);
+// Lấy danh sách danh mục phẳng
+router.get('/flat', jobCategoryController.getAll);
 
-// GET /api/v1/categories/:id    → Lấy chi tiết 1 danh mục
-router.get('/:id', auth, jobCategoryController.getById);
+// Lấy chi tiết 1 danh mục
+router.get('/:id', jobCategoryController.getById);
 
 export default router;

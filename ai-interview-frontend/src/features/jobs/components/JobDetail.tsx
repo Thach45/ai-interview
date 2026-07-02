@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SelectCvModal from '../../cvs/components/SelectCvModal';
+import { useAuthStore } from '../../../store/authStore';
 
 interface JobDetailProps {
   job: {
@@ -20,7 +21,16 @@ interface JobDetailProps {
 
 export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
   const navigate = useNavigate();
+  const user = useAuthStore(state => state.user);
   const [isCvModalOpen, setIsCvModalOpen] = useState(false);
+
+  const handleAction = (action: () => void) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    action();
+  };
 
   if (!job) {
     return (
@@ -109,18 +119,18 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
       {/* Sticky Action Footer */}
       <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex gap-3">
         <button className="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-[14px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-          onClick={() => setIsCvModalOpen(true)}>
+          onClick={() => handleAction(() => setIsCvModalOpen(true))}>
           <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
           Phân tích CV
         </button>
         <button 
-          onClick={() => navigate('/interviews/setup', {
+          onClick={() => handleAction(() => navigate('/interviews/setup', {
             state: {
               jobTitle: job.title,
               companyName: job.companyName,
               jdText: `MÔ TẢ CÔNG VIỆC:\n${job.responsibilities}\n\nYÊU CẦU ỨNG VIÊN:\n${job.requirements}`
             }
-          })}
+          }))}
           className="flex-1 border border-primary/20 bg-white text-primary py-3 rounded-xl font-bold text-[14px] hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined text-[20px]">mic</span>
