@@ -40,7 +40,12 @@ Nhiệm vụ của bạn là tạo ra một danh sách chủ đề/mục tiêu �
 
 6. **Lý do đánh giá (Reason)**: Với mỗi câu hỏi, cung cấp một lời giải thích ngắn gọn, súc tích (1 câu) về mục đích hoặc khía cạnh chuyên môn cụ thể đang được đánh giá (ví dụ: "Đánh giá khả năng lập kế hoạch chiến lược và phân tích thị trường..." hoặc "Đánh giá khả năng giao tiếp, giải quyết xung đột trong nhóm...").
 
-7. **Định dạng dữ liệu trả về**:
+7. **Tiêu chí đánh giá (Rubric/Criteria)**:
+   - Với MỖI chủ đề/câu hỏi, bạn PHẢI sinh ra một Barem chấm điểm (criteria) gồm 3-5 tiêu chí cụ thể.
+   - Mỗi tiêu chí phải có một 'id' duy nhất (ví dụ: "c1", "c2"), 'description' rõ ràng (các ý/từ khóa ứng viên cần nhắc đến), và 'points' (trọng số điểm).
+   - TỔNG ĐIỂM (points) của tất cả các tiêu chí trong 1 chủ đề/câu hỏi PHẢI LUÔN BẰNG ĐÚNG 100.
+
+8. **Định dạng dữ liệu trả về**:
    - Bạn bắt buộc phải trả về kết quả khớp chính xác với JSON Schema được yêu cầu. Không kèm theo bất kỳ văn bản giải thích nào khác ngoài chuỗi JSON sạch.
 `;
 
@@ -102,8 +107,25 @@ export const CREATE_QUESTIONS_RESPONSE_SCHEMA = {
             description:
               'Lý do/Mục đích đánh giá cụ thể hoặc cách khai thác của chủ đề này (ví dụ: Đánh giá khả năng tự giới thiệu, kỹ năng cốt lõi và kinh nghiệm thực tiễn...)',
           },
+          criteria: {
+            type: 'array',
+            description:
+              'Danh sách các tiêu chí chấm điểm (Barem) cho câu hỏi này. Tổng points phải đúng bằng 100.',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', description: 'ID duy nhất của tiêu chí, ví dụ: c1, c2' },
+                description: {
+                  type: 'string',
+                  description: 'Nội dung chi tiết ứng viên cần đạt được, kèm từ khóa quan trọng',
+                },
+                points: { type: 'integer', description: 'Điểm số của tiêu chí này' },
+              },
+              required: ['id', 'description', 'points'],
+            },
+          },
         },
-        required: ['title', 'reason'],
+        required: ['title', 'reason', 'criteria'],
       },
     },
   },

@@ -279,7 +279,8 @@ model QuestionEvaluation {
   questionIndex     Int      // Thứ tự câu hỏi trong phiên
   questionTitle     String   // Tiêu đề/Nội dung câu hỏi cốt lõi
   feedback          String   // Nhận xét chi tiết của AI về cách trả lời của ứng viên cho câu này
-  score             Int      // Điểm đánh giá riêng cho câu này (Thang 0-100)
+  score             Float    // Điểm đánh giá riêng cho câu này (Thang 0-100, có thể lẻ)
+  criteriaMatches   CriterionMatch[] // Lưu kết quả đối chiếu từng tiêu chí
 
   interviewResult   InterviewResult @relation(fields: [interviewResultId], references: [id], onDelete: Cascade)
 }
@@ -522,10 +523,23 @@ model VerificationCode {
   @@index([email])
 }
 
+type RubricCriterion {
+  id          String
+  description String
+  points      Int
+}
+
+type CriterionMatch {
+  criterionId   String
+  partialCredit Float    // 0, 0.5, 1
+  evidence      String   // Bằng chứng trích xuất từ câu trả lời
+}
+
 // Định nghĩa cấu trúc cho câu hỏi cốt lõi
 type CoreQuestion {
   title        String    // Chủ đề hoặc kỹ năng tương ứng (ví dụ: Security, Database...)
   reason       String    // Lý do hỏi câu hỏi này
+  criteria     RubricCriterion[]
 }
 
 // 11. BẢNG MẪU CV (Template)

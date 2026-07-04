@@ -156,7 +156,11 @@ export class InterviewAiService {
     }
 
     const cvText = session.cv?.contentExtracted || '';
-    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
+    const coreQuestions = session.coreQuestions as Array<{
+      title: string;
+      reason: string;
+      criteria: any[];
+    }>;
 
     if (!coreQuestions || coreQuestions.length === 0) {
       throw new BadRequestException('Phiên phỏng vấn chưa được cấu hình câu hỏi cốt lõi');
@@ -249,7 +253,11 @@ export class InterviewAiService {
     const aiMainMessages = allMessages.filter((m) => m.role === 'AI' && !m.isFollowUp);
     const currIdx = Math.max(0, aiMainMessages.length - 1);
 
-    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
+    const coreQuestions = session.coreQuestions as Array<{
+      title: string;
+      reason: string;
+      criteria: any[];
+    }>;
 
     // Lấy JD
     let jdText: string;
@@ -366,7 +374,11 @@ export class InterviewAiService {
     }
 
     const cvText = session.cv?.contentExtracted || '';
-    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
+    const coreQuestions = session.coreQuestions as Array<{
+      title: string;
+      reason: string;
+      criteria: any[];
+    }>;
     // cập nhật trạng thái phiên phỏng vấn
     if (session.status !== 'COMPLETED') {
       await this.prismaClient.interviewSession.update({
@@ -410,11 +422,12 @@ export class InterviewAiService {
         weaknesses: interviewResult.weaknesses,
         learningPath: interviewResult.learningPath,
         questionEvaluations: {
-          create: interviewResult.questionEvaluations.map((q) => ({
+          create: interviewResult.questionEvaluations.map((q: any) => ({
             questionIndex: q.questionIndex,
             questionTitle: q.questionTitle,
             feedback: q.feedback,
             score: q.score,
+            criteriaMatches: q.criteriaMatches,
           })),
         },
       },

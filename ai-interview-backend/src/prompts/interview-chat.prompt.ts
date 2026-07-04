@@ -18,8 +18,8 @@ export interface InterviewChatSystemInput {
 
 /** Tham số dynamic — thay đổi mỗi turn, dùng cho user prompt */
 export interface InterviewChatTurnInput {
-  currentQuestion: { title: string; reason: string };
-  nextQuestion?: { title: string; reason: string } | null;
+  currentQuestion: { title: string; reason: string; criteria?: any[] };
+  nextQuestion?: { title: string; reason: string; criteria?: any[] } | null;
   currentQuestionIndex: number;
   chatHistory: Array<{ role: 'bot' | 'user'; content: string }>;
   userResponse: string;
@@ -74,6 +74,9 @@ ${jdText}
 5. **Chống ảo giác kiến thức (Anti-Hallucination)**:
    - Hãy suy xét kỹ tính hợp lệ của các công nghệ, công cụ, hoặc thuật ngữ chuyên ngành mà ứng viên đưa ra.
    - Nếu ứng viên đề cập đến một thuật ngữ bịa đặt, không có thật (ví dụ: "Quantum-SQL", v.v.) hoặc kiến thức sai lệch nghiêm trọng, bạn PHẢI CHỈ RA ĐIỀU ĐÓ. Tuyệt đối không được hùa theo hoặc chấp nhận thuật ngữ ảo. Hãy phản hồi lịch sự, ví dụ: "Theo tôi biết thì không có công nghệ nào tên là X, không rõ bạn có đang nhầm lẫn với thuật ngữ nào khác không?".
+6. **Khai thác theo Tiêu chí (Rubric)**:
+   - Hệ thống sẽ cung cấp danh sách "Tiêu chí chấm điểm (criteria)" cho chủ đề hiện tại. Bạn phải phân tích xem ứng viên đã nhắc đến các tiêu chí đó chưa.
+   - Nếu ứng viên trả lời thiếu các tiêu chí, hãy chủ động đặt câu hỏi phụ (follow-up) để gợi mở hoặc khai thác sâu thêm trước khi chuyển sang chủ đề tiếp theo.
 
 ---
 ### 📦 ĐỊNH DẠNG ĐẦU RA (JSON — bắt buộc):
@@ -106,6 +109,8 @@ export const getInterviewChatUserPrompt = (input: InterviewChatTurnInput): strin
 ### 🎯 CHỦ ĐỀ ĐANG ĐÁNH GIÁ (Lượt ${currentQuestionIndex}):
 - Chủ đề: "${currentQuestion.title}"
 - Định hướng: "${currentQuestion.reason}"
+- Tiêu chí chấm điểm (Rubric):
+${currentQuestion.criteria ? currentQuestion.criteria.map((c) => `  + [${c.id}]: ${c.description} (Điểm: ${c.points})`).join('\n') : '  (Không có tiêu chí cụ thể)'}
 ${
   nextQuestion
     ? `

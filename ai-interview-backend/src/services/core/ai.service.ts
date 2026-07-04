@@ -29,6 +29,7 @@ import {
   SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
 } from '../../prompts/submit-interview-result.prompt';
 import { AppException } from '../../exceptions';
+import { calculateFinalInterviewResult } from '../../utils/scoring.util';
 
 export class AiService {
   async transcribeAudio(
@@ -143,7 +144,8 @@ export class AiService {
         return parsed.questions.map((q: any) => ({
           title: q.title || q.topic || 'Chủ đề phỏng vấn',
           reason: q.reason || q.explanation || 'Đánh giá năng lực chuyên môn của ứng viên.',
-        })) as { title: string; reason: string }[];
+          criteria: q.criteria || [],
+        })) as { title: string; reason: string; criteria: any[] }[];
       } else {
         throw new Error('Cấu trúc câu hỏi trả về từ AI không đúng định dạng mong muốn.');
       }
@@ -236,11 +238,9 @@ export class AiService {
         throw new Error('AI không phản hồi dữ liệu báo cáo đánh giá.');
       }
 
-      // 3. Parse JSON từ phản hồi của AI
+      // 3. Parse JSON từ phản hồi của AI (Schema mới)
       const parsed = JSON.parse(response.text) as {
-        generalEvaluation: {
-          overall: { score: number; reason: string };
-          domain: { score: number; reason: string };
+        softSkillsEvaluation: {
           problemSolving: { score: number; reason: string };
           clarity: { score: number; reason: string };
           confidence: { score: number; reason: string };
@@ -255,16 +255,23 @@ export class AiService {
           questionIndex: number;
           questionTitle: string;
           feedback: string;
-          score: number;
+          criteriaMatches: Array<{
+            criterionId: string;
+            partialCredit: number;
+            evidence: string;
+          }>;
         }>;
       };
 
-      // Tùy chọn: Validate cấu trúc cơ bản
-      if (!parsed.generalEvaluation || !parsed.recommendation || !Array.isArray(parsed.strengths)) {
+      if (
+        !parsed.softSkillsEvaluation ||
+        !parsed.recommendation ||
+        !Array.isArray(parsed.strengths)
+      ) {
         throw new Error('Cấu trúc phản hồi phân tích từ AI không đúng định dạng Schema quy định.');
       }
 
-      return parsed;
+      return calculateFinalInterviewResult(parsed, input.coreQuestions);
     } catch (error: any) {
       console.error('Lỗi khi gọi AI submit interview result:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI.', { cause: error });
