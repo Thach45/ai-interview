@@ -1,4 +1,10 @@
-import { ai, AI_MODEL_CONFIG } from '../../config/ai.config';
+import {
+  ai,
+  AI_MODEL_CONFIG,
+  generateDeepSeekContent,
+  generateDeepSeekStream,
+  generateDeepSeekProContent,
+} from '../../config/ai.config';
 import { InterviewLanguage } from '@prisma/client';
 import {
   CV_ANALYSIS_RESPONSE_SCHEMA,
@@ -30,6 +36,7 @@ import {
 } from '../../prompts/submit-interview-result.prompt';
 import { AppException } from '../../exceptions';
 import { calculateFinalInterviewResult } from '../../utils/scoring.util';
+import { StreamReplyExtractor } from '../../utils/stream.util';
 
 export class AiService {
   async transcribeAudio(
@@ -124,22 +131,41 @@ export class AiService {
   async createQuestionForInterview(input: GenerateQuestionsInput) {
     try {
       const userPrompt = getCreateQuestionsUserPrompt(input);
+      let responseText = '';
 
-      const response = await ai.models.generateContent({
-        model: AI_MODEL_CONFIG.model,
-        contents: userPrompt,
-        config: {
-          ...AI_MODEL_CONFIG.config,
-          systemInstruction: CREATE_QUESTIONS_SYSTEM_PROMPT,
-          responseSchema: CREATE_QUESTIONS_RESPONSE_SCHEMA,
-        },
-      });
+      try {
+        responseText = await generateDeepSeekContent(
+          CREATE_QUESTIONS_SYSTEM_PROMPT,
+          userPrompt,
+          CREATE_QUESTIONS_RESPONSE_SCHEMA,
+        );
 
-      if (!response.text) {
-        throw new Error('AI không phản hồi dữ liệu câu hỏi phỏng vấn.');
+        if (!responseText) {
+          throw new Error('DeepSeek không phản hồi.');
+        }
+      } catch (deepSeekError: any) {
+        console.warn(
+          'DeepSeek failed in createQuestionForInterview, falling back to Gemini:',
+          deepSeekError.message,
+        );
+
+        const response = await ai.models.generateContent({
+          model: AI_MODEL_CONFIG.model,
+          contents: userPrompt,
+          config: {
+            ...AI_MODEL_CONFIG.config,
+            systemInstruction: CREATE_QUESTIONS_SYSTEM_PROMPT,
+            responseSchema: CREATE_QUESTIONS_RESPONSE_SCHEMA,
+          },
+        });
+
+        if (!response.text) {
+          throw new Error('Gemini fallback cũng không phản hồi dữ liệu câu hỏi phỏng vấn.');
+        }
+        responseText = response.text;
       }
 
-      const parsed = JSON.parse(response.text);
+      const parsed = JSON.parse(responseText);
       if (parsed && Array.isArray(parsed.questions)) {
         return parsed.questions.map((q: any) => ({
           title: q.title || q.topic || 'Chủ đề phỏng vấn',
@@ -163,48 +189,51 @@ export class AiService {
       // User prompt: dynamic per-turn data (current question, history, user response)
       const userPrompt = getInterviewChatUserPrompt(input);
 
-      const responseStream = await ai.models.generateContentStream({
-        model: AI_MODEL_CONFIG.model,
-        contents: userPrompt,
-        config: {
-          ...AI_MODEL_CONFIG.config,
+      let extractor = new StreamReplyExtractor(onStream);
+
+      try {
+        const dsStream = await generateDeepSeekStream(
           systemInstruction,
-          responseSchema: INTERVIEW_CHAT_RESPONSE_SCHEMA,
-        },
-      });
+          userPrompt,
+          INTERVIEW_CHAT_RESPONSE_SCHEMA,
+        );
+        for await (const chunk of dsStream) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            extractor.process(content);
+          }
+        }
+        console.log('deepseek đang nói');
+      } catch (deepSeekError: any) {
+        console.warn(
+          'DeepSeek stream failed in chatInterview, falling back to Gemini:',
+          deepSeekError.message,
+        );
 
-      let fullText = '';
-      let lastExtractedReply = '';
+        extractor = new StreamReplyExtractor(onStream);
 
-      for await (const chunk of responseStream) {
-        if (chunk.text) {
-          fullText += chunk.text;
-          if (onStream) {
-            // Regex bóc tách chữ nằm trong field "reply": "..."
-            // Hỗ trợ bắt chuỗi kể cả khi chưa có dấu ngoặc kép đóng (vì đang stream)
-            const match = fullText.match(/"reply"\s*:\s*"((?:\\.|[^"\\])*)"?/);
-            if (match && match[1]) {
-              // Xử lý unescape các ký tự đặc biệt trong chuỗi JSON thô
-              const currentReply = match[1]
-                .replace(/\\n/g, '\n')
-                .replace(/\\"/g, '"')
-                .replace(/\\\\/g, '\\');
+        const responseStream = await ai.models.generateContentStream({
+          model: AI_MODEL_CONFIG.model,
+          contents: userPrompt,
+          config: {
+            ...AI_MODEL_CONFIG.config,
+            systemInstruction,
+            responseSchema: INTERVIEW_CHAT_RESPONSE_SCHEMA,
+          },
+        });
 
-              // Chỉ gửi xuống khi có sự thay đổi
-              if (currentReply !== lastExtractedReply) {
-                lastExtractedReply = currentReply;
-                onStream(currentReply);
-              }
-            }
+        for await (const chunk of responseStream) {
+          if (chunk.text) {
+            extractor.process(chunk.text);
           }
         }
       }
 
-      if (!fullText) {
+      if (!extractor.fullText) {
         throw new Error('AI không phản hồi dữ liệu hội thoại phỏng vấn.');
       }
 
-      const parsed = JSON.parse(fullText) as {
+      const parsed = JSON.parse(extractor.fullText) as {
         reply: string;
         suggestedAction: 'CONTINUE' | 'TRANSITION' | 'FINISH';
       };
@@ -224,22 +253,42 @@ export class AiService {
       const systemInstruction = getSubmitInterviewResultSystemPrompt(input);
       const userPrompt = getSubmitInterviewResultUserPrompt(input);
 
-      const response = await ai.models.generateContent({
-        model: AI_MODEL_CONFIG.model,
-        contents: userPrompt,
-        config: {
-          ...AI_MODEL_CONFIG.config,
-          systemInstruction,
-          responseSchema: SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
-        },
-      });
+      let responseText = '';
 
-      if (!response.text) {
-        throw new Error('AI không phản hồi dữ liệu báo cáo đánh giá.');
+      try {
+        responseText = await generateDeepSeekProContent(
+          systemInstruction,
+          userPrompt,
+          SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
+        );
+
+        if (!responseText) {
+          throw new Error('DeepSeek không phản hồi dữ liệu đánh giá.');
+        }
+      } catch (deepSeekError: any) {
+        console.warn(
+          'DeepSeek failed in submitInterviewResult, falling back to Gemini:',
+          deepSeekError.message,
+        );
+
+        const response = await ai.models.generateContent({
+          model: AI_MODEL_CONFIG.model,
+          contents: userPrompt,
+          config: {
+            ...AI_MODEL_CONFIG.config,
+            systemInstruction,
+            responseSchema: SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
+          },
+        });
+
+        if (!response.text) {
+          throw new Error('Gemini fallback cũng không phản hồi dữ liệu báo cáo đánh giá.');
+        }
+        responseText = response.text;
       }
 
       // 3. Parse JSON từ phản hồi của AI (Schema mới)
-      const parsed = JSON.parse(response.text) as {
+      const parsed = JSON.parse(responseText) as {
         softSkillsEvaluation: {
           problemSolving: { score: number; reason: string };
           clarity: { score: number; reason: string };

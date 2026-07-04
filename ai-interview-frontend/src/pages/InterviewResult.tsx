@@ -170,6 +170,11 @@ export default function InterviewResultPage() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('sessionId');
   const navigate = useNavigate();
+  const [expandedCriteria, setExpandedCriteria] = useState<number | null>(null);
+
+  const toggleCriteria = (index: number) => {
+    setExpandedCriteria(expandedCriteria === index ? null : index);
+  };
 
   const { data: response, isLoading, error } = useQuery({
     queryKey: ['interview-result', sessionId],
@@ -343,14 +348,61 @@ export default function InterviewResultPage() {
                     <span className="text-text-tertiary mr-2 text-[14px]">#{qe.questionIndex + 1}</span>
                     {qe.questionTitle}
                   </h4>
-                  <span className={`text-[13px] font-semibold px-2.5 py-1 rounded-md shrink-0 border ${
-                    qe.score >= 80 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
-                    qe.score >= 50 ? 'bg-amber-50 text-amber-700 border-amber-100' : 
-                    'bg-red-50 text-red-700 border-red-100'
-                  }`}>
-                    {qe.score}/100
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[13px] font-semibold px-2.5 py-1 rounded-md shrink-0 border ${
+                      qe.score >= 80 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                      qe.score >= 50 ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                      'bg-red-50 text-red-700 border-red-100'
+                    }`}>
+                      {qe.score}/100
+                    </span>
+                    <button 
+                      onClick={() => toggleCriteria(i)} 
+                      className="text-text-tertiary hover:text-primary transition-colors flex items-center justify-center p-1 rounded-full hover:bg-gray-100" 
+                      title="Xem chi tiết chấm điểm"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">info</span>
+                    </button>
+                  </div>
                 </div>
+                
+                <AnimatePresence>
+                  {expandedCriteria === i && qe.criteriaMatches && qe.criteriaMatches.length > 0 && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden mb-4"
+                    >
+                      <div className="bg-bg-canvas border border-border-hairline rounded-lg p-4 space-y-3">
+                        <h5 className="text-[13px] font-semibold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[16px] text-primary">grading</span>
+                          Chi tiết Barem
+                        </h5>
+                        <ul className="space-y-3">
+                          {qe.criteriaMatches.map((match: any, idx: number) => (
+                            <li key={idx} className="flex flex-col gap-1 border-b border-border-hairline pb-2 last:border-0 last:pb-0">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="text-[13px] font-medium text-text-primary flex-1">Tiêu chí: {match.criterionId}</span>
+                                <span className={`text-[12px] font-semibold px-2 py-0.5 rounded ${
+                                  match.partialCredit === 1 ? 'bg-emerald-100 text-emerald-700' : 
+                                  match.partialCredit > 0 ? 'bg-amber-100 text-amber-700' : 
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {match.partialCredit * 100}%
+                                </span>
+                              </div>
+                              <p className="text-[12px] text-text-secondary italic">
+                                "{match.evidence}"
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="flex-1 mt-auto bg-white p-4 rounded-lg border border-border-hairline">
                   <div className="flex items-center gap-1.5 mb-2">
                      <span className="material-symbols-outlined text-primary text-[16px]">smart_toy</span>
