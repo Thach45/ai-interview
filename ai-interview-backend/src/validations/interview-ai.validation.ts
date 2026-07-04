@@ -98,7 +98,10 @@ export const chatMessageSchema = z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'sessionId không hợp lệ (phải là MongoDB ObjectId)'),
   }),
   body: z.object({
-    message: z.string().min(1, 'Nội dung tin nhắn không được để trống'),
+    message: z
+      .string()
+      .min(1, 'Nội dung tin nhắn không được để trống')
+      .max(1000, 'Nội dung tin nhắn quá dài (tối đa 1000 ký tự)'),
   }),
 });
 

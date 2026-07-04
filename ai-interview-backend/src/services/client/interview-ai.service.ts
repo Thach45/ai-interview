@@ -14,6 +14,7 @@ import { googleTtsService, GoogleTtsService } from '../core/google-tts.service';
 import { eventEmitter } from '../../utils/eventEmitter';
 
 const CHAT_HISTORY_WINDOW_SIZE = 8;
+const CREDIT_PRICE_PER_INTERVIEW = Number(process.env.CREDIT_PRICE_PER_INTERVIEW);
 
 export class InterviewAiService {
   constructor(
@@ -31,7 +32,7 @@ export class InterviewAiService {
    */
   async createInterviewSession(userId: string, body: SetupInterviewBody) {
     // 1. Kiểm tra số dư lượt phỏng vấn (creditsBalance) của user bằng Shared Service
-    await creditsService.checkCredits(userId);
+    await creditsService.checkCredits(userId, CREDIT_PRICE_PER_INTERVIEW);
 
     // 2. Lấy nội dung CV để làm ngữ cảnh cho AI
     const cv = await this.prismaClient.userCv.findUnique({
@@ -73,7 +74,7 @@ export class InterviewAiService {
     // 5. Thực hiện Transaction: Trừ 1 credit của user và lưu phiên phỏng vấn mới vào DB
     const session = await this.prismaClient.$transaction(async (tx) => {
       // Gọi shared service để trừ 1 credit, truyền tx client vào
-      await creditsService.decrementCredits(userId, tx);
+      await creditsService.decrementCredits(userId, CREDIT_PRICE_PER_INTERVIEW, tx);
 
       // Tạo interview session mới
       return tx.interviewSession.create({
@@ -156,11 +157,7 @@ export class InterviewAiService {
     }
 
     const cvText = session.cv?.contentExtracted || '';
-    const coreQuestions = session.coreQuestions as Array<{
-      title: string;
-      reason: string;
-      criteria: any[];
-    }>;
+    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
 
     if (!coreQuestions || coreQuestions.length === 0) {
       throw new BadRequestException('Phiên phỏng vấn chưa được cấu hình câu hỏi cốt lõi');
@@ -220,6 +217,16 @@ export class InterviewAiService {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
 
+    return this.generateMessage(session, messageContent, enableStream);
+  }
+
+  private async generateMessage(
+    session: any,
+    messageContent: string,
+    enableStream: boolean = true,
+  ) {
+    const sessionId = session.id;
+
     if (session.status !== 'IN_PROGRESS') {
       throw new BadRequestException('Phiên phỏng vấn hiện không trong trạng thái hoạt động');
     }
@@ -253,11 +260,7 @@ export class InterviewAiService {
     const aiMainMessages = allMessages.filter((m) => m.role === 'AI' && !m.isFollowUp);
     const currIdx = Math.max(0, aiMainMessages.length - 1);
 
-    const coreQuestions = session.coreQuestions as Array<{
-      title: string;
-      reason: string;
-      criteria: any[];
-    }>;
+    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
 
     // Lấy JD
     let jdText: string;
@@ -299,7 +302,7 @@ export class InterviewAiService {
     // 4. Tính toán questionIndex và isFollowUp dựa trên suggestedAction của AI
     let nextQuestionIndex = currIdx;
     let nextIsFollowUp = true;
-    let newStatus: InterviewSession['status'] = session.status;
+    let newStatus = session.status;
 
     if (aiResponse.suggestedAction === 'TRANSITION') {
       if (currIdx + 1 < coreQuestions.length) {
@@ -374,11 +377,7 @@ export class InterviewAiService {
     }
 
     const cvText = session.cv?.contentExtracted || '';
-    const coreQuestions = session.coreQuestions as Array<{
-      title: string;
-      reason: string;
-      criteria: any[];
-    }>;
+    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
     // cập nhật trạng thái phiên phỏng vấn
     if (session.status !== 'COMPLETED') {
       await this.prismaClient.interviewSession.update({
@@ -422,12 +421,11 @@ export class InterviewAiService {
         weaknesses: interviewResult.weaknesses,
         learningPath: interviewResult.learningPath,
         questionEvaluations: {
-          create: interviewResult.questionEvaluations.map((q: any) => ({
+          create: interviewResult.questionEvaluations.map((q) => ({
             questionIndex: q.questionIndex,
             questionTitle: q.questionTitle,
             feedback: q.feedback,
             score: q.score,
-            criteriaMatches: q.criteriaMatches,
           })),
         },
       },
@@ -480,7 +478,7 @@ export class InterviewAiService {
     const persona = session.persona || InterviewPersona.PROFESSIONAL;
 
     const text = await this.aiService.transcribeAudio(buffer, mimeType, language);
-    const responseAI = await this.sendChatMessage(userId, sessionId, text, false);
+    const responseAI = await this.generateMessage(session, text, false);
     const audioText = responseAI.message.content;
     const audioResponse = await this.googleTtsService.synthesizeSpeech(
       audioText,

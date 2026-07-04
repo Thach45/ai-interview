@@ -1,11 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 import prisma from '../../config/prisma';
 import { AiService, aiService } from '../core/ai.service';
+import { creditsService, CreditsService } from '../../shared/services/credits.service';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const CREDIT_PRICE_PER_ANALYSIS = Number(process.env.CREDIT_PRICE_PER_ANALYSIS);
 
 export class AnalysisCVService {
   constructor(
     private readonly _prisma: PrismaClient,
     private readonly _aiService: AiService,
+    private readonly _creditsService: CreditsService,
   ) {}
 
   /**
@@ -16,6 +22,7 @@ export class AnalysisCVService {
    */
   async analysisCV(userId: string, cvId: string, jobTemplateId: string) {
     // 0. Kiểm tra xem cặp CV và Job này đã được phân tích chưa (Caching logic)
+    await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_ANALYSIS);
     const existingAnalysis = await this._prisma.cvAnalysis.findFirst({
       where: {
         userId,
@@ -49,22 +56,28 @@ export class AnalysisCVService {
       jobTemplate.aiExtractedContext,
     );
 
-    // 4. Lưu kết quả vào bảng CvAnalysis
-    const savedAnalysis = await this._prisma.cvAnalysis.create({
-      data: {
-        userId: userId,
-        cvId: cvId,
-        jobTemplateId: jobTemplateId,
-        matchScore: analysisResult.matchScore,
-        summary: analysisResult.summary,
-        scoringDetails: analysisResult.scoringDetails,
-        strengths: analysisResult.strengths,
-        weaknesses: analysisResult.weaknesses,
-        skillsAnalysis: analysisResult.skillsAnalysis,
-        foundKeywords: analysisResult.foundKeywords,
-        missingKeywords: analysisResult.missingKeywords,
-        improvementSuggestions: analysisResult.improvementSuggestions,
-      },
+    // 4. Thực hiện Transaction: Lưu kết quả và trừ tiền
+    const savedAnalysis = await this._prisma.$transaction(async (tx) => {
+      // 4.1 Trừ tiền user
+      await this._creditsService.decrementCredits(userId, CREDIT_PRICE_PER_ANALYSIS, tx);
+
+      // 4.2 Lưu kết quả
+      return tx.cvAnalysis.create({
+        data: {
+          userId: userId,
+          cvId: cvId,
+          jobTemplateId: jobTemplateId,
+          matchScore: analysisResult.matchScore,
+          summary: analysisResult.summary,
+          scoringDetails: analysisResult.scoringDetails,
+          strengths: analysisResult.strengths,
+          weaknesses: analysisResult.weaknesses,
+          skillsAnalysis: analysisResult.skillsAnalysis,
+          foundKeywords: analysisResult.foundKeywords,
+          missingKeywords: analysisResult.missingKeywords,
+          improvementSuggestions: analysisResult.improvementSuggestions,
+        },
+      });
     });
 
     return savedAnalysis;
@@ -72,4 +85,4 @@ export class AnalysisCVService {
 }
 
 // Export singleton instance với các dependencies đã được inject
-export const analysisCVService = new AnalysisCVService(prisma, aiService);
+export const analysisCVService = new AnalysisCVService(prisma, aiService, creditsService);

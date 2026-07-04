@@ -5,11 +5,17 @@ import { validate } from '../../../middlewares/validate.middleware';
 import {
   interviewAISchema,
   chatMessageWithTTSSchema,
+  chatMessageSchema,
 } from '../../../validations/interview-ai.validation';
 import multer from 'multer';
 import { chatRateLimiter } from '../../../middlewares/rate-limit.middleware';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // Giới hạn 10MB
+  },
+});
 
 const router = express.Router();
 
@@ -19,7 +25,13 @@ router.get('/:id', auth, interviewAIController.getInterview);
 router.get('/:id/messages', auth, interviewAIController.getInterviewMessages); // Bổ sung API lấy lịch sử tin nhắn
 router.get('/:id/stream', auth, interviewAIController.streamInterviewEvents); // Bổ sung API SSE stream
 router.post('/:id/start', auth, interviewAIController.startInterview);
-router.post('/:id/chat', auth, chatRateLimiter, interviewAIController.sendChatMessage);
+router.post(
+  '/:id/chat',
+  auth,
+  chatRateLimiter,
+  validate(chatMessageSchema),
+  interviewAIController.sendChatMessage,
+);
 router.post(
   '/:id/chat-audio',
   auth,
