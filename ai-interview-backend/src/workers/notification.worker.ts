@@ -5,6 +5,7 @@ import { NotificationType } from '@prisma/client';
 import { notificationService } from '../services/client/notification.service';
 
 export interface BroadcastJobData {
+  type: NotificationType;
   title: string;
   message: string;
   link?: string;
@@ -13,7 +14,7 @@ export interface BroadcastJobData {
 export const notificationWorker = new Worker<BroadcastJobData>(
   'notificationQueue',
   async (job: Job<BroadcastJobData>) => {
-    const { title, message, link } = job.data;
+    const { type, title, message, link } = job.data;
     const BATCH_SIZE = 2000;
 
     // 1. Đọc lại tiến độ cũ nếu Job bị retry
@@ -31,7 +32,7 @@ export const notificationWorker = new Worker<BroadcastJobData>(
           skip: 1, // Bỏ qua thằng cuối cùng của lần trước
           cursor: { id: lastProcessedId },
         }),
-        select: { id: true }, // Chỉ lấy ID cho nhẹ RAM
+        select: { id: true, email: true }, // Lấy thêm email để gửi mail
       });
 
       if (users.length === 0) {
@@ -39,15 +40,8 @@ export const notificationWorker = new Worker<BroadcastJobData>(
         break; // Hết user, thoát vòng lặp
       }
 
-      // 3. Gọi hàm Service để tạo DB và bắn SSE
-      const userIds = users.map((user) => user.id);
-      await notificationService.createManyAndBroadcast(
-        userIds,
-        NotificationType.SYSTEM_UPDATE,
-        title,
-        message,
-        link,
-      );
+      // 3. Gọi hàm Service để tạo DB, bắn SSE, và gửi Mail (nếu type = EMAIL)
+      await notificationService.createManyAndBroadcast(users, type, title, message, link);
 
       // 4. Cập nhật tiến độ mới nhất vào BullMQ
       lastProcessedId = users[users.length - 1].id;

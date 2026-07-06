@@ -1,4 +1,8 @@
-import { verifyAccountTemplate, resetPasswordTemplate } from '../../utils/mail.template';
+import {
+  verifyAccountTemplate,
+  resetPasswordTemplate,
+  notificationTemplate,
+} from '../../utils/mail.template';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -45,6 +49,20 @@ class MailService {
   async sendResetPasswordOtp(email: string, otp: string): Promise<boolean> {
     console.log(`📧 Đang gửi OTP đặt lại mật khẩu tới ${email}...`);
     const content = resetPasswordTemplate(otp);
+    return this.sendEmail(email, content);
+  }
+
+  /**
+   * Gửi thông báo qua email
+   */
+  async sendNotificationEmail(email: string, title: string, message: string,): Promise<boolean> {
+    console.log(`📧 Đang gửi thông báo tới ${email}...`);
+    const content = notificationTemplate(title, message);
+    return this.sendEmail(email, content);
+  }
+  async sendBillEmail(email: string, title: string, message: string): Promise<boolean> {
+    console.log(`📧 Đang gửi thông báo tới ${email}...`);
+    const content = notificationTemplate(title, message);
     return this.sendEmail(email, content);
   }
 }

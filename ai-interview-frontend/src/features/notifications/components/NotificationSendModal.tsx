@@ -180,6 +180,7 @@ export const NotificationSendModal: React.FC<NotificationSendModalProps> = ({
               <option value="AI_PROCESS">Tiến trình AI</option>
               <option value="BILLING">Giao dịch / Thanh toán</option>
               <option value="REMINDER">Nhắc nhở</option>
+              <option value="EMAIL">Gửi Email</option>
             </select>
           </div>
 

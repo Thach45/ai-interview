@@ -1,4 +1,4 @@
-export type NotificationType = 'AI_PROCESS' | 'BILLING' | 'REMINDER' | 'SYSTEM_UPDATE';
+export type NotificationType = 'AI_PROCESS' | 'BILLING' | 'REMINDER' | 'SYSTEM_UPDATE' | 'EMAIL';
 
 export interface Notification {
   id: string;

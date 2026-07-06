@@ -1,6 +1,7 @@
 import { PrismaClient, NotificationType } from '@prisma/client';
 import prisma from '../../config/prisma';
 import { eventEmitter } from '../../utils/eventEmitter';
+import { emailQueue } from '../../queues/email.queue';
 
 export class NotificationService {
   private prismaClient: PrismaClient;
@@ -30,12 +31,25 @@ export class NotificationService {
     // Bắn sự kiện qua SSE để Frontend cập nhật ngay lập tức
     eventEmitter.emit(`new_notification_${userId}`, notification);
 
+    // Gửi email nếu type là EMAIL
+    if (type === NotificationType.EMAIL) {
+      const user = await this.prismaClient.user.findUnique({ where: { id: userId } });
+      if (user && user.email) {
+        // Đẩy vào hàng đợi thay vì gọi trực tiếp
+        await emailQueue.add('sendEmail', {
+          email: user.email,
+          title,
+          message,
+        });
+      }
+    }
+
     return notification;
   }
 
   // Tạo hàng loạt thông báo và bắn event realtime (Dùng cho Worker BullMQ)
   async createManyAndBroadcast(
-    userIds: string[],
+    users: { id: string; email?: string | null }[],
     type: NotificationType,
     title: string,
     message: string,
@@ -46,9 +60,9 @@ export class NotificationService {
     const now = new Date();
 
     // Tự sinh ra ObjectId và tạo mảng notifications hoàn chỉnh
-    const notifications = userIds.map((userId) => ({
+    const notifications = users.map((user) => ({
       id: new ObjectId().toString(),
-      userId,
+      userId: user.id,
       type,
       title,
       message,
@@ -67,6 +81,21 @@ export class NotificationService {
     notifications.forEach((noti) => {
       eventEmitter.emit(`new_notification_${noti.userId}`, noti);
     });
+
+    // Gửi email hàng loạt nếu type là EMAIL qua BullMQ (Tự động Retry khi lỗi)
+    if (type === NotificationType.EMAIL) {
+      // Nhồi hàng loạt job vào emailQueue
+      const emailJobs = users
+        .filter((user) => user.email)
+        .map((user) => ({
+          name: 'sendEmail',
+          data: { email: user.email!, title, message },
+        }));
+
+      if (emailJobs.length > 0) {
+        await emailQueue.addBulk(emailJobs);
+      }
+    }
   }
 
   // Lấy danh sách thông báo của user (phân trang)

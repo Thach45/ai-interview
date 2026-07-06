@@ -37,6 +37,7 @@ export const notificationAdminController = {
 
     if (mode === NotificationMode.ALL) {
       await notificationQueue.add('broadcast', {
+        type,
         title,
         message,
         link,

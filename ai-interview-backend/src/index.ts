@@ -43,14 +43,18 @@ const server = app.listen(port, () => {
 
 // --- BULLMQ WORKERS ---
 import { notificationWorker } from './workers/notification.worker';
+import { emailWorker } from './workers/email.worker';
 
 // Graceful Shutdown: Đảm bảo tiến trình đang chạy dở của Worker không bị cắt đứt đột ngột khi tắt Server
 const gracefulShutdown = async () => {
   console.log('Shutting down gracefully...');
   server.close(async () => {
     console.log('HTTP server closed.');
-    await notificationWorker.close(); // Chờ Worker lưu lại Progress
-    console.log('BullMQ Worker closed.');
+    await Promise.all([
+      notificationWorker.close(),
+      emailWorker.close()
+    ]);
+    console.log('BullMQ Workers closed.');
     process.exit(0);
   });
 };

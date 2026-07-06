@@ -89,3 +89,17 @@ export const resetPasswordTemplate = (otp: string): string => {
   `;
   return baseLayout(content);
 };
+
+/**
+ * Template email gửi thông báo hệ thống
+ */
+export const notificationTemplate = (title: string, message: string): string => {
+  const content = `
+    <h1 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0;">${title}</h1>
+    <p style="font-size: 15px; line-height: 24px; color: #64748b; margin: 0 0 24px 0; white-space: pre-wrap;">${message}</p>
+    <div style="background-color: #f1f5f9; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+      <p style="font-size: 14px; color: #475569; margin: 0;">Bạn nhận được email này vì đã đăng ký nhận thông báo từ hệ thống của chúng tôi.</p>
+    </div>
+  `;
+  return baseLayout(content);
+};

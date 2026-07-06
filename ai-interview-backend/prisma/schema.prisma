@@ -561,6 +561,7 @@ enum NotificationType {
   BILLING         // Giao dịch, Cảnh báo hết lượt
   REMINDER        // Nhắc nhở học tập
   SYSTEM_UPDATE   // Thông báo toàn hệ thống từ Admin
+  EMAIL           // Gửi thông báo qua email
 }
 
 model Notification {
