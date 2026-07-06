@@ -33,6 +33,42 @@ export class NotificationService {
     return notification;
   }
 
+  // Tạo hàng loạt thông báo và bắn event realtime (Dùng cho Worker BullMQ)
+  async createManyAndBroadcast(
+    userIds: string[],
+    type: NotificationType,
+    title: string,
+    message: string,
+    link?: string,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { ObjectId } = require('bson');
+    const now = new Date();
+
+    // Tự sinh ra ObjectId và tạo mảng notifications hoàn chỉnh
+    const notifications = userIds.map((userId) => ({
+      id: new ObjectId().toString(),
+      userId,
+      type,
+      title,
+      message,
+      link,
+      isRead: false,
+      createdAt: now,
+      updatedAt: now,
+    }));
+
+    // Insert 1 LẦN DUY NHẤT vào Database
+    await this.prismaClient.notification.createMany({
+      data: notifications,
+    });
+
+    // Bắn SSE cho tất cả user (Có đầy đủ trường id)
+    notifications.forEach((noti) => {
+      eventEmitter.emit(`new_notification_${noti.userId}`, noti);
+    });
+  }
+
   // Lấy danh sách thông báo của user (phân trang)
   async getNotifications(userId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;

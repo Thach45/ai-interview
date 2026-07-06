@@ -1,19 +1,17 @@
 import { z } from 'zod';
+import { DashboardDateRange } from '../enum/dashboard.enum';
 
 export const getDashboardStatsSchema = z.object({
   query: z
     .object({
-      dateRange: z
-        .enum(['7days', 'this_month', 'last_month', 'custom'])
-        .optional()
-        .default('7days'),
+      dateRange: z.nativeEnum(DashboardDateRange).optional().default(DashboardDateRange.SEVEN_DAYS),
       startDate: z.string().optional(),
       endDate: z.string().optional(),
     })
     .refine(
       (data) => {
         // Nếu chọn custom thì phải truyền đủ startDate và endDate
-        if (data.dateRange === 'custom') {
+        if (data.dateRange === DashboardDateRange.CUSTOM) {
           return !!data.startDate && !!data.endDate;
         }
         return true;

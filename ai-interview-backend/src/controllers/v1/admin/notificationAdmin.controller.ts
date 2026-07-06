@@ -4,6 +4,8 @@ import { sendResponse } from '../../../utils/apiResponse';
 import { notificationAdminService } from '../../../services/admin/notificationAdmin.service';
 import { notificationService } from '../../../services/client/notification.service';
 import { NotificationType } from '@prisma/client';
+import { notificationQueue } from '../../../queues/notification.queue';
+import { NotificationMode } from '../../../enum/notification.enum';
 
 export const notificationAdminController = {
   // 1. Lấy danh sách thông báo (phân trang)
@@ -12,29 +14,40 @@ export const notificationAdminController = {
 
     const result = await notificationAdminService.getAllNotifications(
       page ? parseInt(page as string) : 1,
-      limit ? parseInt(limit as string) : 20
+      limit ? parseInt(limit as string) : 20,
     );
 
     return sendResponse(res, 200, 'Lấy danh sách thông báo thành công', result);
   }),
 
-  // 2. Tạo thông báo mới (Gửi cho 1 user)
+  // 2. Tạo thông báo mới (Cá nhân hoặc Hàng loạt)
   send: asyncHandler(async (req: Request, res: Response) => {
-    const { userId, type, title, message, link } = req.body;
+    const { mode, userId, type, title, message, link } = req.body;
 
-    if (!userId || !type || !title || !message) {
-      return sendResponse(res, 400, 'Thiếu thông tin bắt buộc', null);
+    if (mode === NotificationMode.PERSONAL) {
+      const notification = await notificationService.createNotification(
+        userId,
+        type as NotificationType,
+        title,
+        message,
+        link,
+      );
+      return sendResponse(res, 201, 'Gửi thông báo cá nhân thành công', notification);
     }
 
-    const notification = await notificationService.createNotification(
-      userId,
-      type as NotificationType,
-      title,
-      message,
-      link
-    );
-
-    return sendResponse(res, 201, 'Gửi thông báo thành công', notification);
+    if (mode === NotificationMode.ALL) {
+      await notificationQueue.add('broadcast', {
+        title,
+        message,
+        link,
+      });
+      return sendResponse(
+        res,
+        200,
+        'Đã đưa yêu cầu gửi thông báo hàng loạt vào hàng đợi (BullMQ)',
+        null,
+      );
+    }
   }),
 
   // 3. Xóa thông báo
@@ -45,7 +58,7 @@ export const notificationAdminController = {
     }
 
     await notificationAdminService.deleteNotification(id);
-    
+
     return sendResponse(res, 200, 'Đã thu hồi thông báo', null);
   }),
 };

@@ -1,14 +1,14 @@
-import { useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { notificationApi } from '../api/notification.api';
-import type { Notification } from '../type/notification.type';
-
+import { useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { notificationApi } from "../api/notification.api";
+import type { Notification } from "../type/notification.type";
+import { toast } from "sonner";
 
 export const useNotifications = () => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['notifications'],
+    queryKey: ["notifications"],
     queryFn: async () => {
       const res = await notificationApi.getNotifications(1, 50);
       return res.data;
@@ -19,13 +19,13 @@ export const useNotifications = () => {
   const markAsReadMutation = useMutation({
     mutationFn: notificationApi.markAsRead,
     onSuccess: (_, id) => {
-      queryClient.setQueryData(['notifications'], (oldData: any) => {
+      queryClient.setQueryData(["notifications"], (oldData: any) => {
         if (!oldData) return oldData;
         return {
           ...oldData,
           unreadCount: Math.max(0, oldData.unreadCount - 1),
           notifications: oldData.notifications.map((n: Notification) =>
-            n.id === id ? { ...n, isRead: true } : n
+            n.id === id ? { ...n, isRead: true } : n,
           ),
         };
       });
@@ -35,12 +35,15 @@ export const useNotifications = () => {
   const markAllAsReadMutation = useMutation({
     mutationFn: notificationApi.markAllAsRead,
     onSuccess: () => {
-      queryClient.setQueryData(['notifications'], (oldData: any) => {
+      queryClient.setQueryData(["notifications"], (oldData: any) => {
         if (!oldData) return oldData;
         return {
           ...oldData,
           unreadCount: 0,
-          notifications: oldData.notifications.map((n: Notification) => ({ ...n, isRead: true })),
+          notifications: oldData.notifications.map((n: Notification) => ({
+            ...n,
+            isRead: true,
+          })),
         };
       });
     },
@@ -48,8 +51,8 @@ export const useNotifications = () => {
 
   useEffect(() => {
     // Chỉ kết nối SSE nếu đã đăng nhập (có token)
-    const token = localStorage.getItem('token');
-    const API_URL = import.meta.env.VITE_API_URL
+    const token = localStorage.getItem("token");
+    const API_URL = import.meta.env.VITE_API_URL;
     if (!token) return;
 
     // Sử dụng URL SSE
@@ -57,12 +60,12 @@ export const useNotifications = () => {
     const eventSource = new EventSource(`${sseUrl}?token=${token}`);
 
     eventSource.onmessage = (event) => {
-      if (event.data === ':') return; // Bỏ qua keep-alive ping
+      if (event.data === ":") return; // Bỏ qua keep-alive ping
 
       try {
         const newNotification: Notification = JSON.parse(event.data);
-        
-        queryClient.setQueryData(['notifications'], (oldData: any) => {
+
+        queryClient.setQueryData(["notifications"], (oldData: any) => {
           if (!oldData) return oldData;
           return {
             ...oldData,
@@ -70,13 +73,24 @@ export const useNotifications = () => {
             notifications: [newNotification, ...oldData.notifications],
           };
         });
+
+        // Hiển thị toast cho người dùng
+        toast(newNotification.title, {
+          description: newNotification.message,
+          action: newNotification.link
+            ? {
+                label: "Xem",
+                onClick: () => (window.location.href = newNotification.link!),
+              }
+            : undefined,
+        });
       } catch (err) {
-        console.error('Error parsing notification SSE:', err);
+        console.error("Error parsing notification SSE:", err);
       }
     };
 
     eventSource.onerror = () => {
-      console.log('SSE connection lost, reconnecting automatically...');
+      console.log("SSE connection lost, reconnecting automatically...");
     };
 
     return () => {

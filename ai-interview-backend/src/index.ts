@@ -37,6 +37,23 @@ app.all('*', (req, res, next) => {
 
 app.use(globalErrorHandler);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+
+// --- BULLMQ WORKERS ---
+import { notificationWorker } from './workers/notification.worker';
+
+// Graceful Shutdown: Đảm bảo tiến trình đang chạy dở của Worker không bị cắt đứt đột ngột khi tắt Server
+const gracefulShutdown = async () => {
+  console.log('Shutting down gracefully...');
+  server.close(async () => {
+    console.log('HTTP server closed.');
+    await notificationWorker.close(); // Chờ Worker lưu lại Progress
+    console.log('BullMQ Worker closed.');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);

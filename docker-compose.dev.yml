@@ -1,0 +1,50 @@
+services:
+  # --- 1. REDIS ---
+  redis:
+    image: redis:7-alpine
+    container_name: ai_interview_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # --- 2. BACKEND (Hot Reload) ---
+  backend:
+    image: node:24
+    container_name: ai_interview_backend_dev
+    working_dir: /app
+    # Ánh xạ toàn bộ thư mục code thật vào trong Container
+    volumes:
+      - ./ai-interview-backend:/app
+      # Giữ lại node_modules trong container để không xung đột với máy thật
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    # Chạy lệnh cài thư viện trước, sau đó chạy dev
+    command: sh -c "npm install && npx prisma generate && npm run dev"
+    depends_on:
+      - redis
+    env_file:
+      - ./ai-interview-backend/.env
+
+  # --- 3. FRONTEND (Hot Reload) ---
+  frontend:
+    image: node:24-alpine
+    container_name: ai_interview_frontend_dev
+    working_dir: /app
+    # Ánh xạ toàn bộ thư mục code thật vào trong Container
+    volumes:
+      - ./ai-interview-frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    # Cài thư viện xong thì chạy vite với --host để nhận request từ bên ngoài Docker
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - backend
+
+volumes:
+  redis_data:
