@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore';
+import { useProfile } from '../../features/profile/hooks/useProfile';
 import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
 
 
@@ -19,7 +19,7 @@ const NAV_ITEMS = [
 
 export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
   const location = useLocation();
-  const user = useAuthStore((state) => state.user);
+  const { user } = useProfile();
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
 
   return (
@@ -90,6 +90,18 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
         )} */}
 
        
+
+        {/* Credits */}
+        <Link 
+          to="/subscription"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all mr-2 group"
+          title="Quản lý lượt phỏng vấn"
+        >
+          <span className="material-symbols-outlined text-[16px] text-gray-400 group-hover:text-gray-600 transition-colors">wallet</span>
+          <span className="text-[13px] font-medium text-gray-600">
+            <span className="text-gray-900 font-semibold">{user?.creditsBalance || 0}</span> lượt
+          </span>
+        </Link>
 
         {/* Notifications */}
         <NotificationDropdown />

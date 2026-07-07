@@ -21,20 +21,14 @@ export class AnalysisCVService {
    * 3. Lưu kết quả chi tiết vào database
    */
   async analysisCV(userId: string, cvId: string, jobTemplateId: string) {
-    // 0. Kiểm tra xem cặp CV và Job này đã được phân tích chưa (Caching logic)
-    await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_ANALYSIS);
-    const existingAnalysis = await this._prisma.cvAnalysis.findFirst({
-      where: {
-        userId,
-        cvId,
-        jobTemplateId,
-      },
-    });
-
-    if (existingAnalysis) {
-      return existingAnalysis;
+    // Xóa bản phân tích cũ nếu có để phân tích lại từ đầu
+    const cachedAnalysis = await this.getAnalysisCV(userId, cvId, jobTemplateId);
+    if (cachedAnalysis) {
+      await this._prisma.cvAnalysis.delete({
+        where: { id: cachedAnalysis.id },
+      });
     }
-
+    await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_ANALYSIS);
     // 1. Lấy nội dung CV của người dùng
     const userCv = await this._prisma.userCv.findFirstOrThrow({
       where: {
@@ -81,6 +75,20 @@ export class AnalysisCVService {
     });
 
     return savedAnalysis;
+  }
+
+  async getAnalysisCV(userId: string, cvId: string, jobTemplateId: string) {
+    const existingAnalysis = await this._prisma.cvAnalysis.findFirst({
+      where: {
+        userId,
+        cvId,
+        jobTemplateId,
+      },
+    });
+    if (existingAnalysis) {
+      return existingAnalysis;
+    }
+    return null;
   }
 }
 

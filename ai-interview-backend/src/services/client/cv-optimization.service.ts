@@ -3,11 +3,17 @@ import prisma from '../../config/prisma';
 import puppeteer from 'puppeteer';
 import { AiService, aiService } from '../core/ai.service';
 import { NotFoundException } from '../../exceptions';
+import { CreditsService, creditsService } from '../../shared/services/credits.service';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const CREDIT_PRICE_PER_OPTIMIZATION = Number(process.env.CREDIT_PRICE_PER_OPTIMIZATION);
 
 export class CvOptimizationService {
   constructor(
     private readonly _prisma: PrismaClient,
     private readonly _aiService: AiService,
+    private readonly _creditsService: CreditsService,
   ) {}
 
   async optimizeCV(userId: string, analysisId: string) {
@@ -21,6 +27,8 @@ export class CvOptimizationService {
     if (existingOptimizedCv) {
       return existingOptimizedCv;
     }
+    // 1.1 kiểm tra số dư
+    await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_OPTIMIZATION);
 
     // 2. Lấy thông tin bản phân tích
     const analysis = await this._prisma.cvAnalysis.findUnique({
@@ -46,14 +54,20 @@ export class CvOptimizationService {
       analysis.improvementSuggestions,
     );
 
-    // 4. Lưu kết quả vào DB
-    const savedOptimizedCv = await this._prisma.optimizedCv.create({
-      data: {
-        userId: userId,
-        cvAnalysisId: analysisId,
-        optimizedData: aiResult.optimizedData,
-        modifications: aiResult.modifications,
-      },
+    // 4. Lưu kết quả vào DB và trừ tiền bằng Transaction để đảm bảo tính toàn vẹn
+    const savedOptimizedCv = await this._prisma.$transaction(async (tx) => {
+      await this._creditsService.decrementCredits(userId, CREDIT_PRICE_PER_OPTIMIZATION, tx);
+
+      const optimizedCv = await tx.optimizedCv.create({
+        data: {
+          userId: userId,
+          cvAnalysisId: analysisId,
+          optimizedData: aiResult.optimizedData,
+          modifications: aiResult.modifications,
+        },
+      });
+
+      return optimizedCv;
     });
 
     return savedOptimizedCv;
@@ -96,4 +110,4 @@ export class CvOptimizationService {
   }
 }
 
-export const cvOptimizationService = new CvOptimizationService(prisma, aiService);
+export const cvOptimizationService = new CvOptimizationService(prisma, aiService, creditsService);

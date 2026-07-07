@@ -39,7 +39,7 @@ export class CreditsService {
     const client = tx || this.prismaClient;
     return client.user.update({
       where: { id: userId },
-      data: { creditsBalance: creditAmount },
+      data: { creditsBalance: { decrement: creditAmount } },
     });
   }
 }

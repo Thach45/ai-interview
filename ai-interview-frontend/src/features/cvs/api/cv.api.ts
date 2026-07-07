@@ -29,7 +29,20 @@ export const cvApi = {
   },
 
   /**
-   * Phân tích CV với Job Template
+   * Lấy kết quả phân tích CV đã có
+   */
+  getAnalysisCv: async (cvId: string, jobDescriptionId: string): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>('/analysis-cv/result', {
+      params: {
+        cvId,
+        jobTemplateId: jobDescriptionId,
+      }
+    });
+    return response.data;
+  },
+
+  /**
+   * Phân tích CV với Job Template (Tốn Credit)
    */
   analyzeCv: async (cvId: string, jobDescriptionId: string): Promise<any> => {
     const response = await apiClient.post<any, { success: boolean; data: any }>('/analysis-cv/analyze', {

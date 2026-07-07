@@ -4,6 +4,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { cvApi } from '../features/cvs/api/cv.api';
 import { useCvs } from '../features/cvs/hooks/useCvs';
+import { useCvAnalysis } from '../features/cvs/hooks/useCvAnalysis';
 import { 
   CheckCircle, XCircle, AlertTriangle, 
   Lightbulb, TrendingUp,
@@ -226,7 +227,7 @@ const RadarChart = ({ data }: { data: any[] }) => {
               key={`label-${i}`}
               x={x}
               y={y}
-              textAnchor={textAnchor}
+              textAnchor={textAnchor as any}
               dominantBaseline="middle"
               className="text-[11px] font-medium fill-gray-500"
             >
@@ -308,32 +309,21 @@ export default function CVAnalysisResultPage() {
   const { cvs } = useCvs();
   const selectedCv = cvs.find(c => c.id === cvId);
 
-  const { data: analysisResponse, isLoading, error } = useQuery({
-    queryKey: ['analyze-cv', cvId, id],
-    queryFn: () => cvApi.analyzeCv(cvId!, id!),
-    enabled: !!cvId && !!id,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 60,
-  });
+  const {
+    analysisResponse,
+    isLoadingAnalysis: isLoading,
+    analysisError: error,
+    triggerAnalysis,
+    isAnalyzing,
+    optimizeCv,
+    isOptimizing
+  } = useCvAnalysis(cvId || undefined, id);
 
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
-  const optimizeMutation = useMutation({
-    mutationFn: (analysisId: string) => cvApi.optimizeCv(analysisId),
-    onSuccess: () => {
-      if (analysisResponse?.id) {
-        navigate(`/jobs/cv-analysis/${id}/optimize?cvId=${cvId}&analysisId=${analysisResponse.id}`);
-      }
-    },
-    onError: (err) => {
-      console.error(err);
-      alert('Có lỗi xảy ra khi tối ưu CV. Vui lòng thử lại sau.');
-    }
-  });
-
   const handleOptimize = () => {
     if (analysisResponse?.id) {
-      optimizeMutation.mutate(analysisResponse.id);
+      optimizeCv(analysisResponse.id);
     }
   };
 
@@ -349,7 +339,7 @@ export default function CVAnalysisResultPage() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || isAnalyzing) {
     return (
       <LoadingIndicator 
         type="ai"
@@ -369,7 +359,7 @@ export default function CVAnalysisResultPage() {
     );
   }
 
-  if (optimizeMutation.isPending) {
+  if (isOptimizing) {
     return (
       <LoadingIndicator 
         type="ai"
@@ -387,14 +377,77 @@ export default function CVAnalysisResultPage() {
     );
   }
 
-  if (error || !analysisResponse) {
+  if (error) {
     return (
       <MainLayout hideSearch={true} fullHeight={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <XCircle size={60} className="text-red-500 mb-4" />
-           <p className="text-xl font-bold text-gray-800">Lỗi khi phân tích CV</p>
-           <p className="text-gray-500 mt-2 mb-6">Không thể kết nối với AI hoặc CV không hợp lệ.</p>
-           <button onClick={() => navigate(-1)} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Thử lại</button>
+           <p className="text-xl font-bold text-gray-800">Lỗi khi tải kết quả phân tích</p>
+           <p className="text-gray-500 mt-2 mb-6">Không thể kết nối với hệ thống.</p>
+           <button onClick={() => navigate(-1)} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!analysisResponse) {
+    return (
+      <MainLayout hideSearch={true} fullHeight={true} className="bg-gray-50/50">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] px-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white p-10 md:p-12 rounded-[24px] shadow-sm shadow-gray-200/40 border border-gray-200/60 max-w-lg w-full text-center relative overflow-hidden"
+          >
+            {/* Subtle top highlight */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-50"></div>
+            
+            <div className="relative mx-auto size-16 mb-10 mt-2 flex items-center justify-center">
+              {/* Subtle background glow */}
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-[20px] animate-pulse w-24 h-24 m-auto"></div>
+              
+              {/* Central Icon */}
+              <div className="relative bg-white rounded-2xl shadow-lg shadow-primary/10 border border-primary/20 z-10 flex items-center justify-center w-full h-full">
+                <BrainCircuit size={28} className="text-primary animate-pulse" strokeWidth={1.5} />
+                <div className="absolute -top-2 -right-2">
+                  <Sparkles size={16} className="text-amber-400 animate-spin" style={{ animationDuration: '4s' }} />
+                </div>
+              </div>
+              
+              {/* Orbiting particles */}
+              <div className="absolute inset-0 animate-spin w-24 h-24 m-auto z-0" style={{ animationDuration: '8s' }}>
+                 <div className="absolute top-0 left-1/2 w-1.5 h-1.5 bg-blue-400 rounded-full shadow-[0_0_8px_rgba(96,165,250,0.8)]"></div>
+              </div>
+              <div className="absolute inset-0 animate-spin w-32 h-32 m-auto z-0" style={{ animationDuration: '12s', animationDirection: 'reverse' }}>
+                 <div className="absolute bottom-0 right-1/2 w-2 h-2 bg-indigo-400 rounded-full shadow-[0_0_8px_rgba(129,140,248,0.8)]"></div>
+              </div>
+            </div>
+            
+            <h2 className="text-[22px] font-semibold text-gray-900 mb-3 tracking-tight">Phân tích CV chuyên sâu</h2>
+            
+            <p className="text-gray-500 mb-8 text-[14px] leading-relaxed px-4">
+              AI sẽ đối chiếu CV của bạn với yêu cầu tuyển dụng, phát hiện các lỗ hổng kỹ năng và đề xuất chiến lược tối ưu.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button 
+                onClick={() => navigate(-1)}
+                className="w-full sm:w-auto px-6 py-2.5 bg-white border border-gray-200 text-gray-700 text-[14px] font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all"
+              >
+                Trở lại
+              </button>
+              <button 
+                onClick={() => triggerAnalysis()}
+                className="w-full sm:w-auto px-6 py-2.5 bg-primary text-white text-[14px] font-bold rounded-xl shadow-lg shadow-primary/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+              >
+                <BrainCircuit size={18} />
+                Bắt đầu phân tích
+                <span className="flex items-center gap-1 ml-1 px-1.5 py-0.5 bg-white/20 rounded-md text-[11px] font-semibold border border-white/20">
+                  <span className="material-symbols-outlined text-[12px] leading-none">wallet</span> -3
+                </span>
+              </button>
+            </div>
+          </motion.div>
         </div>
       </MainLayout>
     );
@@ -447,7 +500,7 @@ export default function CVAnalysisResultPage() {
                 </button>
                 <button 
                   onClick={handleOptimize}
-                  disabled={optimizeMutation.isPending}
+                  disabled={isOptimizing}
                   className="px-4 py-2 bg-primary text-white rounded-lg text-[13px] font-semibold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-70"
                 >
                   <BrainCircuit size={16} />
@@ -698,7 +751,7 @@ export default function CVAnalysisResultPage() {
                     </p>
                     <button 
                       onClick={handleOptimize}
-                      disabled={optimizeMutation.isPending}
+                      disabled={isOptimizing}
                       className="px-6 py-2.5 bg-primary text-white text-[14px] font-bold rounded-xl shadow-lg shadow-primary/30 hover:-translate-y-1 hover:shadow-xl transition-all disabled:opacity-70"
                     >
                       Cập nhật CV tự động

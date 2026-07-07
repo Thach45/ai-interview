@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import profileApi from "../api/profile.api";
 import type { UpdateProfileRequest } from "../types";
 import { useAuthStore } from "../../../store/authStore";
-
+import { useEffect } from "react";
 export const useProfile = () => {
   const queryClient = useQueryClient();
   const { user: authUser, setAuth, token } = useAuthStore();
@@ -16,8 +16,12 @@ export const useProfile = () => {
     queryFn: () => profileApi.getProfile(),
     staleTime: 5 * 60 * 1000, // 5 phút
   });
-
   const user = profileResponse?.data || authUser;
+  useEffect(() => {
+  if (profileResponse?.data && token) {
+    setAuth(profileResponse.data, token);
+  }
+}, [profileResponse?.data, token, setAuth]);
 
   /**
    * Cập nhật profile
