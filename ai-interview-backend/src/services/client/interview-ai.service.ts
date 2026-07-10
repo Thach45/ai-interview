@@ -377,7 +377,11 @@ export class InterviewAiService {
     }
 
     const cvText = session.cv?.contentExtracted || '';
-    const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
+    const coreQuestions = session.coreQuestions as Array<{
+      title: string;
+      reason: string;
+      criteria?: any[];
+    }>;
     // cập nhật trạng thái phiên phỏng vấn
     if (session.status !== 'COMPLETED') {
       await this.prismaClient.interviewSession.update({
@@ -426,6 +430,12 @@ export class InterviewAiService {
             questionTitle: q.questionTitle,
             feedback: q.feedback,
             score: q.score,
+            criteriaMatches:
+              q.criteriaMatches?.map((c) => ({
+                criterionId: c.criterionId,
+                partialCredit: c.partialCredit,
+                evidence: c.evidence,
+              })) || [],
           })),
         },
       },
@@ -449,6 +459,11 @@ export class InterviewAiService {
     const result = await this.prismaClient.interviewResult.findUnique({
       where: { sessionId },
       include: {
+        session: {
+          select: {
+            coreQuestions: true,
+          },
+        },
         questionEvaluations: {
           orderBy: { questionIndex: 'asc' },
         },
@@ -475,19 +490,42 @@ export class InterviewAiService {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
     const language = session.language || InterviewLanguage.VIETNAMESE;
-    const persona = session.persona || InterviewPersona.PROFESSIONAL;
 
+    // 1. Chuyển file thu âm của ứng viên thành Text (STT)
+    console.time('[PERF] STT (Gemini) Time');
     const text = await this.aiService.transcribeAudio(buffer, mimeType, language);
-    const responseAI = await this.generateMessage(session, text, false);
-    const audioText = responseAI.message.content;
-    const audioResponse = await this.googleTtsService.synthesizeSpeech(
-      audioText,
-      language,
-      persona,
-    );
+    console.timeEnd('[PERF] STT (Gemini) Time');
+
+    // 2. Dùng chung luồng sinh tin nhắn AI, NHƯNG BẬT STREAM LÊN (enableStream = true)
+    // Hệ thống sẽ tự động băm nhỏ text bắn về Frontend qua SSE
+    console.time('[PERF] DeepSeek Generation Time (Total)');
+    const responseAI = await this.generateMessage(session, text, true);
+    console.timeEnd('[PERF] DeepSeek Generation Time (Total)');
+
+    // 3. Không tạo TTS ở đây nữa, chỉ trả về chữ để Frontend nhận biết
     return {
       ...responseAI,
-      userText: text,
+      userText: text, // Gửi lại text của user để UI hiển thị
+    };
+  }
+
+  /**
+   * Tạo Audio TTS cho một đoạn Text ngắn được Frontend yêu cầu
+   */
+  async generateTTS(userId: string, sessionId: string, text: string) {
+    const session = await this.prismaClient.interviewSession.findFirst({
+      where: { id: sessionId, userId },
+    });
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
+    }
+
+    const language = session.language || InterviewLanguage.VIETNAMESE;
+    const persona = session.persona || InterviewPersona.PROFESSIONAL;
+
+    const audioResponse = await this.googleTtsService.synthesizeSpeech(text, language, persona);
+
+    return {
       audioBase64: audioResponse.toString('base64'),
     };
   }

@@ -227,6 +227,7 @@ export default function InterviewResultPage() {
   }
 
   const result = response;
+
   const evalData = result.generalEvaluation;
   
   // Chuẩn bị data cho biểu đồ Radar
@@ -340,12 +341,17 @@ export default function InterviewResultPage() {
             <h3 className="text-[18px] font-semibold text-text-primary">Phân tích chi tiết từng câu hỏi</h3>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {result.questionEvaluations.map((qe: any, i: number) => (
-              <div key={i} className="bg-bg-surface p-6 rounded-xl border border-border-hairline flex flex-col h-full hover:border-primary/50 transition-colors">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {result.questionEvaluations.map((qe: any, i: number) => {
+              const coreQuestions = result.session?.coreQuestions || [];
+              const currentQuestion = coreQuestions[qe.questionIndex - 1] || coreQuestions[i];
+              const rubric = currentQuestion?.criteria || [];
+
+              return (
+              <div key={i} className="bg-bg-surface p-6 rounded-xl border border-border-hairline flex flex-col hover:border-primary/50 transition-colors">
                 <div className="flex items-start justify-between mb-4 gap-4">
                   <h4 className="text-[15px] font-medium text-text-primary flex-1 leading-snug">
-                    <span className="text-text-tertiary mr-2 text-[14px]">#{qe.questionIndex + 1}</span>
+                    <span className="text-text-tertiary mr-2 text-[14px]">#{qe.questionIndex}</span>
                     {qe.questionTitle}
                   </h4>
                   <div className="flex items-center gap-1.5">
@@ -380,30 +386,40 @@ export default function InterviewResultPage() {
                           Chi tiết Barem
                         </h5>
                         <ul className="space-y-3">
-                          {qe.criteriaMatches.map((match: any, idx: number) => (
-                            <li key={idx} className="flex flex-col gap-1 border-b border-border-hairline pb-2 last:border-0 last:pb-0">
-                              <div className="flex justify-between items-start gap-2">
-                                <span className="text-[13px] font-medium text-text-primary flex-1">Tiêu chí: {match.criterionId}</span>
-                                <span className={`text-[12px] font-semibold px-2 py-0.5 rounded ${
-                                  match.partialCredit === 1 ? 'bg-emerald-100 text-emerald-700' : 
-                                  match.partialCredit > 0 ? 'bg-amber-100 text-amber-700' : 
-                                  'bg-red-100 text-red-700'
-                                }`}>
-                                  {match.partialCredit * 100}%
-                                </span>
-                              </div>
-                              <p className="text-[12px] text-text-secondary italic">
-                                "{match.evidence}"
-                              </p>
-                            </li>
-                          ))}
+                          {qe.criteriaMatches.map((match: any, idx: number) => {
+                            const matchRubric = rubric.find((r: any) => r.id === match.criterionId);
+                            const rubricText = matchRubric ? matchRubric.description : `Tiêu chí: ${match.criterionId}`;
+                            const rubricPoints = matchRubric ? matchRubric.points : 0;
+                            const earnedPoints = rubricPoints * match.partialCredit;
+                            
+                            return (
+                              <li key={idx} className="flex flex-col gap-1 border-b border-border-hairline pb-2 last:border-0 last:pb-0">
+                                <div className="flex justify-between items-start gap-2">
+                                  <span className="text-[13px] font-medium text-text-primary flex-1">
+                                    {rubricText}
+                                    {rubricPoints > 0 && <span className="text-text-tertiary font-normal ml-1">({rubricPoints} điểm)</span>}
+                                  </span>
+                                  <span className={`text-[12px] font-semibold px-2 py-0.5 rounded whitespace-nowrap ${
+                                    match.partialCredit === 1 ? 'bg-emerald-100 text-emerald-700' : 
+                                    match.partialCredit > 0 ? 'bg-amber-100 text-amber-700' : 
+                                    'bg-red-100 text-red-700'
+                                  }`}>
+                                    {rubricPoints > 0 ? `${earnedPoints}/${rubricPoints}đ` : `${match.partialCredit * 100}%`}
+                                  </span>
+                                </div>
+                                <p className="text-[12px] text-text-secondary italic mt-1">
+                                  "{match.evidence}"
+                                </p>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                <div className="flex-1 mt-auto bg-white p-4 rounded-lg border border-border-hairline">
+                <div className="mt-4 bg-white p-4 rounded-lg border border-border-hairline">
                   <div className="flex items-center gap-1.5 mb-2">
                      <span className="material-symbols-outlined text-primary text-[16px]">smart_toy</span>
                      <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">AI Phản hồi</span>
@@ -413,7 +429,8 @@ export default function InterviewResultPage() {
                   </p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

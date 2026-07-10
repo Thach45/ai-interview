@@ -66,6 +66,17 @@ export const interviewAiApi = {
   },
 
   /**
+   * Gọi TTS cho một đoạn văn bản (Dùng cho Streaming Chunking)
+   */
+  generateTTS: async (sessionId: string, text: string): Promise<{ audioBase64: string }> => {
+    const response = await apiClient.post<any, { success: boolean; data: { audioBase64: string } }>(
+      `/interview-ai/${sessionId}/tts`,
+      { text }
+    );
+    return response.data;
+  },
+
+  /**
    * Yêu cầu AI nộp và tổng hợp kết quả phỏng vấn
    */
   submitInterviewResult: async (sessionId: string): Promise<any> => {

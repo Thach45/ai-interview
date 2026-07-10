@@ -68,6 +68,18 @@ class InterviewAIController {
     sendResponse(res, 200, 'Phản hồi từ AI thành công', result);
   });
 
+  synthesizeTTS = asyncHandler(async (req: Request, res: Response) => {
+    const sessionId = req.params.id;
+    const { text } = req.body;
+
+    if (!text || text.trim() === '') {
+      throw new AppException('Nội dung văn bản không được để trống', 400);
+    }
+
+    const result = await this.interviewAiService.generateTTS(req.user!.id, sessionId, text);
+    sendResponse(res, 200, 'Tạo âm thanh TTS thành công', result);
+  });
+
   getInterviewMessages = asyncHandler(async (req: Request, res: Response) => {
     const sessionId = req.params.id;
     const messages = await this.interviewAiService.getInterviewMessages(req.user!.id, sessionId);

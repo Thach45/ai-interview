@@ -8,10 +8,10 @@ import {
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { InterviewProgressCard } from '../features/interviews/components/InterviewProgressCard';
-import { useInterviewSession, useStartInterview, useSendChatAudio, useSubmitInterviewResult } from '../features/interviews/hooks/useInterviewAI';
+import { useInterviewSession, useStartInterview, useSendChatAudio, useSubmitInterviewResult, useInterviewSSE } from '../features/interviews/hooks/useInterviewAI';
+import { useTTSPlayer } from '../features/interviews/hooks/useTTSPlayer';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LoadingIndicator } from '../shared/components/LoadingIndicator';
-import { interviewAiApi } from '../features/interviews/api/interview-ai.api';
 import { PERSONA_DETAILS } from '../shared/constants/personas';
 import { InterviewPersona } from '../shared/types/interview';
 
@@ -51,12 +51,24 @@ const InterviewRoomVideoPage: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProgressSidebarOpen, setIsProgressSidebarOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState(sessionResponse?.duration);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(sessionResponse?.status || 'IN_PROGRESS');
+  const [rawStreamText, setRawStreamText] = useState("");
+
+  useInterviewSSE(sessionId, (text, isFinished) => {
+    // Nếu text mới đến, setRawStreamText
+    if (text) setRawStreamText(text);
+  });
+
+  const { isSpeaking, spokenText } = useTTSPlayer(sessionId, rawStreamText);
+
   useEffect(() => {
     if (sessionData.duration) {
       setTimeLeft(sessionData.duration * 60);
     }
-  }, [sessionData.duration]);
+    if (sessionData.status) {
+      setCurrentStatus(sessionData.status);
+    }
+  }, [sessionData.duration, sessionData.status]);
 
   // Mảng tin nhắn (xóa mock data, để mảng rỗng ban đầu)
   const [messages, setMessages] = useState<any[]>([]);
@@ -152,6 +164,11 @@ const InterviewRoomVideoPage: React.FC = () => {
           onSuccess: (res: any) => {
             const data = res.data || res;
             if (data) {
+              // Cập nhật trạng thái của buổi phỏng vấn dựa trên AI trả về
+              if (data.status) {
+                setCurrentStatus(data.status);
+              }
+
               // Thêm tin nhắn của User
               const userMsg = {
                 role: 'user',
@@ -159,32 +176,28 @@ const InterviewRoomVideoPage: React.FC = () => {
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 questionIndex: data.message?.questionIndex || 0
               };
-              // Thêm tin nhắn của AI
-              const aiMsg = {
-                role: 'bot',
-                content: data.message?.content || '',
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                questionIndex: data.message?.questionIndex || 0
-              };
               
-              setMessages(prev => [...prev, userMsg, aiMsg]);
-
-              // Phát lại audio từ AI
-              if (data.audioBase64) {
-                setIsSpeaking(true);
-                const audio = new Audio(`data:audio/mp3;base64,${data.audioBase64}`);
-                audio.onended = () => setIsSpeaking(false);
-                audio.play().catch(e => {
-                  console.error("Lỗi phát audio:", e);
-                  setIsSpeaking(false);
-                });
-              }
+              setMessages(prev => [...prev, userMsg]);
             }
           }
         });
       };
 
       mediaRecorderRef.current = recorder;
+      
+      // Chuyển giao: Bế câu nói vừa rồi của AI vào Lịch sử Chat trước khi xóa
+      if (rawStreamText) {
+        const aiHistoryMsg = {
+          role: 'bot',
+          content: rawStreamText,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, aiHistoryMsg]);
+      }
+
+      // Xóa chữ màn hình khi ứng viên bắt đầu nói
+      setRawStreamText("");
+      
       recorder.start();
     } else {
       // Dừng ghi âm
@@ -225,29 +238,12 @@ const InterviewRoomVideoPage: React.FC = () => {
 
           if (chatHistory.length > 0) {
             setMessages(chatHistory);
-            
-            // Tìm câu nói gần nhất của AI để phát âm thanh
-            // const lastAiMessage = chatHistory.filter((m: any) => m.role === 'bot').pop();
-            // if (lastAiMessage && lastAiMessage.content) {
-            //   setIsSpeaking(true);
-            //   interviewAiApi.synthesizeSpeech(lastAiMessage.content).then((ttsRes) => {
-            //     if (ttsRes.audioBase64) {
-            //       const audio = new Audio(`data:audio/mp3;base64,${ttsRes.audioBase64}`);
-            //       audio.onended = () => setIsSpeaking(false);
-            //       audio.play().catch(e => {
-            //         console.error("Lỗi phát âm thanh (có thể do trình duyệt chặn autoplay):", e);
-            //         setIsSpeaking(false);
-            //       });
-            //     } else {
-            //       setIsSpeaking(false);
-            //     }
-            //   }).catch(e => {
-            //     console.error("Lỗi gọi API TTS:", e);
-            //     setIsSpeaking(false);
-            //   });
-            // }
           }
           
+          if (messagesData[0] && messagesData[0].content) {
+            // Thiết lập raw stream text để AI đọc câu chào đầu tiên
+            setRawStreamText(messagesData[0].content);
+          }
         }
       });
     }
@@ -260,8 +256,7 @@ const InterviewRoomVideoPage: React.FC = () => {
   };
 
   const currentPersona = PERSONA_DETAILS[currentConfig.persona as InterviewPersona] || PERSONA_DETAILS[InterviewPersona.PROFESSIONAL];
-  const currentQuestionIdx = Math.max(0, ...messages.map(m => m.questionIndex || 0));
-  const isCompleted = currentQuestionIdx >= currentConfig.coreQuestions.length || sessionData?.status === 'COMPLETED';
+  const isCompleted = currentStatus === 'COMPLETED';
 
   const handleEndInterview = () => {
     if (window.confirm('Bạn có chắc chắn muốn kết thúc buổi phỏng vấn ngay bây giờ?')) {
@@ -520,6 +515,24 @@ const InterviewRoomVideoPage: React.FC = () => {
                        </p>
                     </div>
                   ))}
+
+                  {/* Hiển thị câu đang được AI nói (Subtitle Mode) */}
+                  {spokenText && (
+                    <div className="flex flex-col gap-2">
+                       <div className="flex items-center justify-between">
+                          <span className={cn(
+                            "text-[8px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
+                            isDarkMode ? "bg-primary/20 text-primary-light" : "bg-primary/10 text-primary"
+                          )}>
+                            {currentPersona.name}
+                          </span>
+                       </div>
+                       <p className={cn("text-[13px] leading-relaxed font-medium", isDarkMode ? "text-gray-300" : "text-gray-600")}>
+                          {spokenText}
+                          {isSpeaking && <span className="animate-pulse inline-block ml-1">|</span>}
+                       </p>
+                    </div>
+                  )}
                </div>
 
                <div className={cn(

@@ -53,7 +53,7 @@ export const useInterviewMessages = (sessionId: string) => {
   });
 };
 
-export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: string) => void) => {
+export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: string, isFinished?: boolean) => void) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -73,8 +73,8 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
       try {
         const data = JSON.parse(event.data);
         if (data.type === "SYNC_SESSION") {
-          // Xóa stream text khi quá trình stream kết thúc
-          if (onStreamUpdate) onStreamUpdate("");
+          // Bắn sự kiện kết thúc nhưng KHÔNG xóa text để UI tự quyết định (cho TTS Player đọc xong)
+          if (onStreamUpdate) onStreamUpdate(data.text || "", true);
           // Invalidate cache -> React Query tự động trigger fetch data mới!
           queryClient.invalidateQueries({ queryKey: ["interviewMessages", sessionId] });
         } else if (data.type === "STREAM_CHUNK") {

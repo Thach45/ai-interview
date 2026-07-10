@@ -40,6 +40,7 @@ router.post(
   validate(chatMessageWithTTSSchema),
   interviewAIController.sendChatMessageWithTTS,
 );
+router.post('/:id/tts', auth, interviewAIController.synthesizeTTS);
 router.post('/:id/submit', auth, interviewAIController.submitInterviewResult);
 router.get('/:id/result', auth, interviewAIController.getInterviewResult);
 

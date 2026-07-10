@@ -6,7 +6,9 @@ export function calculateFinalInterviewResult(
   let totalPossibleDomainScore = 0;
 
   const evaluatedQuestions = parsed.questionEvaluations.map((qEval: any) => {
-    const coreQ = coreQuestions[qEval.questionIndex];
+    const coreQ =
+      coreQuestions[qEval.questionIndex - 1] ||
+      coreQuestions.find((cq) => cq.title === qEval.questionTitle);
     let qScore = 0;
     let qPossibleScore = 0;
 
