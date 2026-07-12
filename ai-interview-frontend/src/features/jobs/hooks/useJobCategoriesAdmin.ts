@@ -32,7 +32,7 @@ export const useJobCategories = () => {
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi tạo danh mục",
+        error.message || "Có lỗi xảy ra khi tạo danh mục",
       );
     },
   });
@@ -47,7 +47,7 @@ export const useJobCategories = () => {
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi cập nhật",
+        error.message || "Có lỗi xảy ra khi cập nhật",
       );
     },
   });
@@ -61,7 +61,7 @@ export const useJobCategories = () => {
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.data?.message || "Không thể xóa danh mục này",
+        error.message || "Không thể xóa danh mục này",
       );
     },
   });

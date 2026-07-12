@@ -41,7 +41,7 @@ export const useJobTemplates = (
       queryClient.invalidateQueries({ queryKey: ["job-templates"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Tạo thất bại";
+      const message = error.message || "Tạo thất bại";
       toast.error(message);
     },
   });
@@ -57,7 +57,7 @@ export const useJobTemplates = (
       queryClient.invalidateQueries({ queryKey: ["job-templates"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Cập nhật thất bại";
+      const message = error.message || "Cập nhật thất bại";
       toast.error(message);
     },
   });
@@ -72,7 +72,7 @@ export const useJobTemplates = (
       queryClient.invalidateQueries({ queryKey: ["job-templates"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Xóa thất bại";
+      const message = error.message || "Xóa thất bại";
       toast.error(message);
     },
   });

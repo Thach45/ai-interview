@@ -40,7 +40,7 @@ const UploadCvModal: React.FC<UploadCvModalProps> = ({ isOpen, onClose }) => {
       setFile(null);
       setTitle('');
     } catch (err: any) {
-      setError(err.response?.data?.error || err.response?.data?.message || 'Đã xảy ra lỗi khi tải lên CV');
+      setError(err.message || 'Đã xảy ra lỗi khi tải lên CV');
     }
   };
 

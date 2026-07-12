@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../shared/utils/cn';
 import { Header } from '../components/layout/Header';
+import { BackgroundJobWidget } from '../shared/components/BackgroundJobWidget';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Trang chủ', href: '/', icon: 'dashboard' },
@@ -66,6 +67,9 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
           {children}
         </div>
       </main>
+
+      {/* Floating Background Job Widget */}
+      <BackgroundJobWidget />
     </div>
   );
 };

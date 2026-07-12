@@ -41,7 +41,7 @@ export const useProfile = () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Cập nhật thất bại";
+      const message = error.message || "Cập nhật thất bại";
       toast.error(message);
     },
   });

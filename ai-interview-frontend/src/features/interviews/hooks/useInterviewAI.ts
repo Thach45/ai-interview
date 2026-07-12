@@ -15,8 +15,7 @@ export const useInterviewAi = () => {
     },
     onError: (error: any) => {
       const message =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
+        error.message ||
         "Setup interview thất bại";
       toast.error(message);
     },
@@ -107,8 +106,7 @@ export const useStartInterview = (sessionId: string) => {
     mutationFn: () => interviewAiApi.startInterview(sessionId),
     onError: (error: any) => {
       const message =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
+        error.message ||
         "Không thể khởi chạy buổi phỏng vấn";
       toast.error(message);
     },
@@ -120,8 +118,7 @@ export const useSendChatMessage = (sessionId: string) => {
     mutationFn: (message: string) => interviewAiApi.sendChatMessage(sessionId, message),
     onError: (error: any) => {
       const message =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
+        error.message ||
         "Không thể gửi tin nhắn";
       toast.error(message);
     },
@@ -133,8 +130,7 @@ export const useSendChatAudio = (sessionId: string) => {
     mutationFn: (audioBlob: Blob) => interviewAiApi.sendChatAudio(sessionId, audioBlob),
     onError: (error: any) => {
       const message =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
+        error.message ||
         "Không thể xử lý âm thanh";
       toast.error(message);
     },
@@ -146,8 +142,7 @@ export const useSubmitInterviewResult = (sessionId: string) => {
     mutationFn: () => interviewAiApi.submitInterviewResult(sessionId),
     onError: (error: any) => {
       const message =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
+        error.message ||
         "Không thể nộp kết quả phỏng vấn";
       toast.error(message);
     },

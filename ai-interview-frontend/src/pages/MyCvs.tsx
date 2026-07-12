@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Loader2, Inbox, ExternalLink, Trash2, Calendar } from 'lucide-react';
+import { Plus, Search, Filter, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit } from 'lucide-react';
 import { MainLayout } from '../layouts/MainLayout';
 import UploadCvModal from '../features/cvs/components/UploadCvModal';
 import { useCvs } from '../features/cvs/hooks/useCvs';
@@ -13,9 +13,15 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 // PDF Viewer Styles
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { useCvAnalysisHistory } from '../features/cvs/hooks/useCvAnalysis';
+import { useNavigate } from 'react-router-dom';
 
 const MyCvs: React.FC = () => {
+  const navigate = useNavigate();
   const { cvs, isLoading, refetch } = useCvs();
+  const { data: historyResponse, isLoading: isLoadingHistory } = useCvAnalysisHistory();
+  const historyData = historyResponse?.data || [];
+  
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCvId, setSelectedCvId] = useState<string | null>(null);
@@ -36,6 +42,8 @@ const MyCvs: React.FC = () => {
   }, [filteredCvs, selectedCvId]);
 
   const selectedCv = cvs.find(cv => cv.id === selectedCvId);
+  
+  const selectedCvHistory = historyData.filter((item: any) => item.cv?.title === selectedCv?.title || item.cvId === selectedCv?.id);
 
   return (
     <MainLayout maxWidth="1600px" fullHeight={true} className="px-4 lg:px-8 py-6 flex flex-col">
@@ -56,11 +64,12 @@ const MyCvs: React.FC = () => {
           </button>
         </div>
 
-        {/* 2-Column Layout */}
         <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
           
-          {/* Left Column: CV List */}
-          <div className="w-full lg:w-1/3 flex flex-col h-full bg-white border border-gray-100 rounded-3xl p-4 shadow-sm">
+          {/* Left Column: CV List and History */}
+          <div className="w-full lg:w-1/3 flex flex-col h-full gap-4">
+            {/* CV List */}
+            <div className="flex flex-col bg-white border border-gray-100 rounded-3xl p-4 shadow-sm shrink-0 max-h-[50%]">
             {/* Filters & Search */}
             <div className="flex flex-col gap-3 mb-4 shrink-0">
               <div className="relative w-full">
@@ -140,29 +149,83 @@ const MyCvs: React.FC = () => {
               )}
             </div>
           </div>
-
-          {/* Right Column: PDF Viewer */}
-          <div className="w-full lg:w-2/3 flex flex-col h-full bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden relative">
-            {selectedCv ? (
-              <div className="flex-1 overflow-hidden">
-                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                  <Viewer
-                    fileUrl={selectedCv.fileUrl}
-                    plugins={[defaultLayoutPluginInstance]}
-                  />
-                </Worker>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-gray-50/50">
-                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-100">
-                  <ExternalLink className="text-gray-300" size={40} />
+          
+          {/* History Section below CV List */}
+          {selectedCv && (
+            <div className="flex-1 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm overflow-y-auto custom-scrollbar">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <div className="text-primary" /> Lịch sử phân tích
+              </h3>
+              {isLoadingHistory ? (
+                <div className="flex flex-col items-center justify-center py-4">
+                  <Loader2 className="text-primary animate-spin mb-2" size={24} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Xem trước CV</h3>
-                <p className="text-gray-500 max-w-sm mx-auto">
-                  Chọn một CV từ danh sách bên trái để hiển thị chi tiết tại đây.
-                </p>
-              </div>
-            )}
+              ) : selectedCvHistory.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {selectedCvHistory.map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-primary/30 hover:shadow-sm transition-all group">
+                      <div className="flex-1 min-w-0 pr-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary rounded-md uppercase tracking-wider whitespace-nowrap">
+                            {item.jobTemplate ? 'Mẫu' : 'Ngoài'}
+                          </span>
+                          <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                            <Calendar size={10} />
+                            {format(new Date(item.createdAt), 'dd/MM/yyyy')}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-gray-800 text-xs truncate" title={item.jobTemplate?.title || item.externalJobDescription}>
+                          {item.jobTemplate?.title || "Phân tích JD Bên Ngoài"}
+                        </h4>
+                      </div>
+                      
+                      <div className="flex flex-col items-end shrink-0 gap-1.5">
+                        <span className={`text-xs font-extrabold ${item.matchScore >= 80 ? 'text-green-600' : item.matchScore >= 50 ? 'text-amber-500' : 'text-red-500'}`}>
+                          {item.matchScore}%
+                        </span>
+                        <button 
+                          onClick={() => navigate(`/jobs/cv-analysis/${item.id}`)}
+                          className="px-3 py-1 bg-white border border-gray-200 text-gray-600 hover:bg-primary hover:text-white hover:border-primary font-medium rounded-lg transition-colors text-[10px]"
+                        >
+                          Chi tiết
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <p className="text-gray-500 text-sm">CV này chưa được phân tích lần nào.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: PDF Viewer */}
+        <div className="w-full lg:w-2/3 flex flex-col h-full relative">
+            <div className="flex-1 flex flex-col bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden min-h-0">
+              {selectedCv ? (
+                <div className="flex-1 overflow-hidden">
+                  <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                    <Viewer
+                      fileUrl={selectedCv.fileUrl}
+                      plugins={[defaultLayoutPluginInstance]}
+                    />
+                  </Worker>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-gray-50/50">
+                  <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm border border-gray-100">
+                    <ExternalLink className="text-gray-300" size={40} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">Xem trước CV</h3>
+                  <p className="text-gray-500 max-w-sm mx-auto">
+                    Chọn một CV từ danh sách bên trái để hiển thị chi tiết tại đây.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

@@ -17,7 +17,7 @@ export const useSubscription = () => {
   const purchaseMutation = useMutation({
     mutationFn: (packageId: string) => subscriptionApi.purchase(packageId),
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Yêu cầu thanh toán thất bại";
+      const message = error.message || "Yêu cầu thanh toán thất bại";
       toast.error(message);
     },
   });

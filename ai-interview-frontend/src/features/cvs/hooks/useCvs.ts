@@ -27,7 +27,7 @@ export const useCvs = (options: { enabled?: boolean } = {}) => {
       queryClient.invalidateQueries({ queryKey: ["my-cvs"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || error.response?.data?.message || "Tải lên thất bại";
+      const message = error.message || "Tải lên thất bại";
       toast.error(message);
     },
   });

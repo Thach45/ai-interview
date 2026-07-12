@@ -20,7 +20,7 @@ export const useUserActions = () => {
       toast.success('Người dùng đã được tạo thành công');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Không thể tạo người dùng');
+      toast.error(error.message || 'Không thể tạo người dùng');
     },
   });
 
@@ -31,7 +31,7 @@ export const useUserActions = () => {
       toast.success('Cập nhật người dùng thành công');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Không thể cập nhật người dùng');
+      toast.error(error.message || 'Không thể cập nhật người dùng');
     },
   });
 
@@ -42,7 +42,7 @@ export const useUserActions = () => {
       toast.success('Đã xóa người dùng thành công');
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Không thể xóa người dùng');
+      toast.error(error.message || 'Không thể xóa người dùng');
     },
   });
 

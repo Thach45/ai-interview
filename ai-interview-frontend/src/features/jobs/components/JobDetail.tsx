@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SelectCvModal from '../../cvs/components/SelectCvModal';
+import { useCvAnalysis } from '../../cvs/hooks/useCvAnalysis';
 
 interface JobDetailProps {
   job: {
@@ -21,6 +22,7 @@ interface JobDetailProps {
 export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
   const navigate = useNavigate();
   const [isCvModalOpen, setIsCvModalOpen] = useState(false);
+  const { analyzeCv } = useCvAnalysis();
 
   if (!job) {
     return (
@@ -127,7 +129,7 @@ export const JobDetail: React.FC<JobDetailProps> = ({ job }) => {
         onClose={() => setIsCvModalOpen(false)} 
         onSelect={(cvId) => {
           setIsCvModalOpen(false);
-          navigate(`/jobs/cv-analysis/${job.id}?cvId=${cvId}`);
+          analyzeCv({ cvId, jobId: job.id });
         }} 
       />
     </div>

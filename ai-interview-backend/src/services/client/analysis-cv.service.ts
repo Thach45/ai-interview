@@ -20,7 +20,7 @@ export class AnalysisCVService {
    * 2. Gửi sang AI Service để phân tích
    * 3. Lưu kết quả chi tiết vào database
    */
-  async analysisCV(userId: string, cvId: string, jobTemplateId: string) {
+  async analysisCVByJobTemplateId(userId: string, cvId: string, jobTemplateId: string) {
     // Xóa bản phân tích cũ nếu có để phân tích lại từ đầu
     const cachedAnalysis = await this.getAnalysisCV(userId, cvId, jobTemplateId);
     if (cachedAnalysis) {
@@ -45,10 +45,46 @@ export class AnalysisCVService {
     });
 
     // 3. Gọi AI phân tích (Sử dụng các trường content đã trích xuất)
-    const analysisResult = await this._aiService.analysisCV(
+    const analysisResult = await this.analysisCV(
+      userId,
+      cvId,
+      jobTemplateId,
+      null,
       userCv.contentExtracted,
       jobTemplate.aiExtractedContext,
     );
+    return analysisResult;
+  }
+  async analysisCVByExternalJob(userId: string, cvId: string, externalJobDescription: string) {
+    await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_ANALYSIS);
+    // 1. Lấy nội dung CV của người dùng
+    const userCv = await this._prisma.userCv.findFirstOrThrow({
+      where: {
+        id: cvId,
+        userId: userId, // Đảm bảo đúng chủ sở hữu
+      },
+    });
+
+    // 3. Gọi AI phân tích (Sử dụng các trường content đã trích xuất)
+    const analysisResult = await this.analysisCV(
+      userId,
+      cvId,
+      null, // jobTemplateId is null
+      externalJobDescription, // externalJobDescription
+      userCv.contentExtracted,
+      externalJobDescription,
+    );
+    return analysisResult;
+  }
+  async analysisCV(
+    userId: string,
+    cvId: string,
+    jobTemplateId: string | null,
+    externalJobDescription: string | null,
+    contentExtracted: string,
+    aiExtractedContext: string,
+  ) {
+    const analysisResult = await this._aiService.analysisCV(contentExtracted, aiExtractedContext);
 
     // 4. Thực hiện Transaction: Lưu kết quả và trừ tiền
     const savedAnalysis = await this._prisma.$transaction(async (tx) => {
@@ -56,11 +92,12 @@ export class AnalysisCVService {
       await this._creditsService.decrementCredits(userId, CREDIT_PRICE_PER_ANALYSIS, tx);
 
       // 4.2 Lưu kết quả
-      return tx.cvAnalysis.create({
+      const created = await tx.cvAnalysis.create({
         data: {
-          userId: userId,
-          cvId: cvId,
+          userId,
+          cvId,
           jobTemplateId: jobTemplateId,
+          externalJobDescription: externalJobDescription,
           matchScore: analysisResult.matchScore,
           summary: analysisResult.summary,
           scoringDetails: analysisResult.scoringDetails,
@@ -72,6 +109,8 @@ export class AnalysisCVService {
           improvementSuggestions: analysisResult.improvementSuggestions,
         },
       });
+
+      return created;
     });
 
     return savedAnalysis;
@@ -89,6 +128,43 @@ export class AnalysisCVService {
       return existingAnalysis;
     }
     return null;
+  }
+
+  async getHistoryAnalysisCvResult(userId: string) {
+    const existingAnalysis = await this._prisma.cvAnalysis.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        id: true,
+        matchScore: true,
+        createdAt: true,
+        externalJobDescription: true,
+        cv: { select: { title: true } },
+        jobTemplate: { select: { title: true } },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    if (existingAnalysis) {
+      return existingAnalysis;
+    }
+    return null;
+  }
+
+  async getAnalysisCvById(userId: string, id: string) {
+    const analysis = await this._prisma.cvAnalysis.findFirst({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        cv: { select: { title: true } },
+        jobTemplate: { select: { title: true } },
+      },
+    });
+    return analysis;
   }
 }
 

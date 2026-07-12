@@ -378,7 +378,8 @@ model CvAnalysis {
   id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
   userId                 String                  @db.ObjectId
   cvId                   String                  @db.ObjectId
-  jobTemplateId          String                  @db.ObjectId
+  jobTemplateId          String?                 @db.ObjectId
+  externalJobDescription String?
   
   matchScore             Int      
   summary                String?
@@ -397,7 +398,7 @@ model CvAnalysis {
 
   user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   cv                     UserCv      @relation(fields: [cvId], references: [id], onDelete: Cascade)
-  jobTemplate            JobTemplate @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade)
+  jobTemplate            JobTemplate? @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade)
   
   optimizedCv            OptimizedCv?
 }

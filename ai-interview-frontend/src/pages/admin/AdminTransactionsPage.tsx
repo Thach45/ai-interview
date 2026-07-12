@@ -116,7 +116,7 @@ export const AdminTransactionsPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Lỗi khi nạp credit tay:', error);
-      const msg = error.response?.data?.message || 'Lỗi hệ thống khi nạp credit';
+      const msg = error.message || 'Lỗi hệ thống khi nạp credit';
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -139,7 +139,7 @@ export const AdminTransactionsPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Lỗi khi cập nhật trạng thái giao dịch:', error);
-      const msg = error.response?.data?.message || 'Lỗi hệ thống khi xử lý duyệt giao dịch';
+      const msg = error.message || 'Lỗi hệ thống khi xử lý duyệt giao dịch';
       toast.error(msg);
     } finally {
       setIsUpdatingStatus(false);
@@ -162,7 +162,7 @@ export const AdminTransactionsPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Lỗi khi xóa giao dịch:', error);
-      const msg = error.response?.data?.message || 'Lỗi hệ thống khi xóa giao dịch';
+      const msg = error.message || 'Lỗi hệ thống khi xóa giao dịch';
       toast.error(msg);
     } finally {
       setIsDeleting(false);

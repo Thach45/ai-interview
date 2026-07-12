@@ -28,7 +28,7 @@ export const useAuth = () => {
       navigate("/");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Đăng nhập thất bại";
+      const message = error.message || "Đăng nhập thất bại";
       toast.error(message);
     },
   });
@@ -44,7 +44,7 @@ export const useAuth = () => {
       navigate(`/verify-otp?email=${variables.email}`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Đăng ký thất bại";
+      const message = error.message || "Đăng ký thất bại";
       toast.error(message);
     },
   });
@@ -58,7 +58,7 @@ export const useAuth = () => {
       toast.success("Mã OTP đã được gửi về email của bạn! 📧");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Không thể gửi mã OTP";
+      const message = error.message || "Không thể gửi mã OTP";
       toast.error(message);
     },
   });
@@ -74,7 +74,7 @@ export const useAuth = () => {
       navigate("/login");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Mã OTP không chính xác";
+      const message = error.message || "Mã OTP không chính xác";
       toast.error(message);
     },
   });
@@ -88,7 +88,7 @@ export const useAuth = () => {
       toast.success("Mã OTP mới đã được gửi! 📧");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Không thể gửi lại mã OTP";
+      const message = error.message || "Không thể gửi lại mã OTP";
       toast.error(message);
     },
   });
@@ -112,7 +112,7 @@ export const useAuth = () => {
       navigate(`/reset-password?email=${variables.email}`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Không thể gửi mã OTP";
+      const message = error.message || "Không thể gửi mã OTP";
       toast.error(message);
     },
   });
@@ -127,7 +127,7 @@ export const useAuth = () => {
       navigate("/login");
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Không thể đặt lại mật khẩu";
+      const message = error.message || "Không thể đặt lại mật khẩu";
       toast.error(message);
     },
   });

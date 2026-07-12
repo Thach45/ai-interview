@@ -29,6 +29,12 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+    // Lấy message lỗi từ backend (ví dụ lỗi 400, 429)
+    const backendMessage = error.response?.data?.message || error.response?.data?.error;
+    if (backendMessage) {
+      return Promise.reject(new Error(backendMessage));
+    }
+    
     return Promise.reject(error);
   }
 );

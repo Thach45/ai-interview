@@ -3,20 +3,46 @@ import { analysisCVService, AnalysisCVService } from '../../../services/client/a
 import { asyncHandler } from '../../../utils/asyncHandler';
 import { sendResponse } from '../../../utils/apiResponse';
 import { UnauthorizedException, BadRequestException } from '../../../exceptions';
+import { analysisCvQueue } from '../../../queues/analysis-cv.queue';
 
 class AnalysisCVController {
   constructor(private readonly analysisCVService: AnalysisCVService) {}
 
-  analyzeCV = asyncHandler(async (req: Request, res: Response) => {
+  analyzeCVWithTemplate = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) {
       throw new UnauthorizedException('Vui lòng đăng nhập để thực hiện chức năng này');
     }
 
-    const { cvId, jobDescriptionId } = req.body;
-    const result = await this.analysisCVService.analysisCV(userId, cvId, jobDescriptionId);
+    const { cvId, jobTemplateId } = req.body;
 
-    return sendResponse(res, 201, 'Phân tích CV thành công', result);
+    // Đẩy tác vụ vào Queue chạy ngầm
+    // const job = await analysisCvQueue.add('analyze-cv-job', {
+    //   userId,
+    //   cvId,
+    //   jobTemplateId,
+    // });
+
+    const job = { id: '234' };
+    return sendResponse(res, 202, 'Đã đưa yêu cầu phân tích vào hàng đợi', { jobId: job.id });
+  });
+
+  analyzeCVWithExternalJob = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException('Vui lòng đăng nhập để thực hiện chức năng này');
+    }
+
+    const { cvId, externalJobDescription } = req.body;
+
+    // Đẩy tác vụ vào Queue chạy ngầm
+    const job = await analysisCvQueue.add('analyze-cv-job', {
+      userId,
+      cvId,
+      externalJobDescription,
+    });
+
+    return sendResponse(res, 202, 'Đã đưa yêu cầu phân tích vào hàng đợi', { jobId: job.id });
   });
 
   getAnalysisCV = asyncHandler(async (req: Request, res: Response) => {
@@ -39,6 +65,40 @@ class AnalysisCVController {
 
     if (!result) {
       return sendResponse(res, 200, 'Chưa có phân tích cho CV này', null);
+    }
+
+    return sendResponse(res, 200, 'Lấy kết quả phân tích thành công', result);
+  });
+  getHistoryAnalysisCvResult = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException('Vui lòng đăng nhập để thực hiện chức năng này');
+    }
+
+    const result = await this.analysisCVService.getHistoryAnalysisCvResult(userId);
+
+    if (!result) {
+      return sendResponse(res, 200, 'Chưa có phân tích cho CV này', null);
+    }
+
+    return sendResponse(res, 200, 'Lấy kết quả phân tích thành công', result);
+  });
+
+  getAnalysisCvById = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException('Vui lòng đăng nhập để thực hiện chức năng này');
+    }
+
+    const { id } = req.params;
+    if (!id) {
+      throw new BadRequestException('Thiếu id');
+    }
+
+    const result = await this.analysisCVService.getAnalysisCvById(userId, id);
+
+    if (!result) {
+      return sendResponse(res, 200, 'Không tìm thấy kết quả phân tích', null);
     }
 
     return sendResponse(res, 200, 'Lấy kết quả phân tích thành công', result);

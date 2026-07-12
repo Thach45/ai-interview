@@ -112,7 +112,7 @@ export const AdminPackagesPage: React.FC = () => {
       setIsFormOpen(false);
       fetchPackages();
     } catch (error: any) {
-      const msg = error.response?.data?.message || 'Có lỗi xảy ra khi lưu';
+      const msg = error.message || 'Có lỗi xảy ra khi lưu';
       toast.error(msg);
     }
   };
@@ -125,7 +125,7 @@ export const AdminPackagesPage: React.FC = () => {
       toast.success('Xóa gói dịch vụ thành công!');
       fetchPackages();
     } catch (error: any) {
-      const msg = error.response?.data?.message || 'Không thể xóa gói dịch vụ';
+      const msg = error.message || 'Không thể xóa gói dịch vụ';
       toast.error(msg);
     }
   };

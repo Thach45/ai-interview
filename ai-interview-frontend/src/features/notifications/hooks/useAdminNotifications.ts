@@ -21,7 +21,7 @@ export const useAdminNotifications = (page: number, limit: number) => {
       queryClient.invalidateQueries({ queryKey: ['admin_notifications'] });
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Lỗi khi gửi thông báo');
+      toast.error(error.message || 'Lỗi khi gửi thông báo');
     },
   });
 
@@ -33,7 +33,7 @@ export const useAdminNotifications = (page: number, limit: number) => {
       queryClient.invalidateQueries({ queryKey: ['admin_notifications'] });
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Lỗi khi thu hồi thông báo');
+      toast.error(error.message || 'Lỗi khi thu hồi thông báo');
     },
   });
 

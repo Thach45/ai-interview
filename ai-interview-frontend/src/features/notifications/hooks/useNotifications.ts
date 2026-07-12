@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notificationApi } from "../api/notification.api";
 import type { Notification } from "../type/notification.type";
 import { toast } from "sonner";
+import { useBackgroundJobStore } from "../../../store/backgroundJobStore";
 
 export const useNotifications = () => {
   const queryClient = useQueryClient();
@@ -64,6 +65,25 @@ export const useNotifications = () => {
 
       try {
         const newNotification: Notification = JSON.parse(event.data);
+
+        // --- Logic cập nhật Background Job Widget ---
+        if (newNotification.type === 'AI_PROCESS' || newNotification.title?.includes('Phân tích CV')) {
+          const updateJob = useBackgroundJobStore.getState().updateJob;
+          const jobs = useBackgroundJobStore.getState().jobs;
+          
+          // Tìm job đang chạy gần nhất để cập nhật (vì hệ thống đơn giản chưa map jobId)
+          const latestRunningJob = jobs.find(j => j.status === 'processing');
+          if (latestRunningJob) {
+            if (newNotification.title?.includes('thất bại') || newNotification.title?.includes('lỗi')) {
+              updateJob(latestRunningJob.id, { status: 'error', errorMessage: newNotification.message });
+            } else {
+              updateJob(latestRunningJob.id, { status: 'success', resultUrl: newNotification.link });
+            }
+          }
+          // Worker đã xử lý xong (trừ/cộng tiền), nên ta cần ép Header gọi lại API profile ngay lúc này!
+          queryClient.invalidateQueries({ queryKey: ["profile"] });
+        }
+        // ---------------------------------------------
 
         queryClient.setQueryData(["notifications"], (oldData: any) => {
           if (!oldData) return oldData;

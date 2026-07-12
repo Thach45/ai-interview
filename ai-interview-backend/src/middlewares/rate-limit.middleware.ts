@@ -30,7 +30,7 @@ export const authLimiter = rateLimit({
 });
 
 /**
- * Giới hạn gửi OTP: 10 phút mới được gửi lại 1 lần
+ * Giới hạn gửi OTP: 3 phút mới được gửi lại 1 lần
  */
 export const otpLimiter = rateLimit({
   windowMs: 3 * 60 * 1000, // 3 phút
@@ -52,4 +52,16 @@ export const chatRateLimiter = rateLimit({
     error: 'Bạn đang gửi tin nhắn quá nhanh. Vui lòng chờ một chút!',
   },
   standardHeaders: true,
+});
+
+export const analysisCVRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 phút
+  max: 2, // Tối đa 2 lần thử trong 1 phút
+  message: {
+    success: false,
+    message: 'Hệ thống quá tải do có quá nhiều CV đang được xử lý. Vui lòng thử lại sau 1 phút.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false, // Tính cả request thành công
 });

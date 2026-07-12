@@ -45,11 +45,37 @@ export const cvApi = {
    * Phân tích CV với Job Template (Tốn Credit)
    */
   analyzeCv: async (cvId: string, jobDescriptionId: string): Promise<any> => {
-    const response = await apiClient.post<any, { success: boolean; data: any }>('/analysis-cv/analyze', {
+    const response = await apiClient.post<any, { success: boolean; data: any }>('/analysis-cv/analyze/template', {
       cvId,
-      jobDescriptionId,
+      jobTemplateId: jobDescriptionId,
     });
     return response.data;
+  },
+  /**
+   * Phân tích CV với mô tả công việc bên ngoài (Tốn Credit)
+   */
+  analyzeCvExternal: async (cvId: string, externalJobDescription: string): Promise<any> => {
+    const response = await apiClient.post<any, { success: boolean; data: any }>('/analysis-cv/analyze/external', {
+      cvId,
+      externalJobDescription,
+    });
+    return response.data;
+  },
+
+  /**
+   * Lấy lịch sử phân tích CV
+   */
+  getAnalysisHistory: async (): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>('/analysis-cv/history');
+    return response;
+  },
+
+  /**
+   * Lấy chi tiết phân tích CV theo ID phân tích
+   */
+  getAnalysisCvById: async (analysisId: string): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>(`/analysis-cv/${analysisId}`);
+    return response;
   },
 
   /**
