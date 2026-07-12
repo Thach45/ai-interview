@@ -5,8 +5,7 @@ import { Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, BrainCircuit, CheckCircle, ChevronDown, PenTool, TrendingUp, ChevronRight, XCircle } from 'lucide-react';
-import { useCvs } from '../features/cvs/hooks/useCvs';
-import { useQuery } from '@tanstack/react-query';
+import { useOptimizedCv } from '../features/cvs/hooks/useCvAnalysis';
 import { cvApi } from '../features/cvs/api/cv.api';
 import { generateCvHtml } from '../features/cvs/utils/cvTemplateGenerator';
 import Handlebars from 'handlebars';
@@ -17,16 +16,10 @@ import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 
 const CvOptimizationPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const analysisId = searchParams.get('analysisId');
+  const { analysisId } = useParams();
   
-  const { data: optimizedResult, isLoading, error } = useQuery({
-    queryKey: ['optimize-cv', analysisId],
-    queryFn: () => cvApi.optimizeCv(analysisId!),
-    enabled: !!analysisId,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 60,
-  });
+  const { data: optimizedResultResult, isLoading, error } = useOptimizedCv(analysisId);
+  const optimizedResult = optimizedResultResult?.data || optimizedResultResult;
 
   const { templates, isLoading: isLoadingTemplates } = useCvTemplatesClient();
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('mock-1');
@@ -36,7 +29,7 @@ const CvOptimizationPage: React.FC = () => {
     return (
       <MainLayout hideSearch={true} fullHeight={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
-           <p className="text-lg font-bold">Thiếu thông tin phân tích để tối ưu</p>
+           <p className="text-lg font-bold">Thiếu thông tin phân tích để tối ưu {analysisId}</p>
            <button onClick={() => navigate(-1)} className="mt-4 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg">Quay lại</button>
         </div>
       </MainLayout>
@@ -45,18 +38,10 @@ const CvOptimizationPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <LoadingIndicator 
-        type="ai"
-        title="AI đang viết lại CV của bạn..."
-        subtitle="Quá trình này có thể mất vài chục giây để hệ thống cấu trúc lại CV dựa trên các đề xuất cải thiện."
-        fullScreen={true}
-        aiSteps={[
-          "Đang lấy dữ liệu và ngữ cảnh...",
-          "Viết lại mục tiêu nghề nghiệp và kỹ năng...",
-          "Cấu trúc lại kinh nghiệm làm việc...",
-          "Hoàn thiện bản xem trước CV..."
-        ]}
-      />
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
+        <LoadingIndicator />
+        <p className="mt-4 text-gray-500 font-medium">Đang tải dữ liệu CV đã tối ưu...</p>
+      </div>
     );
   }
 

@@ -89,6 +89,14 @@ export const cvApi = {
   },
 
   /**
+   * Lấy dữ liệu CV đã được tối ưu
+   */
+  getOptimizedCv: async (analysisId: string): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>(`/analysis-cv/optimized/${analysisId}`);
+    return response.data;
+  },
+
+  /**
    * Xuất PDF CV
    */
   exportPdf: async (analysisId: string, html: string): Promise<Blob> => {

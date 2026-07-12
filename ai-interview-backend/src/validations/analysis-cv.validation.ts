@@ -47,3 +47,25 @@ export const analyzeCvWithExternalJobSchema = z.object({
       ),
   }),
 });
+
+export const getAnalysisCvSchema = z.object({
+  query: z.object({
+    cvId: z.string().min(1, 'Vui lòng cung cấp cvId'),
+    jobTemplateId: z.string().min(1, 'Vui lòng cung cấp jobTemplateId'),
+  }),
+});
+
+export const getHistoryAnalysisCvSchema = z.object({
+  query: z
+    .object({
+      page: z.string().optional(),
+      limit: z.string().optional(),
+    })
+    .optional(),
+});
+
+export const getAnalysisCvByIdSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, 'Vui lòng cung cấp id'),
+  }),
+});

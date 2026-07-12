@@ -142,13 +142,19 @@ export class AnalysisCVService {
         externalJobDescription: true,
         cv: { select: { title: true } },
         jobTemplate: { select: { title: true } },
+        optimizedCv: { select: { id: true } },
       },
+
       orderBy: {
         createdAt: 'desc',
       },
     });
     if (existingAnalysis) {
-      return existingAnalysis;
+      return existingAnalysis.map((item) => ({
+        ...item,
+        isOptimized: !!item.optimizedCv,
+        optimizedCv: undefined,
+      }));
     }
     return null;
   }

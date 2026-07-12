@@ -83,29 +83,38 @@ export const useCvAnalysisById = (analysisId?: string) => {
   });
 };
 
-export const useOptimizeCv = () => {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+export const useOptimizedCv = (analysisId?: string) => {
+  return useQuery({
+    queryKey: ['optimized-cv', analysisId],
+    queryFn: () => cvApi.getOptimizedCv(analysisId!),
+    enabled: !!analysisId,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 60,
+  });
+};
 
+export const useOptimizeCv = () => {
   const optimizeMutation = useMutation({
     mutationFn: (analysisId: string) => cvApi.optimizeCv(analysisId),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-      // Navigate to optimization page. We only need the analysisId now!
-      // But the old route was: `/jobs/cv-analysis/${jobId}/optimize?cvId=${cvId}&analysisId=${analysisId}`
-      // We should probably just pass the analysisId in the URL, but let's keep the existing navigation if needed, or navigate to a simpler route.
-      // Wait, we don't know jobId and cvId here. But we can just navigate to the optimize page with analysisId.
-      navigate(`/jobs/cv-analysis/${variables}/optimize`);
+    onSuccess: (data) => {
+      // Thêm job vào UI chạy ngầm
+      const addJob = useBackgroundJobStore.getState().addJob;
+      addJob({
+        id: data?.jobId || 'cv-optimization-' + Date.now(),
+        title: 'Đang tối ưu hóa CV...',
+        status: 'processing'
+      });
+      
+      toast.info('Đã đưa yêu cầu tối ưu CV đến hệ thống AI!');
     },
     onError: (err) => {
       console.error(err);
-      toast.error('Lỗi khi tối ưu CV: ' + (err as any).message);
+      toast.error(err.message);
     },
   });
 
   return {
     optimizeCv: optimizeMutation.mutate,
     isOptimizing: optimizeMutation.isPending,
-    optimizedCvData: optimizeMutation.data,
   };
 };

@@ -183,12 +183,23 @@ const MyCvs: React.FC = () => {
                         <span className={`text-xs font-extrabold ${item.matchScore >= 80 ? 'text-green-600' : item.matchScore >= 50 ? 'text-amber-500' : 'text-red-500'}`}>
                           {item.matchScore}%
                         </span>
-                        <button 
-                          onClick={() => navigate(`/jobs/cv-analysis/${item.id}`)}
-                          className="px-3 py-1 bg-white border border-gray-200 text-gray-600 hover:bg-primary hover:text-white hover:border-primary font-medium rounded-lg transition-colors text-[10px]"
-                        >
-                          Chi tiết
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => navigate(`/jobs/cv-analysis/${item.id}`)}
+                            className="px-3 py-1 bg-white border border-gray-200 text-gray-600 hover:bg-primary hover:text-white hover:border-primary font-medium rounded-lg transition-colors text-[10px]"
+                          >
+                            Chi tiết
+                          </button>
+                          {item.isOptimized && (
+                            <button
+                              onClick={() => navigate(`/jobs/cv-analysis/${item.id}/optimize`)}
+                              className="flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary hover:bg-primary hover:text-white font-medium rounded-lg transition-colors text-[10px]"
+                            >
+                              <BrainCircuit size={10} />
+                              <span>Đã Tối Ưu</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

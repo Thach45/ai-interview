@@ -108,6 +108,20 @@ export class CvOptimizationService {
       await browser.close();
     }
   }
+
+  async getOptimizedCv(userId: string, analysisId: string) {
+    const optimizedCv = await this._prisma.optimizedCv.findUnique({
+      where: {
+        cvAnalysisId: analysisId,
+      },
+    });
+
+    if (!optimizedCv || optimizedCv.userId !== userId) {
+      throw new NotFoundException('Không tìm thấy dữ liệu CV đã tối ưu');
+    }
+
+    return optimizedCv;
+  }
 }
 
 export const cvOptimizationService = new CvOptimizationService(prisma, aiService, creditsService);

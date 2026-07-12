@@ -103,7 +103,7 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         } />
 
-        <Route path="/jobs/cv-analysis/:id/optimize" element={
+        <Route path="/jobs/cv-analysis/:analysisId/optimize" element={
           <ProtectedRoute>
             <CvOptimizationPage />
           </ProtectedRoute>

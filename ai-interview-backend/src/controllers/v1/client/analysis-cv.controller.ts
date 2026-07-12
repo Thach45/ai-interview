@@ -15,15 +15,12 @@ class AnalysisCVController {
     }
 
     const { cvId, jobTemplateId } = req.body;
+    const job = await analysisCvQueue.add('analyze-cv-job', {
+      userId,
+      cvId,
+      jobTemplateId,
+    });
 
-    // Đẩy tác vụ vào Queue chạy ngầm
-    // const job = await analysisCvQueue.add('analyze-cv-job', {
-    //   userId,
-    //   cvId,
-    //   jobTemplateId,
-    // });
-
-    const job = { id: '234' };
     return sendResponse(res, 202, 'Đã đưa yêu cầu phân tích vào hàng đợi', { jobId: job.id });
   });
 
