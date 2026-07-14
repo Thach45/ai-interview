@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { PaymentStatus } from '@prisma/client';
 import { asyncHandler } from '../../../utils/asyncHandler';
 import {
   AdminTransactionsService,
@@ -69,7 +70,10 @@ class AdminTransactionsController {
       return sendResponse(res, 400, 'Thiếu thông tin trạng thái cập nhật');
     }
 
-    const transaction = await this.transactionsService.updateTransactionStatus(id, status);
+    const transaction = await this.transactionsService.updateTransactionStatus(
+      id as string,
+      status as PaymentStatus,
+    );
     return sendResponse(res, 200, 'Cập nhật trạng thái giao dịch thành công', transaction);
   });
 
@@ -78,7 +82,7 @@ class AdminTransactionsController {
    */
   delete = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await this.transactionsService.deleteTransaction(id);
+    const result = await this.transactionsService.deleteTransaction(id as string);
     return sendResponse(res, 200, result.message);
   });
 }

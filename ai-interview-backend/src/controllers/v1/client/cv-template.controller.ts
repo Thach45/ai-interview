@@ -17,7 +17,7 @@ export class CvTemplateClientController {
 
   getTemplateById = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const template = await this._cvTemplateService.getTemplateById(id);
+    const template = await this._cvTemplateService.getTemplateById((id as string));
 
     if (!template) {
       throw new NotFoundException('Không tìm thấy template hoặc template không hoạt động');

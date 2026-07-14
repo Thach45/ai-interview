@@ -95,7 +95,7 @@ const InterviewRoomTextPage: React.FC = () => {
         questionTitle: activeQuestions[msg.questionIndex]?.title,
         questionIndex: msg.questionIndex != null ? msg.questionIndex + 1 : undefined,
       }));
-      setMessages(mappedMessages);
+      setMessages(mappedMessages as any);
       
       // Xác định câu hỏi hiện tại dựa vào tin nhắn mới nhất
       const aiMainMessages = serverMessages.filter((m: any) => m.role === 'AI' && !m.isFollowUp);

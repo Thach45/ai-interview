@@ -30,7 +30,7 @@ export default function CVAnalysisResultPage() {
   const { optimizeCv, isOptimizing } = useOptimizeCv();
 
   const analysisResponse = historyResponse?.data;
-  const selectedCv = cvs.find(c => c.id === analysisResponse?.cvId);
+  const selectedCv = cvs.find((c: any) => c.id === analysisResponse?.cvId);
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   const handleOptimize = () => {

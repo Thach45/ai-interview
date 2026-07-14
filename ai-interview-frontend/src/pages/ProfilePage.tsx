@@ -9,7 +9,7 @@ const ProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'purchase' | 'notifications'>('profile');
 
   return (
-    <MainLayout title="Quản lý tài khoản">
+    <MainLayout>
       <>
         
         {/* Page Header */}

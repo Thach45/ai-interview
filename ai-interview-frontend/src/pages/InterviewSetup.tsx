@@ -37,7 +37,7 @@ const InterviewSetupPage: React.FC = () => {
   ];
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (setupInterviewMutation.isPending) {
       interval = setInterval(() => {
         setLoadingStepIdx((prev) => (prev + 1) % loadingSteps.length);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit } from 'lucide-react';
+import { Plus, Search, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit } from 'lucide-react';
 import { MainLayout } from '../layouts/MainLayout';
 import UploadCvModal from '../features/cvs/components/UploadCvModal';
 import { useCvs } from '../features/cvs/hooks/useCvs';
@@ -28,7 +28,7 @@ const MyCvs: React.FC = () => {
 
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
-  const filteredCvs = cvs.filter(cv => 
+  const filteredCvs = cvs.filter((cv: any) => 
     cv.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -41,7 +41,7 @@ const MyCvs: React.FC = () => {
     }
   }, [filteredCvs, selectedCvId]);
 
-  const selectedCv = cvs.find(cv => cv.id === selectedCvId);
+  const selectedCv = cvs.find((cv: any) => cv.id === selectedCvId);
   
   const selectedCvHistory = historyData.filter((item: any) => item.cv?.title === selectedCv?.title || item.cvId === selectedCv?.id);
 
@@ -92,7 +92,7 @@ const MyCvs: React.FC = () => {
                   <p className="text-gray-500 font-medium italic text-sm">Đang tải danh sách...</p>
                 </div>
               ) : filteredCvs.length > 0 ? (
-                filteredCvs.map(cv => (
+                filteredCvs.map((cv: any) => (
                   <div 
                     key={cv.id} 
                     onClick={() => setSelectedCvId(cv.id)}

@@ -22,7 +22,7 @@ class PackagesController {
    */
   getById = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const pkg = await this.packagesService.getPackageById(id);
+    const pkg = await this.packagesService.getPackageById(id as string);
     return sendResponse(res, 200, 'Package retrieved successfully', pkg);
   });
 
@@ -39,7 +39,7 @@ class PackagesController {
    */
   update = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const pkg = await this.packagesService.updatePackage(id, req.body);
+    const pkg = await this.packagesService.updatePackage(id as string, req.body);
     return sendResponse(res, 200, 'Package updated successfully', pkg);
   });
 
@@ -48,7 +48,7 @@ class PackagesController {
    */
   delete = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await this.packagesService.deletePackage(id);
+    const result = await this.packagesService.deletePackage(id as string);
     return sendResponse(res, 200, result.message);
   });
 }

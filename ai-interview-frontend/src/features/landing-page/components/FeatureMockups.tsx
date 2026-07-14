@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Sparkles, Video, Play, CheckCircle2, ChevronRight, Mic, Camera, XCircle, BrainCircuit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const customEase = [0.32, 0.72, 0, 1];
+const customEase: [number, number, number, number] = [0.32, 0.72, 0, 1];
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },

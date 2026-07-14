@@ -19,7 +19,7 @@ export class CvTemplateController {
     try {
       const { id } = req.params;
       const template = await prisma.cvTemplate.findUnique({
-        where: { id },
+        where: { id: id as string },
       });
       if (!template) {
         res.status(404).json({ error: 'Không tìm thấy template' });
@@ -54,14 +54,14 @@ export class CvTemplateController {
       const { id } = req.params;
       const { name, thumbnailUrl, htmlStructure, cssStyles, isActive } = req.body;
 
-      const existing = await prisma.cvTemplate.findUnique({ where: { id } });
+      const existing = await prisma.cvTemplate.findUnique({ where: { id: id as string } });
       if (!existing) {
         res.status(404).json({ error: 'Không tìm thấy template để cập nhật' });
         return;
       }
 
       const updated = await prisma.cvTemplate.update({
-        where: { id },
+        where: { id: id as string },
         data: {
           name,
           thumbnailUrl,
@@ -80,14 +80,14 @@ export class CvTemplateController {
     try {
       const { id } = req.params;
 
-      const existing = await prisma.cvTemplate.findUnique({ where: { id } });
+      const existing = await prisma.cvTemplate.findUnique({ where: { id: id as string } });
       if (!existing) {
         res.status(404).json({ error: 'Không tìm thấy template để xóa' });
         return;
       }
 
       await prisma.cvTemplate.delete({
-        where: { id },
+        where: { id: id as string },
       });
       res.json({ message: 'Xóa template thành công' });
     } catch (error) {

@@ -33,7 +33,7 @@ const SelectCvModal: React.FC<SelectCvModalProps> = ({ isOpen, onClose, onSelect
             </div>
           ) : cvs.length > 0 ? (
             <div className="space-y-3">
-              {cvs.map((cv) => (
+              {cvs.map((cv: any) => (
                 <div 
                   key={cv.id}
                   onClick={() => onSelect(cv.id)}

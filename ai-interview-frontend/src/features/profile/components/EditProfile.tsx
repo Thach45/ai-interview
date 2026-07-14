@@ -36,9 +36,9 @@ export const EditProfile: React.FC = () => {
       setValue('fullName', user.fullName || '');
       setValue('email', user.email || ''); // Readonly
       setValue('avatarUrl', user.avatarUrl || '');
-      setValue('phone', user.phone || ''); // Fallback
-      setValue('dob', user.dob || '');
-      setValue('bio', user.bio || '');
+      // setValue('phone', user.phone || ''); // Fallback
+      // setValue('dob', user.dob || '');
+      // setValue('bio', user.bio || '');
     }
   }, [user, setValue]);
 

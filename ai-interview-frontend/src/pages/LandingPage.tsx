@@ -12,7 +12,7 @@ import { TestimonialSection } from '../features/landing-page/components/Testimon
 import { CustomCursor } from '../features/landing-page/components/CustomCursor';
 
 // Custom Easing Curve
-const customEase = [0.32, 0.72, 0, 1];
+const customEase: [number, number, number, number] = [0.32, 0.72, 0, 1];
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },

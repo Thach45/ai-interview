@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
 
-const customEase = [0.32, 0.72, 0, 1];
+const customEase: [number, number, number, number] = [0.32, 0.72, 0, 1];
 
 export const CTASection: React.FC = () => {
   const { isAuthenticated } = useAuthStore();

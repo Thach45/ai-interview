@@ -1,4 +1,4 @@
-export enum ExperienceLevel {
+export const enum ExperienceLevel {
   INTERN = 'INTERN',
   FRESHER = 'FRESHER',
   JUNIOR = 'JUNIOR',
@@ -8,18 +8,18 @@ export enum ExperienceLevel {
   DIRECTOR = 'DIRECTOR',
 }
 
-export enum InterviewMode {
+export const enum InterviewMode {
   VIDEO = 'VIDEO',
   TEXT = 'TEXT',
 }
 
-export enum InterviewLanguage {
+export const enum InterviewLanguage {
   VIETNAMESE = 'VIETNAMESE',
   ENGLISH = 'ENGLISH',
   BILINGUAL = 'BILINGUAL',
 }
 
-export enum InterviewPersona {
+export const enum InterviewPersona {
   PROFESSIONAL = 'PROFESSIONAL',
   FRIENDLY = 'FRIENDLY',
   STRICT = 'STRICT',

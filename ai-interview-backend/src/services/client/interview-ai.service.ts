@@ -425,13 +425,13 @@ export class InterviewAiService {
         weaknesses: interviewResult.weaknesses,
         learningPath: interviewResult.learningPath,
         questionEvaluations: {
-          create: interviewResult.questionEvaluations.map((q) => ({
+          create: interviewResult.questionEvaluations.map((q: any) => ({
             questionIndex: q.questionIndex,
             questionTitle: q.questionTitle,
             feedback: q.feedback,
             score: q.score,
             criteriaMatches:
-              q.criteriaMatches?.map((c) => ({
+              q.criteriaMatches?.map((c: any) => ({
                 criterionId: c.criterionId,
                 partialCredit: c.partialCredit,
                 evidence: c.evidence,

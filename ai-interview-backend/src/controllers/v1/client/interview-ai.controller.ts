@@ -23,33 +23,46 @@ class InterviewAIController {
     const sessionId = req.params.id;
     const interviewSession = await this.interviewAiService.getInterviewSession(
       req.user!.id,
-      sessionId,
+      sessionId as string,
     );
     sendResponse(res, 200, 'Lấy thông tin phiên phỏng vấn thành công', interviewSession);
   });
 
   startInterview = asyncHandler(async (req: Request, res: Response) => {
     const sessionId = req.params.id;
-    const messages = await this.interviewAiService.startInterviewSession(req.user!.id, sessionId);
+    const messages = await this.interviewAiService.startInterviewSession(
+      req.user!.id,
+      sessionId as string,
+    );
     sendResponse(res, 200, 'Bắt đầu buổi phỏng vấn thành công', messages);
   });
 
   sendChatMessage = asyncHandler(async (req: Request, res: Response) => {
     const sessionId = req.params.id;
     const { message } = req.body;
-    const result = await this.interviewAiService.sendChatMessage(req.user!.id, sessionId, message);
+    const result = await this.interviewAiService.sendChatMessage(
+      req.user!.id,
+      sessionId as string,
+      message,
+    );
     sendResponse(res, 200, 'Phản hồi từ AI thành công', result);
   });
 
   submitInterviewResult = asyncHandler(async (req: Request, res: Response) => {
     const sessionId = req.params.id;
-    const result = await this.interviewAiService.submitInterviewResult(req.user!.id, sessionId);
+    const result = await this.interviewAiService.submitInterviewResult(
+      req.user!.id,
+      sessionId as string,
+    );
     sendResponse(res, 200, 'Nộp kết quả phỏng vấn thành công', result);
   });
 
   getInterviewResult = asyncHandler(async (req: Request, res: Response) => {
     const sessionId = req.params.id;
-    const result = await this.interviewAiService.getInterviewResult(req.user!.id, sessionId);
+    const result = await this.interviewAiService.getInterviewResult(
+      req.user!.id,
+      sessionId as string,
+    );
     sendResponse(res, 200, 'Lấy báo cáo kết quả phỏng vấn thành công', result);
   });
 
@@ -61,7 +74,7 @@ class InterviewAIController {
     // Gửi file cho Gemini nghe và chép chính tả
     const result = await this.interviewAiService.sendChatMessageWithTTS(
       req.user!.id,
-      sessionId,
+      sessionId as string,
       req.file.buffer,
       req.file.mimetype,
     );
@@ -76,13 +89,20 @@ class InterviewAIController {
       throw new AppException('Nội dung văn bản không được để trống', 400);
     }
 
-    const result = await this.interviewAiService.generateTTS(req.user!.id, sessionId, text);
+    const result = await this.interviewAiService.generateTTS(
+      req.user!.id,
+      sessionId as string,
+      text,
+    );
     sendResponse(res, 200, 'Tạo âm thanh TTS thành công', result);
   });
 
   getInterviewMessages = asyncHandler(async (req: Request, res: Response) => {
     const sessionId = req.params.id;
-    const messages = await this.interviewAiService.getInterviewMessages(req.user!.id, sessionId);
+    const messages = await this.interviewAiService.getInterviewMessages(
+      req.user!.id,
+      sessionId as string,
+    );
     sendResponse(res, 200, 'Lấy lịch sử tin nhắn thành công', messages);
   });
 

@@ -35,7 +35,7 @@ class CvOptimizationController {
     }
 
     const { analysisId } = req.params;
-    const result = await this.cvOptimizationService.getOptimizedCv(userId, analysisId);
+    const result = await this.cvOptimizationService.getOptimizedCv((userId as string), (analysisId as string));
 
     return sendResponse(res, 200, 'Lấy dữ liệu tối ưu thành công', result);
   });

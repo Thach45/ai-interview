@@ -275,7 +275,7 @@ export const JobTemplateModal: React.FC<JobTemplateModalProps> = ({ isOpen, onCl
                   className="w-full px-4 py-2 bg-bg-surface border border-border-hairline rounded-lg cursor-pointer hover:border-primary/30 transition-all flex flex-wrap items-center gap-2 min-h-[44px]"
                 >
                   {watch('categoryId') ? (
-                    getCategoryNames(watch('categoryId')).map((name, idx) => (
+                    getCategoryNames(watch('categoryId') || '').map((name, idx) => (
                       <span key={idx} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary text-[11px] font-bold rounded-md border border-primary/20">
                         <span className="material-symbols-outlined text-[14px]">work</span>
                         {name}

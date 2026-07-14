@@ -58,7 +58,7 @@ export const notificationAdminController = {
       return sendResponse(res, 400, 'Thiếu ID thông báo', null);
     }
 
-    await notificationAdminService.deleteNotification(id);
+    await notificationAdminService.deleteNotification((id as string));
 
     return sendResponse(res, 200, 'Đã thu hồi thông báo', null);
   }),

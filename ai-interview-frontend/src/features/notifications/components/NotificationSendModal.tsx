@@ -6,7 +6,7 @@ import { useDebounce } from 'use-debounce';
 interface NotificationSendModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSend: (data: any) => Promise<void>;
+  onSend: (data: any) => Promise<any>;
   isSending: boolean;
 }
 

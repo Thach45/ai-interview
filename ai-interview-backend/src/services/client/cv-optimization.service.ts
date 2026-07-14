@@ -94,7 +94,7 @@ export class CvOptimizationService {
       const page = await browser.newPage();
 
       // Đặt content và chờ mạng tĩnh để Tailwind CDN render
-      await page.setContent(html, { waitUntil: 'networkidle0' });
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
       // Xuất PDF
       const pdfBuffer = await page.pdf({

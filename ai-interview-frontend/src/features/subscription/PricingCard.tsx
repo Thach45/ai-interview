@@ -60,8 +60,8 @@ export const PricingCard: React.FC<Props> = ({ pkg, index, onBuy }) => {
 
         {/* Price */}
         <div className="mb-1">
-          {pkg.oldPrice > 0 && (
-            <span className="text-[12px] text-text-tertiary line-through mr-2">{formatPrice(pkg.oldPrice)}đ</span>
+          {(pkg.oldPrice || 0) > 0 && (
+            <span className="text-[12px] text-text-tertiary line-through mr-2">{formatPrice(pkg.oldPrice || 0)}đ</span>
           )}
           {discount > 0 && (
             <span className="text-[11px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">

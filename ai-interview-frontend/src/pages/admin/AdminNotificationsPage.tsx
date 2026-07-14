@@ -176,7 +176,7 @@ export const AdminNotificationsPage: React.FC = () => {
       <NotificationSendModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSend={sendNotification}
+        onSend={async (data) => { await sendNotification(data); }}
         isSending={isSending}
       />
     </AdminLayout>

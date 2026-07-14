@@ -20,7 +20,7 @@ class NotificationController {
 
   markAsRead = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    await this.notificationService.markAsRead(req.user!.id, id);
+    await this.notificationService.markAsRead(req.user!.id, id as string);
     sendResponse(res, 200, 'Đã đánh dấu đọc', null);
   });
 

@@ -145,7 +145,7 @@ export class SubscriptionService {
 
                 // Kiểm tra nội dung chuyển khoản có chứa mã đối soát không
                 if (
-                  transactionContent.toLowerCase().includes(transaction.paymentRefId.toLowerCase())
+                  transactionContent.toLowerCase().includes(transaction!.paymentRefId!.toLowerCase())
                 ) {
                   try {
                     const amountIn = parseFloat(amountInStr);
@@ -160,7 +160,7 @@ export class SubscriptionService {
                         // Cập nhật trạng thái giao dịch thành công và cộng credit
                         await prisma.$transaction([
                           prisma.transaction.update({
-                            where: { id: transaction.id },
+                            where: { id: transaction!.id },
                             data: {
                               status: PaymentStatus.SUCCESS,
                               sepayTransactionId: sepayId.toString(),
@@ -168,25 +168,25 @@ export class SubscriptionService {
                             },
                           }),
                           prisma.user.update({
-                            where: { id: transaction.userId },
+                            where: { id: transaction!.userId },
                             data: {
                               creditsBalance: {
                                 increment:
-                                  transaction.creditsAdded === -1
+                                  transaction!.creditsAdded === -1
                                     ? 999999
-                                    : transaction.creditsAdded,
+                                    : transaction!.creditsAdded,
                               },
                             },
                           }),
                         ]);
 
                         console.log(
-                          `✅ Đã nạp ${transaction.creditsAdded} credits cho user ${transaction.user.email} qua Polling`,
+                          `✅ Đã nạp ${transaction!.creditsAdded} credits cho user ${transaction!.user.email} qua Polling`,
                         );
 
                         // Lấy lại transaction mới nhất để trả về
                         transaction = await prisma.transaction.findUnique({
-                          where: { id: transaction.id },
+                          where: { id: transaction!.id },
                           include: { user: true },
                         });
                         break; // Đã tìm thấy và xử lý, thoát vòng lặp

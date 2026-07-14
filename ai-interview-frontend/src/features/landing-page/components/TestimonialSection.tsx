@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { TestimonialMarquee } from '../../subscription/TestimonialMarquee';
 import { TESTIMONIALS } from '../../subscription/subscription.data';
 
-const customEase = [0.32, 0.72, 0, 1];
+const customEase: [number, number, number, number] = [0.32, 0.72, 0, 1];
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },

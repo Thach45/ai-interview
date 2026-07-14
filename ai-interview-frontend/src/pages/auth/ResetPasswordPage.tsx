@@ -75,7 +75,7 @@ export const ResetPasswordPage: React.FC = () => {
                   type="text"
                   maxLength={1}
                   value={data}
-                  ref={(el) => (inputRefs.current[index] = el)}
+                  ref={(el) => { inputRefs.current[index] = el; }}
                   onChange={(e) => handleOtpChange(e.target, index)}
                   onKeyDown={(e) => handleOtpKeyDown(e, index)}
                   className="size-12 bg-bg-surface border border-border-hairline rounded-xl text-center text-lg font-bold outline-none focus:border-primary focus:bg-white transition-all"

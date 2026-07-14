@@ -1,4 +1,4 @@
-import { InterviewPersona } from '../types/interview-ai.type';
+import { InterviewPersona } from '@prisma/client';
 
 export interface PersonaDetails {
   id: string;

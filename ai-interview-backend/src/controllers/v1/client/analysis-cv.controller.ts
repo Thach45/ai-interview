@@ -92,7 +92,7 @@ class AnalysisCVController {
       throw new BadRequestException('Thiếu id');
     }
 
-    const result = await this.analysisCVService.getAnalysisCvById(userId, id);
+    const result = await this.analysisCVService.getAnalysisCvById((userId as string), (id as string));
 
     if (!result) {
       return sendResponse(res, 200, 'Không tìm thấy kết quả phân tích', null);

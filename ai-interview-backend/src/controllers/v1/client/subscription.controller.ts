@@ -39,7 +39,7 @@ class SubscriptionController {
     const { id } = req.params;
     const userId = (req as any).user.id;
 
-    const transaction = await this.subscriptionService.getTransactionByIdAndUser(id, userId);
+    const transaction = await this.subscriptionService.getTransactionByIdAndUser((id as string), (userId as string));
     if (!transaction) {
       return sendResponse(res, 404, 'Không tìm thấy giao dịch chuyển khoản');
     }
