@@ -18,7 +18,7 @@ export const useAuth = () => {
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: (response) => {
       const { user, accessToken } = response.data;
-      console.log(accessToken)
+      
       
       // Xóa sạch cache cũ để đảm bảo dữ liệu mới hoàn toàn
       queryClient.clear();

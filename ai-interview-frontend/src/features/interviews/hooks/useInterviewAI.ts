@@ -82,7 +82,7 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
           lastChunkTime = now;
           
           // Cập nhật text đang stream
-          console.log(`[+${delta}ms] FE RECEIVED CHUNK:`, data.text);
+       
           if (onStreamUpdate) onStreamUpdate(data.text);
         }
       } catch (error) {

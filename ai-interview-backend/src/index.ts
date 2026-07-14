@@ -12,10 +12,10 @@ import { apiLimiter } from './middlewares/rate-limit.middleware';
 
 const app: Express = express();
 const port: number = parseInt(process.env.PORT || '3000', 10);
-
+const corsDomain = process.env.FRONTEND_URL;
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'http://localhost:5174'],
+    origin: corsDomain,
     credentials: true,
   }),
 );

@@ -43,9 +43,6 @@ const SubscriptionPage: React.FC = () => {
     resetPurchase();
   };
 
-  React.useEffect(() => {
-    console.log('Subscription Packages Data:', packages);
-  }, [packages]);
 
   return (
     <MainLayout maxWidth="1440px" className="px-4 lg:px-12 py-0">
