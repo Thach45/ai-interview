@@ -56,7 +56,7 @@ const gracefulShutdown = async () => {
       notificationWorker.close(),
       emailWorker.close(),
       analysisCvWorker.close(),
-      optimizeCvWorker.close()
+      optimizeCvWorker.close(),
     ]);
     console.log('BullMQ Workers closed.');
     process.exit(0);
