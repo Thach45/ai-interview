@@ -31,12 +31,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // 2. Giải mã Token để lấy Role và thời gian hết hạn
     const decoded: DecodedToken = jwtDecode(token);
     
-    // 3. Kiểm tra xem Token đã hết hạn chưa (exp tính bằng giây)
-    const currentTime = Date.now() / 1000;
-    if (decoded.exp < currentTime) {
-      logout(); // Logout nếu token hết hạn
-      return <Navigate to="/login" state={{ from: location }} replace />;
-    }
+    // 3. Không kiểm tra exp ở đây nữa, để cho apiClient interceptor tự lo vụ Refresh Token
+    // Nếu hết hạn thì khi gọi API, apiClient sẽ tự catch 401 và gọi /refresh-token
 
     // 4. Kiểm tra phân quyền (Role-based Authorization)
     if (allowedRoles && !allowedRoles.includes(decoded.role)) {
@@ -46,8 +42,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     return <>{children}</>;
   } catch (error) {
-    // Nếu token lỗi, đá về login
-    logout();
+    // Nếu token lỗi định dạng nặng
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 };

@@ -34,15 +34,17 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     }
 
     // 2. Xác thực token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET || 'secret',
-    ) as CustomJwtPayload;
+    try {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_ACCESS_SECRET || 'secret',
+      ) as CustomJwtPayload;
 
-    // 3. Gắn thông tin user vào request
-    req.user = decoded;
-
-    next();
+      req.user = decoded;
+      next();
+    } catch (err) {
+      throw err;
+    }
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       next(new UnauthorizedException('Token đã hết hạn, vui lòng đăng nhập lại'));

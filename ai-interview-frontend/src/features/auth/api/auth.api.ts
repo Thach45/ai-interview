@@ -58,6 +58,12 @@ export const authApi = {
    */
   resetPassword: (data: ResetPasswordRequest) =>
     apiClient.post<any, { success: boolean; message: string }>("/auth/reset-password", data),
+
+  /**
+   * Làm mới Access Token
+   */
+  refreshToken: () =>
+    apiClient.post<any, { success: boolean; message: string; data: { accessToken: string; refreshToken: string } }>("/auth/refresh-token"),
 };
 
 export default authApi;

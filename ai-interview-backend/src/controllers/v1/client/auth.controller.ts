@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { generateAccessToken, generateRefreshToken } from '../../../utils/jwt';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../../utils/jwt';
 import { AuthService, authService } from '../../../services/client/auth.service';
 import { asyncHandler } from '../../../utils/asyncHandler';
 import { sendResponse } from '../../../utils/apiResponse';
@@ -65,7 +65,7 @@ class AuthController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
     });
 
     return sendResponse(res, 200, 'User logged in successfully', {
@@ -79,8 +79,47 @@ class AuthController {
    * Làm mới token
    */
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
-    // Logic refresh token sẽ được bổ sung sau
-    return sendResponse(res, 200, 'Token refreshed successfully');
+    const token = req.cookies?.refreshToken;
+    if (!token) {
+      return sendResponse(res, 401, 'No refresh token provided');
+    }
+
+    const payload = verifyRefreshToken(token);
+    if (!payload) {
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      return sendResponse(res, 401, 'Invalid or expired refresh token');
+    }
+
+    const user = await this.authService.findUserById(payload.id);
+    if (!user || user.status !== 'ACTIVE') {
+      res.clearCookie('refreshToken');
+      return sendResponse(res, 401, 'User no longer valid');
+    }
+
+    const newPayload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      emailVerifyAt: user.emailVerifiedAt,
+      status: user.status,
+    } as TokenPayload;
+
+    const accessToken = generateAccessToken(newPayload);
+    const newRefreshToken = generateRefreshToken(newPayload);
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    return sendResponse(res, 200, 'Token refreshed successfully', {
+      accessToken,
+      refreshToken: newRefreshToken,
+    });
   });
 
   /**
@@ -90,7 +129,7 @@ class AuthController {
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
     });
 
     return sendResponse(res, 200, 'User logged out successfully');
