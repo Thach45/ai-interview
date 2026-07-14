@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { MainLayout } from '../layouts/MainLayout';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Viewer, Worker } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, BrainCircuit, CheckCircle, ChevronDown, PenTool, TrendingUp, ChevronRight, XCircle } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Sparkles, BrainCircuit, CheckCircle, ChevronRight, XCircle } from 'lucide-react';
 import { useOptimizedCv } from '../features/cvs/hooks/useCvAnalysis';
 import { cvApi } from '../features/cvs/api/cv.api';
-import { generateCvHtml } from '../features/cvs/utils/cvTemplateGenerator';
 import Handlebars from 'handlebars';
 import { useCvTemplatesClient } from '../features/cvs/hooks/useCvTemplatesClient';
 import '@react-pdf-viewer/core/lib/styles/index.css';

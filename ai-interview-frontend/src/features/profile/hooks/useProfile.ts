@@ -15,6 +15,7 @@ export const useProfile = () => {
     queryKey: ["profile"],
     queryFn: () => profileApi.getProfile(),
     staleTime: 5 * 60 * 1000, // 5 phút
+    enabled: !!token, // Chỉ fetch khi có token
   });
   const user = profileResponse?.data || authUser;
   useEffect(() => {

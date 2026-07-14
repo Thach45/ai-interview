@@ -25,7 +25,7 @@ export const useAuth = () => {
       
       setAuth(user, accessToken);
       toast.success("Chào mừng bạn trở lại! 👋");
-      navigate("/");
+      navigate("/dashboard");
     },
     onError: (error: any) => {
       const message = error.message || "Đăng nhập thất bại";

@@ -34,11 +34,14 @@ import { LoadingTestPage } from '../pages/LoadingTestPage';
 import CvOptimizationPage from '../pages/CvOptimizationPage.tsx';
 
 
+import LandingPage from '../pages/LandingPage';
+
 export const AppRoutes: React.FC = () => {
   return (
     <Router>
       <Routes>
         {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -49,7 +52,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/test-loading/:type" element={<LoadingTestPage />} />
 
         {/* Private Routes (Bất kỳ user nào đăng nhập cũng vào được) */}
-        <Route path="/" element={
+        <Route path="/dashboard" element={
           <ProtectedRoute>
             <DashboardPage />
           </ProtectedRoute>

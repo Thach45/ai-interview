@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useProfile } from '../../features/profile/hooks/useProfile';
 import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
-
+import { useAuthStore } from '../../store/authStore';
+import { ArrowUpRight } from 'lucide-react';
 
 interface HeaderProps {
   hideSearch?: boolean;
 }
 
+const PUBLIC_NAV_ITEMS = [
+  { id: 'features', label: 'Giải pháp', href: '/#features' },
+  { id: 'how-it-works', label: 'Luồng hoạt động', href: '/#how-it-works' },
+  { id: 'subscription', label: 'Gói dịch vụ', href: '/subscription' },
+];
 
-const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Trang chủ', href: '/' },
+const PRIVATE_NAV_ITEMS = [
+  { id: 'dashboard', label: 'Trang chủ', href: '/dashboard' },
   { id: 'jobs', label: 'Việc làm', href: '/jobs' },
   { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs' },
   { id: 'interview', label: 'Phỏng vấn AI', href: '/interviews/setup' },
@@ -19,15 +25,18 @@ const NAV_ITEMS = [
 
 export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
   const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
   const { user } = useProfile();
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+
+  const navItems = isAuthenticated ? PRIVATE_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
   return (
     <header className="h-16 flex items-center justify-between px-6 lg:px-10 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shrink-0 gap-6">
       
       {/* Left: Brand & Navigation */}
       <div className="flex items-center shrink-0">
-        <Link to="/" className="flex items-center gap-3 group mr-6">
+        <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-3 group mr-6">
           <div className="size-8 flex items-center justify-center transition-transform group-hover:scale-105">
             <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
@@ -36,18 +45,23 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
           </span>
         </Link>
         
-        {/* Toggle Nav Button */}
-        
-
-        {/* Navigation Container (Animated Width) */}
+        {/* Navigation Container */}
         <div 
           className="hidden lg:flex items-center overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
           style={{ width: isNavCollapsed ? '0px' : '480px', opacity: isNavCollapsed ? 0 : 1 }}
         >
           <nav className="flex items-center gap-6 ml-4 w-[480px]">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href));
-              return (
+              return item.href.startsWith('/#') ? (
+                <a
+                  key={item.id}
+                  href={item.href.replace('/', '')}
+                  className={`relative py-5 text-[14px] font-medium transition-colors whitespace-nowrap text-gray-500 hover:text-gray-900`}
+                >
+                  {item.label}
+                </a>
+              ) : (
                 <Link
                   key={item.id}
                   to={item.href}
@@ -68,54 +82,46 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
         </div>
       </div>
 
-      {/* Right: Search & Actions */}
+      {/* Right: Actions based on auth state */}
       <div className="flex items-center gap-4 flex-1 justify-end transition-all duration-500">
+        {isAuthenticated ? (
+          <>
+            {/* Credits */}
+            <Link 
+              to="/subscription"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all mr-2 group"
+              title="Quản lý lượt phỏng vấn"
+            >
+              <span className="material-symbols-outlined text-[16px] text-gray-400 group-hover:text-gray-600 transition-colors">wallet</span>
+              <span className="text-[13px] font-medium text-gray-600">
+                <span className="text-gray-900 font-semibold">{user?.creditsBalance || 0}</span> lượt
+              </span>
+            </Link>
 
-        {/* Search Bar - Grows dynamically
-        {!hideSearch && (
-          <div 
-            className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-gray-100/60 hover:bg-gray-100 border border-transparent focus-within:bg-white focus-within:border-gray-200 focus-within:shadow-sm rounded-full transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
-            style={{ width: isNavCollapsed ? '100%' : '260px', maxWidth: '700px' }}
-          >
-            <span className="material-symbols-outlined text-[18px] text-gray-400 shrink-0">search</span>
-            <input 
-              type="text"
-              placeholder="Tìm kiếm..."
-              className="bg-transparent border-none outline-none text-[13px] w-full text-gray-900 placeholder:text-gray-500 min-w-0"
-            />
-            <kbd className="hidden xl:flex items-center justify-center text-[11px] font-medium text-gray-400 px-1.5 py-0.5 rounded border border-gray-200 bg-white shrink-0">
-              ⌘K
-            </kbd>
-          </div>
-        )} */}
+            {/* Notifications */}
+            <NotificationDropdown />
 
-       
-
-        {/* Credits */}
-        <Link 
-          to="/subscription"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all mr-2 group"
-          title="Quản lý lượt phỏng vấn"
-        >
-          <span className="material-symbols-outlined text-[16px] text-gray-400 group-hover:text-gray-600 transition-colors">wallet</span>
-          <span className="text-[13px] font-medium text-gray-600">
-            <span className="text-gray-900 font-semibold">{user?.creditsBalance || 0}</span> lượt
-          </span>
-        </Link>
-
-        {/* Notifications */}
-        <NotificationDropdown />
-
-        {/* Profile Avatar */}
+            {/* Profile Avatar */}
         <Link to="/profile" className="ml-2 block rounded-full hover:ring-2 hover:ring-primary/20 transition-all">
           <img 
             src={user?.avatarUrl || "https://i.pravatar.cc/100?u=admin"} 
             alt="Avatar" 
-            className="size-9 rounded-full object-cover border border-gray-200" 
+                className="size-9 rounded-full object-cover border border-gray-200" 
           />
         </Link>
-        
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Link to="/login" className="px-5 py-2.5 text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors hidden sm:block">Đăng nhập</Link>
+            <Link to="/register" className="group flex items-center gap-2 bg-primary hover:bg-primary-pressed text-white px-5 py-2.5 rounded-full font-medium text-[13px] transition-all duration-500 active:scale-[0.98] shadow-lg shadow-primary/20">
+              Đăng ký miễn phí
+              <div className="size-6 rounded-full bg-white/10 flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-500">
+                <ArrowUpRight size={12} strokeWidth={2} />
+              </div>
+            </Link>
+          </div>
+        )}
       </div>
-    </header>
+      </header>
   );
 };

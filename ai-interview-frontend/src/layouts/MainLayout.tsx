@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../shared/utils/cn';
 import { Header } from '../components/layout/Header';
+import { Footer } from '../components/layout/Footer';
 import { BackgroundJobWidget } from '../shared/components/BackgroundJobWidget';
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Trang chủ', href: '/', icon: 'dashboard' },
+  { id: 'dashboard', label: 'Trang chủ', href: '/dashboard', icon: 'dashboard' },
   { id: 'jobs', label: 'Việc làm', href: '/jobs', icon: 'work' },
   { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs', icon: 'description' },
   { id: 'interview', label: 'Phỏng vấn AI', href: '/interviews/setup', icon: 'chat' },
@@ -38,10 +39,10 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
 
       {/* BOTTOM HEADER / BREADCRUMB */}
       <div className="backdrop-blur-md px-6 lg:px-10 py-2.5 flex items-center gap-2 text-sm text-gray-500 sticky top-[64px] z-40">
-        <Link to="/" className="hover:text-primary transition-colors flex items-center gap-1">
+        <Link to="/dashboard" className="hover:text-primary transition-colors flex items-center gap-1">
           <span className="material-symbols-outlined text-[18px]">home</span>
         </Link>
-        {location.pathname !== '/' && (
+        {location.pathname !== '/dashboard' && (
           <>
             <span className="material-symbols-outlined text-[16px]">chevron_right</span>
             <span className="text-gray-900 font-medium">
@@ -66,6 +67,8 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
         >
           {children}
         </div>
+        
+        {!fullHeight && <Footer />}
       </main>
 
       {/* Floating Background Job Widget */}
