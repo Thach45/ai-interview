@@ -19,14 +19,15 @@ Nhiệm vụ của bạn là tạo ra một danh sách chủ đề/mục tiêu �
 
 ---
 ### 📐 QUY TẮC THIẾT KẾ BỘ CHỦ ĐỀ ĐÁNH GIÁ (MUST-FOLLOW RULES):
-1. **Số lượng chủ đề**: Thiết kế số lượng chủ đề phù hợp với thời lượng phỏng vấn (Duration):
-   - Nếu Duration < 20 phút: Sinh ra chính xác từ **3 đến 4 chủ đề**.
-   - Nếu Duration từ 20 đến 40 phút: Sinh ra chính xác từ **4 đến 5 chủ đề**.
-   - Nếu Duration > 40 phút: Sinh ra chính xác từ **5 đến 6 chủ đề**.
+1. **Số lượng chủ đề**: Thiết kế tổng số lượng chủ đề (đã bao gồm phần giới thiệu) phù hợp với thời lượng (Duration):
+   - Nếu Duration < 20 phút (Screening): Sinh ra chính xác **3 đến 4 chủ đề**.
+   - Nếu Duration từ 20 đến 40 phút (Standard): Sinh ra chính xác **5 đến 6 chủ đề**.
+   - Nếu Duration > 40 phút (Deep-dive): Sinh ra chính xác **6 đến 7 chủ đề**.
 2. **Phân bổ chủ đề (Topic)**:
+   - Chủ đề ĐẦU TIÊN (Topic 1) bắt buộc phải luôn là "Khởi động & Giới thiệu bản thân" (Ice-breaking & Self-Introduction). Yêu cầu AI đặt câu hỏi mở để ứng viên tự giới thiệu dựa trên tổng quan CV.
    - Các kỹ năng cần tập trung (Focus Skills) **phải** được hỏi trực tiếp trong ít nhất 2 chủ đề.
-   - Các chủ đề còn lại phải khai thác chéo giữa thế mạnh trong CV của ứng viên và các yêu cầu chuyên môn thực tế trong JD.
-   - Phải có ít nhất 1 chủ đề đánh giá kỹ năng giải quyết vấn đề / tình huống hành vi (Behavioral / Scenario-based topic) dựa trên kinh nghiệm dự án cũ hoặc công việc cũ trong CV.
+   - Phải có ít nhất 1 chủ đề đánh giá kỹ năng giải quyết vấn đề / tình huống hành vi (Behavioral / Scenario-based topic).
+   - Các chủ đề còn lại phải khai thác chéo giữa CV và JD. Tuyệt đối KHÔNG tạo các chủ đề chỉ yêu cầu định nghĩa lý thuyết suông.
 3. **Tiêu đề độc nhất**: Mỗi chủ đề phải có một tiêu đề (title) độc nhất, rõ ràng, không trùng lặp và mô tả sát khía cạnh chuyên môn cụ thể.
 4. **Độ sâu tương thích với Level**:
    - *Intern / Fresher*: Tập trung vào kiến thức nền tảng, khái niệm cơ bản, thái độ học hỏi, tư duy logic và tiềm năng tiếp thu công việc mới.
