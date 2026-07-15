@@ -15,9 +15,8 @@ const NAV_ITEMS = [
   { id: 'profile', label: 'Cá nhân', href: '/profile', icon: 'person' },
 ];
 
-export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: boolean; className?: string; maxWidth?: string; hideSearch?: boolean }> = ({
+export const MainLayout: React.FC<{ children: React.ReactNode; className?: string; maxWidth?: string; hideSearch?: boolean }> = ({
   children,
-  fullHeight = false,
   className = '',
   maxWidth = '1280px',
   hideSearch = false
@@ -26,7 +25,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f9fafb] overflow-hidden font-sans">
+    <div className="flex flex-col min-h-screen bg-[#f9fafb] font-sans">
 
       {/* GLOBAL FULL SCREEN OVERLAY (Scrim) */}
       <div className={cn(
@@ -53,14 +52,11 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
       </div>
 
       {/* Main Content Area */}
-      <main className={cn(
-        "flex-1 relative min-w-0",
-        fullHeight ? "h-[calc(100vh-64px)] overflow-hidden" : "overflow-y-auto pb-32"
-      )}>
+      <main className="flex-1 relative min-w-0 flex flex-col">
         <div
           className={cn(
-            "mx-auto h-full transition-all duration-500",
-            !fullHeight && "p-6 lg:p-10",
+            "mx-auto h-full flex-1 w-full",
+            "p-6 lg:p-10",
             className
           )}
           style={{ maxWidth: maxWidth === 'full' ? 'none' : maxWidth }}
@@ -68,7 +64,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; fullHeight?: bool
           {children}
         </div>
         
-        {!fullHeight && <Footer />}
+        <Footer />
       </main>
 
       {/* Floating Background Job Widget */}

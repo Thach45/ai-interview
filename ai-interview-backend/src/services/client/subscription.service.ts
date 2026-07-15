@@ -145,7 +145,9 @@ export class SubscriptionService {
 
                 // Kiểm tra nội dung chuyển khoản có chứa mã đối soát không
                 if (
-                  transactionContent.toLowerCase().includes(transaction!.paymentRefId!.toLowerCase())
+                  transactionContent
+                    .toLowerCase()
+                    .includes(transaction!.paymentRefId!.toLowerCase())
                 ) {
                   try {
                     const amountIn = parseFloat(amountInStr);

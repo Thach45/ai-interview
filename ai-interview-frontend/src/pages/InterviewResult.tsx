@@ -186,7 +186,7 @@ export default function InterviewResultPage() {
 
   if (!sessionId) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true}>
+      <MainLayout hideSearch={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <AlertTriangle size={48} className="text-amber-500 mb-4" />
            <p className="text-lg font-bold">Thiếu thông tin phiên phỏng vấn</p>
@@ -215,7 +215,7 @@ export default function InterviewResultPage() {
 
   if (error || !response) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true}>
+      <MainLayout hideSearch={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <span className="material-symbols-outlined text-red-500 text-6xl mb-4">error</span>
            <p className="text-xl font-semibold text-text-primary">Không thể tải Báo cáo phỏng vấn</p>
@@ -241,7 +241,7 @@ export default function InterviewResultPage() {
   ];
 
   return (
-    <MainLayout hideSearch={true} fullHeight={true} maxWidth="100%" className="px-4 lg:px-12 py-8 bg-bg-canvas">
+    <MainLayout hideSearch={true} maxWidth="100%" className="px-4 lg:px-12 py-8 bg-bg-canvas">
       <div className="flex flex-col gap-6 w-full mx-auto">
         
         {/* Top AI Banner */}

@@ -1,88 +1,152 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BrainCircuit } from 'lucide-react';
+import { ArrowUpRight, MapPin, Mail } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#0a0a0a] text-gray-400 pt-24 pb-12 mt-auto border-t border-gray-900 font-sans">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <footer className="bg-[#050505] text-[#888888] pt-32 pb-8 mt-auto font-sans overflow-hidden border-t border-white/5">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         
-        {/* Main Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-24">
+        {/* Top Section: Info & Links */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-32">
           
-          {/* Brand & Newsletter Column (Spans 5 cols) */}
-          <div className="lg:col-span-5 flex flex-col gap-8">
-            <Link to="/" className="flex items-center gap-3 text-white group">
-              <div className="size-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                <BrainCircuit size={24} strokeWidth={2} />
-              </div>
-              <span className="font-bold text-2xl tracking-tighter">AI Interview</span>
-            </Link>
-            
-            <p className="text-[15px] font-medium text-gray-500 max-w-sm leading-relaxed">
-              Hệ thống phỏng vấn và phân tích năng lực ứng viên bằng Trí tuệ nhân tạo. Tối ưu hoá quy trình tuyển dụng của bạn.
-            </p>
-            
-            <div className="mt-2 w-full max-w-md">
-              <label className="sr-only">Đăng ký nhận tin</label>
-              <div className="flex items-center bg-white/5 rounded-xl p-1.5 border border-white/10 focus-within:border-primary/50 focus-within:bg-white/10 transition-all duration-300">
-                <input 
-                  type="email" 
-                  placeholder="Nhập email nhận bản tin..." 
-                  className="bg-transparent text-[15px] text-white px-4 py-2 outline-none flex-1 placeholder:text-gray-600"
-                />
-                <button className="bg-primary text-white text-[14px] font-bold px-6 py-2.5 rounded-lg hover:bg-primary-pressed transition-colors shadow-lg shadow-primary/20">
-                  Đăng ký
-                </button>
+          {/* Brand & Contact (Spans 4 cols) */}
+          <div className="lg:col-span-4 flex flex-col justify-between">
+            <div className="flex flex-col gap-8">
+              <Link to="/" className="text-white">
+                <span className="font-bold text-2xl tracking-tighter leading-none">AI INTERVIEW.</span>
+              </Link>
+              
+              <div className="space-y-6">
+                <p className="text-[14px] leading-relaxed max-w-[280px]">
+                  Nền tảng phỏng vấn mô phỏng ứng dụng mô hình ngôn ngữ lớn. Chúng tôi giúp ứng viên tự tin hơn trước mọi cơ hội nghề nghiệp.
+                </p>
+                
+                <div className="flex flex-col gap-3 text-[14px]">
+                  <div className="flex items-start gap-3">
+                    <MapPin size={16} className="mt-0.5 opacity-50 shrink-0" />
+                    <span>Tầng 12, Tòa nhà Lotte Center<br />54 Liễu Giai, Ba Đình, Hà Nội</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail size={16} className="opacity-50 shrink-0" />
+                    <span>hello@aiinterview.vn</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Spacer (1 col) */}
+          {/* Spacer */}
           <div className="hidden lg:block lg:col-span-1"></div>
 
-          {/* Links Columns (Span 6 cols total) */}
-          <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-3 gap-8">
-            
+          {/* Links Matrix (Spans 7 cols) */}
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-10">
             {/* Col 1 */}
-            <div className="flex flex-col gap-5">
-              <h4 className="text-white font-bold text-[13px] tracking-widest uppercase mb-2">Sản phẩm</h4>
-              <Link to="/features" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">Tính năng</Link>
-              <Link to="/subscription" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">Bảng giá</Link>
-              <Link to="/jobs" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">Việc làm</Link>
-              <Link to="/changelog" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">Cập nhật</Link>
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-medium text-[13px] mb-4">Giải pháp</h4>
+              <Link to="/features" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Phân tích CV ATS
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/interview-room" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Phỏng vấn giả lập
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/enterprise" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Dành cho Doanh nghiệp
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/api" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                API Tuyển dụng
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
             </div>
 
             {/* Col 2 */}
-            <div className="flex flex-col gap-5">
-              <h4 className="text-white font-bold text-[13px] tracking-widest uppercase mb-2">Công ty</h4>
-              <Link to="/about" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">Về chúng tôi</Link>
-              <Link to="/careers" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium flex items-center gap-2">
-                Tuyển dụng
-                <span className="bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded font-bold">Hiring</span>
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-medium text-[13px] mb-4">Tài nguyên</h4>
+              <Link to="/blog" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Blog
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/contact" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">Liên hệ</Link>
+              <Link to="/questions" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Ngân hàng câu hỏi
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/templates" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Mẫu CV chuẩn ATS
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/help" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Trung tâm trợ giúp
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
             </div>
 
             {/* Col 3 */}
-            <div className="flex flex-col gap-5">
-              <h4 className="text-white font-bold text-[13px] tracking-widest uppercase mb-2">Mạng xã hội</h4>
-              <a href="#" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">Facebook</a>
-              <a href="#" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">LinkedIn</a>
-              <a href="#" className="hover:text-primary hover:translate-x-1 transition-all duration-300 text-[15px] font-medium">YouTube</a>
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-medium text-[13px] mb-4">Công ty</h4>
+              <Link to="/about" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Về chúng tôi
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/careers" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Tuyển dụng
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/press" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Báo chí
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
+              <Link to="/contact" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Liên hệ
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </Link>
             </div>
 
+            {/* Col 4 */}
+            <div className="flex flex-col gap-4">
+              <h4 className="text-white font-medium text-[13px] mb-4">Mạng xã hội</h4>
+              <a href="#" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                LinkedIn
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </a>
+              <a href="#" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                X (Twitter)
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </a>
+              <a href="#" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                GitHub
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </a>
+              <a href="#" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+                Discord
+                <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Sub Footer */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-[14px] font-medium">
-          <p className="text-gray-500">
-            &copy; {new Date().getFullYear()} AI Interview. All rights reserved.
-          </p>
-          <div className="flex items-center gap-8">
-            <Link to="/privacy" className="hover:text-white transition-colors">Chính sách bảo mật</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Điều khoản dịch vụ</Link>
+        {/* Massive Brand Typography */}
+        <div className="w-full flex items-center justify-center pointer-events-none select-none overflow-hidden mb-12">
+          <h2 className="text-[14vw] font-bold tracking-tighter leading-[0.8] text-white/5 whitespace-nowrap">
+            AI INTERVIEW
+          </h2>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[13px] border-t border-white/5 pt-8">
+          <div className="flex flex-col md:flex-row gap-2 md:gap-8 items-start md:items-center">
+            <p className="text-[#666666]">
+              &copy; {new Date().getFullYear()} AI Interview. All rights reserved.
+            </p>
+            <span className="hidden md:inline text-white/10">|</span>
+            <span className="text-[#555555]">Mã số doanh nghiệp: 0109999999</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-6 md:gap-8">
+            <Link to="/privacy" className="hover:text-white transition-colors">Bảo mật</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Điều khoản</Link>
+            <Link to="/cookies" className="hover:text-white transition-colors">Cookies</Link>
           </div>
         </div>
 

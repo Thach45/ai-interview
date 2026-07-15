@@ -23,7 +23,7 @@ const CvOptimizationPage: React.FC = () => {
 
   if (!analysisId) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true}>
+      <MainLayout hideSearch={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <p className="text-lg font-bold">Thiếu thông tin phân tích để tối ưu {analysisId}</p>
            <button onClick={() => navigate(-1)} className="mt-4 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg">Quay lại</button>
@@ -43,7 +43,7 @@ const CvOptimizationPage: React.FC = () => {
 
   if (error || !optimizedResult) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true}>
+      <MainLayout hideSearch={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <XCircle size={60} className="text-red-500 mb-4" />
            <p className="text-xl font-bold text-gray-800">Lỗi khi tối ưu CV</p>
@@ -74,7 +74,7 @@ const CvOptimizationPage: React.FC = () => {
   }
 
   return (
-    <MainLayout hideSearch={true} fullHeight={true} maxWidth="1600px" className="px-4 lg:px-8 py-4 bg-[#f8fafc]">
+    <MainLayout hideSearch={true} maxWidth="1600px" className="px-4 lg:px-8 py-4 bg-[#f8fafc]">
       <div className="flex gap-6 h-[calc(100vh-100px)]">
 
         <div className="flex-1 flex flex-col overflow-hidden relative bg-gray-50/50 rounded-2xl border border-gray-200">

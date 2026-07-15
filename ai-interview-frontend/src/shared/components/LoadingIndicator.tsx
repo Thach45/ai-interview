@@ -169,7 +169,7 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
 
   if (fullScreen) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true} maxWidth='100%' className="overflow-hidden bg-[#fafafa]">
+      <MainLayout hideSearch={true} maxWidth='100%' className="overflow-hidden bg-[#fafafa]">
         <div className="h-[calc(100vh-140px)] flex items-center justify-center">
           {content}
         </div>

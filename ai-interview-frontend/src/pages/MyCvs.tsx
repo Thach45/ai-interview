@@ -46,7 +46,7 @@ const MyCvs: React.FC = () => {
   const selectedCvHistory = historyData.filter((item: any) => item.cv?.title === selectedCv?.title || item.cvId === selectedCv?.id);
 
   return (
-    <MainLayout maxWidth="1600px" fullHeight={true} className="px-4 lg:px-8 py-6 flex flex-col">
+    <MainLayout maxWidth="1600px" className="px-4 lg:px-8 py-6 flex flex-col">
       <div className="animate-in fade-in duration-500 flex flex-col h-full">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 shrink-0">

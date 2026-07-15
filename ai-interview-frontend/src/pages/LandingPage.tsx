@@ -38,7 +38,7 @@ export const LandingPage: React.FC = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans selection:bg-primary/20 selection:text-primary relative cursor-none overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-[#fafafa] font-sans selection:bg-primary/20 selection:text-primary relative cursor-none overflow-x-hidden">
       <CustomCursor />
       
       {/* GLOBAL NOISE TEXTURE (Soft Structuralism) */}
@@ -46,7 +46,7 @@ export const LandingPage: React.FC = () => {
 
       <Header />
 
-      <main>
+      <main className="flex-1">
         {/* SECTION 1: MASSIVE HERO (Ethereal Glass) */}
         <section className="relative min-h-[100dvh] flex flex-col justify-center pt-24 pb-20 px-4 overflow-hidden">
           {/* Removed glowing orbs for a cleaner, high-end editorial look */}
@@ -110,7 +110,7 @@ export const LandingPage: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-16 items-center">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer}>
                 <motion.div variants={fadeInUp} className="inline-block px-3 py-1 rounded-full bg-gray-100 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-6">
-                  Quy trình
+                  Trải nghiệm mượt mà
                 </motion.div>
                 <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-bold tracking-tighter text-gray-900 mb-8 leading-[1.1]">
                   Chinh phục nhà tuyển dụng trong 3 bước.
@@ -118,7 +118,7 @@ export const LandingPage: React.FC = () => {
                 
                 <div className="flex flex-col gap-8 mt-12">
                   {[
-                    { title: "Tải CV Lên", desc: "Đẩy bản CV PDF hiện tại của bạn cùng JD công việc mơ ước." },
+                    { title: "Tải CV Lên", desc: "Tải lên hồ sơ CV của bạn kèm theo Mô tả công việc (Job Description) mục tiêu." },
                     { title: "Nhận Báo Cáo AI", desc: "AI phân tích từng dòng, chỉ ra điểm nghẽn khiến CV bị loại." },
                     { title: "Mô Phỏng Phỏng Vấn", desc: "Phản xạ thực tế với bộ câu hỏi được sinh riêng theo CV." }
                   ].map((step, idx) => (

@@ -41,7 +41,7 @@ export default function CVAnalysisResultPage() {
 
   if (!id) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true}>
+      <MainLayout hideSearch={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <AlertTriangle size={48} className="text-amber-500 mb-4" />
            <p className="text-lg font-bold">Thiếu thông tin phân tích</p>
@@ -83,7 +83,7 @@ export default function CVAnalysisResultPage() {
 
   if (error || !analysisResponse) {
     return (
-      <MainLayout hideSearch={true} fullHeight={true}>
+      <MainLayout hideSearch={true}>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <XCircle size={60} className="text-red-500 mb-4" />
            <p className="text-xl font-bold text-gray-800">Lỗi khi tải kết quả phân tích</p>
@@ -97,7 +97,7 @@ export default function CVAnalysisResultPage() {
   const result = analysisResponse;
 
   return (
-    <MainLayout hideSearch={true} fullHeight={true} maxWidth="1600px" className="px-4 lg:px-8 pt-2 overflow-hidden bg-[#fafafa]">
+    <MainLayout hideSearch={true} maxWidth="1600px" className="px-4 lg:px-8 pt-2 overflow-hidden bg-[#fafafa]">
       <div className="flex gap-6 h-[calc(100vh-140px)] p-3">
         {/* LEFT COLUMN: PDF / CV Viewer */}
         <div className="w-[45%] flex flex-col bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden relative">

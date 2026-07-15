@@ -19,7 +19,7 @@ export const CTASection: React.FC = () => {
           transition={{ duration: 1, ease: customEase }}
           className="text-5xl md:text-7xl lg:text-[9rem] font-bold tracking-tighter text-gray-900 mb-12 leading-[0.85]"
         >
-          Bắt đầu <br className="hidden md:block"/>hành trình mới.
+          Khởi đầu sự nghiệp <br className="hidden md:block"/>mơ ước hôm nay.
         </motion.h2>
         
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 1 }}>

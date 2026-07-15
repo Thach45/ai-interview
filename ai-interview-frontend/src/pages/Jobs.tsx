@@ -58,7 +58,7 @@ const JobsPage: React.FC = () => {
   const totalPages = meta?.totalPages || 1;
 
   return (
-    <MainLayout hideSearch={true} fullHeight={true} maxWidth="1440px" className="px-8 lg:px-12 pt-2 overflow-hidden">
+    <MainLayout hideSearch={true} maxWidth="1440px" className="px-8 lg:px-12 pt-2 overflow-hidden">
       <div className="flex flex-col h-full pb-14">
         
         {/* Header Section */}

@@ -38,8 +38,8 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, title }) => {
             </div>
             <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
               <Play size={48} className="mb-4 opacity-50" />
-              <p className="font-medium text-lg">Video Demo: {title}</p>
-              <p className="text-sm mt-2">Tính năng này đang được quay video, sẽ cập nhật sớm.</p>
+              <p className="font-medium text-lg">Đang kết nối luồng Live: {title}</p>
+              <p className="text-sm mt-2">Video hướng dẫn đang được biên tập. Tính năng trải nghiệm trực tiếp sẽ sớm mở cho tài khoản của bạn.</p>
             </div>
           </motion.div>
         </motion.div>
@@ -59,8 +59,8 @@ export const FeatureMockups: React.FC<{ isAuthenticated: boolean }> = ({ isAuthe
         initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
         className="text-center max-w-3xl mx-auto mb-20"
       >
-        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-gray-900 mb-6">Trải nghiệm giống hệt hệ thống thật.</h2>
-        <p className="text-[17px] text-gray-500 leading-relaxed font-medium">Bản dùng thử (Mock UI) bám sát 100% giao diện thực tế. Xem cách AI tương tác với dữ liệu của bạn.</p>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-gray-900 mb-6">Giao diện trực quan. Trải nghiệm chân thực.</h2>
+        <p className="text-[17px] text-gray-500 leading-relaxed font-medium">Mô phỏng chính xác môi trường phỏng vấn chuyên nghiệp tại các tập đoàn lớn. Trải nghiệm tương tác mượt mà với AI theo thời gian thực.</p>
       </motion.div>
 
       {/* Feature 1: CV Analysis (True to system) */}
@@ -69,7 +69,7 @@ export const FeatureMockups: React.FC<{ isAuthenticated: boolean }> = ({ isAuthe
            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-800 text-[11px] font-bold rounded-full mb-6 uppercase tracking-wider">
              <FileText size={14} /> Phân Tích ATS
            </div>
-           <h3 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Đối chiếu CV với Job Description (JD) bằng AI</h3>
+           <h3 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Phân Tích Độ Tương Thích CV & Mô Tả Công Việc</h3>
            <p className="text-gray-500 text-[16px] leading-relaxed mb-8">
              Thay vì chấm điểm chung chung, hệ thống hiển thị chính xác những từ khóa bạn đang thiếu và những kỹ năng nào trùng khớp với mô tả công việc, trên giao diện chia đôi trực quan.
            </p>
@@ -77,7 +77,7 @@ export const FeatureMockups: React.FC<{ isAuthenticated: boolean }> = ({ isAuthe
              <div className="size-10 rounded-full bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
                <Play size={16} className="ml-1" />
              </div>
-             Xem Video Demo
+             Xem Cách Hoạt Động
            </button>
         </div>
 
@@ -147,13 +147,13 @@ export const FeatureMockups: React.FC<{ isAuthenticated: boolean }> = ({ isAuthe
            </div>
            <h3 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Đối thoại trực tiếp với nhà tuyển dụng ảo</h3>
            <p className="text-gray-500 text-[16px] leading-relaxed mb-8">
-             Trải nghiệm phòng phỏng vấn y như thật. Bật Camera và Micro, AI sẽ tự động lắng nghe giọng nói của bạn (Real-time Speech-to-Text) và phản hồi bằng giọng nói tự nhiên, kèm khung chat bên cạnh để theo dõi.
+             Tham gia vào không gian phỏng vấn chuyên nghiệp. Bật Camera và Micro, AI sẽ tự động lắng nghe giọng nói của bạn (Real-time Speech-to-Text) và phản hồi bằng giọng nói tự nhiên, kèm khung chat bên cạnh để theo dõi.
            </p>
            <button onClick={() => setActiveVideo('Phỏng vấn giả lập')} className="group flex items-center gap-2 font-bold text-gray-900 hover:text-primary transition-colors">
              <div className="size-10 rounded-full bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
                <Play size={16} className="ml-1" />
              </div>
-             Xem Video Demo
+             Xem Cách Hoạt Động
            </button>
         </div>
 

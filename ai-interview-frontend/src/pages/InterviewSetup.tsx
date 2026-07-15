@@ -187,7 +187,7 @@ const InterviewSetupPage: React.FC = () => {
   };
 
   return (
-    <MainLayout hideSearch={true} fullHeight={true} maxWidth="1600px" className="px-4 lg:px-8 pt-2 overflow-hidden bg-[#fafafa]">
+    <MainLayout hideSearch={true} maxWidth="1600px" className="px-4 lg:px-8 pt-2 overflow-hidden bg-[#fafafa]">
 
       <div className="flex gap-6 h-[calc(100vh-100px)] p-3">
 

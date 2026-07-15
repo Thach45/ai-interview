@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
       <div className="flex items-center shrink-0">
         <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-3 group mr-6">
           <div className="size-8 flex items-center justify-center transition-transform group-hover:scale-105">
-            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+            <img src="/logo/logo_ai_interview.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
           <span className="text-[17px] font-bold text-gray-900 hidden md:block tracking-tight whitespace-nowrap">
             AI Interview
