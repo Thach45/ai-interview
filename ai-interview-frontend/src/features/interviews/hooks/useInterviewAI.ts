@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { interviewAiApi } from "../api/interview-ai.api";
 import type { SetupInterviewRequest } from "../types/interview-ai.type";
+import { useAuthStore } from "../../../store/authStore";
 
 export const useInterviewAi = () => {
   const queryClient = useQueryClient();
@@ -54,11 +55,11 @@ export const useInterviewMessages = (sessionId: string) => {
 
 export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: string, isFinished?: boolean) => void) => {
   const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId || !token) return;
 
-    const token = localStorage.getItem("token");
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
     
     // Gắn token vào query string để đi qua auth middleware
@@ -76,6 +77,7 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
           if (onStreamUpdate) onStreamUpdate(data.text || "", true);
           // Invalidate cache -> React Query tự động trigger fetch data mới!
           queryClient.invalidateQueries({ queryKey: ["interviewMessages", sessionId] });
+          queryClient.invalidateQueries({ queryKey: ["interviewSession", sessionId] }); 
         } else if (data.type === "STREAM_CHUNK") {
           const now = Date.now();
           const delta = now - lastChunkTime;
@@ -98,7 +100,7 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
     return () => {
       eventSource.close(); // Dọn dẹp kết nối khi unmount (đóng tab)
     };
-  }, [sessionId, queryClient]);
+  }, [sessionId, token, queryClient]);
 };
 
 export const useStartInterview = (sessionId: string) => {
@@ -117,10 +119,10 @@ export const useSendChatMessage = (sessionId: string) => {
   return useMutation({
     mutationFn: (message: string) => interviewAiApi.sendChatMessage(sessionId, message),
     onError: (error: any) => {
-      const message =
-        error.message ||
-        "Không thể gửi tin nhắn";
-      toast.error(message);
+   
+      toast.error(error.message);
+    
+      
     },
   });
 };

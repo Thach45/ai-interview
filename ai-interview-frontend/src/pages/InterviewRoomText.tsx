@@ -13,6 +13,7 @@ import {
   useSubmitInterviewResult, useInterviewMessages, useInterviewSSE 
 } from '../features/interviews/hooks/useInterviewAI';
 import { LoadingIndicator } from '../shared/components/LoadingIndicator';
+import { toast } from 'sonner';
 
 import { PERSONA_DETAILS } from '../shared/constants/personas';
 
@@ -67,18 +68,29 @@ const InterviewRoomTextPage: React.FC = () => {
   // State chứa text đang được stream từ AI
   const [streamingText, setStreamingText] = useState("");
 
-  const isCompleted = currentQuestionIdx >= activeQuestions.length || session?.status === 'COMPLETED';
+  const isCompleted = currentQuestionIdx >= activeQuestions.length;
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isSendingRef = useRef(false);
 
-  // Khởi tạo kết nối SSE để lắng nghe tin nhắn mới
-  useInterviewSSE(session?.id || '', setStreamingText);
+  // Khởi tạo kết nối SSE để lắng nghe tin nhắn mới (Dùng trực tiếp sessionId từ url để tránh kết nối bị ngắt quãng khi refetch session)
+  useInterviewSSE(sessionId, setStreamingText);
+
+  // Tự động chuyển tiếp sang phòng chờ hoặc trang báo cáo dựa trên trạng thái session
+  useEffect(() => {
+    if (session?.status === 'EVALUATING') {
+      toast.success("Nộp bài thành công! Đang chuyển hướng sang phòng chờ chấm điểm...");
+      const timer = setTimeout(() => {
+        navigate(`/interview/waiting?sessionId=${sessionId}`);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [session?.status, sessionId, navigate]);
 
   // Hooks gọi API thực tế
-  const startInterviewMutation = useStartInterview(session?.id || '');
-  const sendChatMutation = useSendChatMessage(session?.id || '');
-  const submitInterviewMutation = useSubmitInterviewResult(session?.id || '');
+  const startInterviewMutation = useStartInterview(sessionId);
+  const sendChatMutation = useSendChatMessage(sessionId);
+  const submitInterviewMutation = useSubmitInterviewResult(sessionId);
 
   // Query để kéo tin nhắn mới nhất khi bị invalidate bởi SSE
   const { data: serverMessages } = useInterviewMessages(session?.id || '');
@@ -101,13 +113,10 @@ const InterviewRoomTextPage: React.FC = () => {
       const aiMainMessages = serverMessages.filter((m: any) => m.role === 'AI' && !m.isFollowUp);
       const currIdx = Math.max(0, aiMainMessages.length - 1);
       
-      if (session?.status === 'COMPLETED') {
-        setCurrentQuestionIdx(activeQuestions.length);
-      } else {
-        setCurrentQuestionIdx(currIdx);
-      }
+      setCurrentQuestionIdx(currIdx);
     }
   }, [serverMessages, activeQuestions, session?.status]);
+
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
     if (scrollRef.current) {
@@ -126,8 +135,14 @@ const InterviewRoomTextPage: React.FC = () => {
   // Khi session tải xong, đồng bộ thời gian và gọi API start để nhận câu hỏi đầu tiên từ AI
   useEffect(() => {
     if (session && !isStarted) {
-    
-      setTimeLeft(session.duration * 60);
+      if (session.startedAt) {
+        const startTime = new Date(session.startedAt).getTime();
+        const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = session.duration * 60 - elapsedSeconds;
+        setTimeLeft(remaining > 0 ? remaining : 0);
+      } else {
+        setTimeLeft(session.duration * 60);
+      }
       setIsStarted(true);
       setIsBotTyping(true);
 
@@ -260,14 +275,17 @@ const InterviewRoomTextPage: React.FC = () => {
             </span>
           </div>
         </div>
-        
+       
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 bg-[#f6f5f4] border border-[#e5e3df] rounded-lg shadow-inner">
-            <Clock size={14} className="text-slate-400" />
-            <span className="text-xs font-mono font-bold text-slate-700">{formatTime(timeLeft)}</span>
-          </div>
+         
+          
           
           {!isCompleted && (
+            <>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 bg-[#f6f5f4] border border-[#e5e3df] rounded-lg shadow-inner">
+                <Clock size={14} className="text-slate-400" />
+                <span className="text-xs font-mono font-bold text-slate-700">{formatTime(timeLeft)}</span>
+            </div>
             <button 
               onClick={() => {
                 if (window.confirm('Bạn có chắc chắn muốn kết thúc phỏng vấn sớm? Kết quả sẽ được đánh giá dựa trên những câu đã trả lời.')) {
@@ -281,6 +299,7 @@ const InterviewRoomTextPage: React.FC = () => {
             >
               {submitInterviewMutation.isPending ? 'Đang nộp...' : 'Kết thúc'}
             </button>
+            </>
           )}
 
           <button 
@@ -456,14 +475,12 @@ const InterviewRoomTextPage: React.FC = () => {
                 
                 <button 
                   onClick={() => {
-                    submitInterviewMutation.mutate(undefined, {
-                      onSuccess: () => navigate(`/interviews/report?sessionId=${session?.id}`)
-                    });
+                    submitInterviewMutation.mutate();
                   }}
                   disabled={submitInterviewMutation.isPending}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                 >
-                  {submitInterviewMutation.isPending ? 'Đang phân tích dữ liệu...' : 'Xem Báo Cáo Phỏng Vấn'}
+                  {submitInterviewMutation.isPending ? 'Đang nộp bài...' : 'Nộp Bài & Xem Báo Cáo'}
                   {!submitInterviewMutation.isPending && <ChevronRight size={16} />}
                 </button>
               </div>

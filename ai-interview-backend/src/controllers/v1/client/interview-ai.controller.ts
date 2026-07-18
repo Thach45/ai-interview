@@ -50,11 +50,11 @@ class InterviewAIController {
 
   submitInterviewResult = asyncHandler(async (req: Request, res: Response) => {
     const sessionId = req.params.id;
-    const result = await this.interviewAiService.submitInterviewResult(
+    const result = await this.interviewAiService.initiateInterviewEvaluation(
       req.user!.id,
       sessionId as string,
     );
-    sendResponse(res, 200, 'Nộp kết quả phỏng vấn thành công', result);
+    sendResponse(res, 200, 'Đã nhận yêu cầu nộp kết quả phỏng vấn', result);
   });
 
   getInterviewResult = asyncHandler(async (req: Request, res: Response) => {

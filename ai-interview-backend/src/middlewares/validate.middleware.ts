@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError, ZodSchema } from 'zod';
+import { sendResponse } from '../utils/apiResponse';
 
 export const validate = (schema: ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -20,14 +21,24 @@ export const validate = (schema: ZodSchema) => {
 
         console.log('ZOD ERRORS:', issues);
 
-        return res.status(400).json({
-          status: 'fail',
-          errors: issues.map((err: any) => ({
+        // return res.status(400).json({
+        //   status: 'fail',
+        //   errors: issues.map((err: any) => ({
+        //     field: err.path.join('.'),
+        //     message: err.message,
+        //     received: err.received,
+        //   })),
+        // });
+        return sendResponse(
+          res,
+          400,
+          'Dữ liệu yêu cầu không hợp lệ',
+          issues.map((err: any) => ({
             field: err.path.join('.'),
             message: err.message,
             received: err.received,
           })),
-        });
+        );
       }
 
       return next(error);

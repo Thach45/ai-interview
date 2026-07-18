@@ -12,6 +12,8 @@ import { BadRequestException, NotFoundException } from '../../exceptions';
 import { creditsService } from '../../shared/services/credits.service';
 import { googleTtsService, GoogleTtsService } from '../core/google-tts.service';
 import { eventEmitter } from '../../utils/eventEmitter';
+import { interviewTimerQueue } from '../../queues/interview-timer.queue';
+import { interviewAnalysisQueue } from '../../queues/interview-analysis.queue';
 
 const CHAT_HISTORY_WINDOW_SIZE = 8;
 const CREDIT_PRICE_PER_INTERVIEW = Number(process.env.CREDIT_PRICE_PER_INTERVIEW);
@@ -190,12 +192,23 @@ export class InterviewAiService {
       },
     });
 
-    // Chuyển trạng thái session sang IN_PROGRESS
-    await this.prismaClient.interviewSession.update({
+    // Chuyển trạng thái session sang IN_PROGRESS và lưu thời điểm bắt đầu
+    const updatedSession = await this.prismaClient.interviewSession.update({
       where: { id: sessionId },
-      data: { status: 'IN_PROGRESS' },
+      data: {
+        status: 'IN_PROGRESS',
+        startedAt: new Date(),
+      },
     });
-
+    const delayMs = session.duration * 60 * 1000;
+    await interviewTimerQueue.add(
+      'timeout_check',
+      { sessionId, userId },
+      {
+        delay: delayMs,
+        jobId: `timeout_${sessionId}`, // Đặt ID cố định để lát nữa dễ tìm và xóa
+      },
+    );
     return [welcomeMessage];
   }
 
@@ -217,10 +230,11 @@ export class InterviewAiService {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
 
-    return this.generateMessage(session, messageContent, enableStream);
+    return this.generateMessage(userId, session, messageContent, enableStream);
   }
 
   private async generateMessage(
+    userId: string,
     session: any,
     messageContent: string,
     enableStream: boolean = true,
@@ -311,10 +325,10 @@ export class InterviewAiService {
         nextIsFollowUp = false;
       } else {
         // Hết bộ câu hỏi -> kết thúc
-        newStatus = 'COMPLETED';
+        newStatus = 'EVALUATING';
       }
     } else if (aiResponse.suggestedAction === 'FINISH') {
-      newStatus = 'COMPLETED';
+      newStatus = 'EVALUATING';
     }
 
     // 5. Lưu tin nhắn AI mới vào DB
@@ -330,10 +344,15 @@ export class InterviewAiService {
 
     // 6. Cập nhật trạng thái session nếu thay đổi
     if (newStatus !== session.status) {
-      await this.prismaClient.interviewSession.update({
-        where: { id: sessionId },
-        data: { status: newStatus },
-      });
+      if (newStatus === 'EVALUATING') {
+        // Gọi initiateInterviewEvaluation để vừa đổi status, hủy timer và đẩy vào Queue chấm bài
+        await this.initiateInterviewEvaluation(userId, sessionId);
+      } else {
+        await this.prismaClient.interviewSession.update({
+          where: { id: sessionId },
+          data: { status: newStatus },
+        });
+      }
     }
 
     // 7. Bắn sự kiện SSE để thông báo có tin nhắn mới cho tất cả các tab
@@ -382,13 +401,7 @@ export class InterviewAiService {
       reason: string;
       criteria?: any[];
     }>;
-    // cập nhật trạng thái phiên phỏng vấn
-    if (session.status !== 'COMPLETED') {
-      await this.prismaClient.interviewSession.update({
-        where: { id: sessionId },
-        data: { status: 'COMPLETED' },
-      });
-    }
+
     const interviewResult = await aiService.submitInterviewResult({
       cvText,
       jdText,
@@ -411,9 +424,6 @@ export class InterviewAiService {
         strengths: interviewResult.strengths,
         weaknesses: interviewResult.weaknesses,
         learningPath: interviewResult.learningPath,
-        // Chú ý: Upsert không hỗ trợ ghi đè mảng relation trực tiếp.
-        // Nhưng vì đây là dữ liệu tĩnh sinh 1 lần, update thường chỉ là ghi đè lại chính nó.
-        // Tốt nhất nếu update thì xóa QuestionEvaluation cũ và tạo mới, nhưng để đơn giản ta dùng create
       },
       create: {
         sessionId,
@@ -444,7 +454,55 @@ export class InterviewAiService {
       },
     });
 
+    // Cập nhật trạng thái phiên phỏng vấn sang COMPLETED sau khi đã có kết quả chấm bài thành công
+    await this.prismaClient.interviewSession.update({
+      where: { id: sessionId },
+      data: { status: 'COMPLETED' },
+    });
+
     return savedResult;
+  }
+
+  async initiateInterviewEvaluation(userId: string, sessionId: string) {
+    const session = await this.prismaClient.interviewSession.findFirst({
+      where: { id: sessionId, userId },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
+    }
+
+    // Nếu đã hoàn thành hoặc đang chấm bài rồi thì bỏ qua
+    if (session.status === 'COMPLETED' || session.status === 'EVALUATING') {
+      return { status: session.status };
+    }
+
+    // 1. Cập nhật trạng thái session sang EVALUATING
+    await this.prismaClient.interviewSession.update({
+      where: { id: sessionId },
+      data: { status: 'EVALUATING' },
+    });
+
+    // 2. Hủy bỏ hẹn giờ timeout (Timer Queue)
+    const jobId = `timeout_${sessionId}`;
+    try {
+      await interviewTimerQueue.remove(jobId);
+      console.log(`[Timer] Đã hủy hẹn giờ cho session ${sessionId} để chuyển sang chấm điểm.`);
+    } catch (error) {
+      console.log(`[Timer] Không có job hẹn giờ ${jobId} hoặc lỗi khi hủy:`, error);
+    }
+
+    // 3. Đẩy job chấm điểm vào Analysis Queue
+    await interviewAnalysisQueue.add(
+      'analysis',
+      { sessionId, userId },
+      { jobId: `analysis_${sessionId}` },
+    );
+
+    // 4. Phát sự kiện cập nhật để client reload UI sang màn hình chờ
+    eventEmitter.emit(`chat_updated_${sessionId}`);
+
+    return { status: 'EVALUATING' };
   }
 
   async getInterviewResult(userId: string, sessionId: string) {
@@ -499,7 +557,7 @@ export class InterviewAiService {
     // 2. Dùng chung luồng sinh tin nhắn AI, NHƯNG BẬT STREAM LÊN (enableStream = true)
     // Hệ thống sẽ tự động băm nhỏ text bắn về Frontend qua SSE
     console.time('[PERF] DeepSeek Generation Time (Total)');
-    const responseAI = await this.generateMessage(session, text, true);
+    const responseAI = await this.generateMessage(userId, session, text, true);
     console.timeEnd('[PERF] DeepSeek Generation Time (Total)');
 
     // 3. Không tạo TTS ở đây nữa, chỉ trả về chữ để Frontend nhận biết

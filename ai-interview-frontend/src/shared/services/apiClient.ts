@@ -1,37 +1,37 @@
-import axios from 'axios';
-import { useAuthStore } from '../../store/authStore';
+import axios from "axios";
+import { useAuthStore } from "../../store/authStore";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
 
 const apiClient = axios.create({
   baseURL: API_URL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request Interceptor: Thêm Token vào Header tự động
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
-      if (config.headers && typeof config.headers.set === 'function') {
-        config.headers.set('Authorization', `Bearer ${token}`);
+      if (config.headers && typeof config.headers.set === "function") {
+        config.headers.set("Authorization", `Bearer ${token}`);
       } else {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
@@ -46,12 +46,24 @@ apiClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
-    const backendMessage = error.response?.data?.message || error.response?.data?.error;
+    let backendMessage =
+      error.response?.data?.message || error.response?.data?.error;
+
+    // Trích xuất chi tiết nếu là lỗi Zod Validation từ Backend
+    const validationErrors = error.response?.data?.errors || error.response?.data?.data;
+    if (validationErrors && Array.isArray(validationErrors)) {
+      const detailedMessages = validationErrors
+        .map((err: any) => err.message)
+        .filter(Boolean);
+      if (detailedMessages.length > 0) {
+        backendMessage = detailedMessages.join(', ');
+      }
+    }
 
     if (
-      error.response?.status === 401 && 
-      window.location.pathname !== '/login' && 
-      originalRequest.url !== '/auth/refresh-token'
+      error.response?.status === 401 &&
+      window.location.pathname !== "/login" &&
+      originalRequest.url !== "/auth/refresh-token"
     ) {
       if (!originalRequest._retry) {
         if (isRefreshing) {
@@ -59,8 +71,11 @@ apiClient.interceptors.response.use(
             const token = await new Promise((resolve, reject) => {
               failedQueue.push({ resolve, reject });
             });
-            if (originalRequest.headers && typeof originalRequest.headers.set === 'function') {
-              originalRequest.headers.set('Authorization', `Bearer ${token}`);
+            if (
+              originalRequest.headers &&
+              typeof originalRequest.headers.set === "function"
+            ) {
+              originalRequest.headers.set("Authorization", `Bearer ${token}`);
             } else {
               originalRequest.headers.Authorization = `Bearer ${token}`;
             }
@@ -75,24 +90,34 @@ apiClient.interceptors.response.use(
 
         try {
           // Sử dụng axios thuần để tránh Circular Dependency và Interceptor Loop
-          const rs = await axios.post(`${API_URL}/auth/refresh-token`, {}, {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          });
-          
+          const rs = await axios.post(
+            `${API_URL}/auth/refresh-token`,
+            {},
+            {
+              withCredentials: true,
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          );
+
           const newAccessToken = rs.data?.data?.accessToken;
 
           if (!newAccessToken) throw new Error("No new access token received");
 
-          localStorage.setItem('token', newAccessToken);
+          localStorage.setItem("token", newAccessToken);
           useAuthStore.setState({ token: newAccessToken });
-          
+
           processQueue(null, newAccessToken);
-          
-          if (originalRequest.headers && typeof originalRequest.headers.set === 'function') {
-            originalRequest.headers.set('Authorization', `Bearer ${newAccessToken}`);
+
+          if (
+            originalRequest.headers &&
+            typeof originalRequest.headers.set === "function"
+          ) {
+            originalRequest.headers.set(
+              "Authorization",
+              `Bearer ${newAccessToken}`,
+            );
           } else {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           }
@@ -100,25 +125,26 @@ apiClient.interceptors.response.use(
         } catch (_error) {
           console.error("REFRESH TOKEN ERROR FE:", _error);
           processQueue(_error, null);
-          localStorage.removeItem('token');
-          window.location.href = '/login';
+          localStorage.removeItem("token");
+          window.location.href = "/login";
           return Promise.reject(_error);
         } finally {
           isRefreshing = false;
         }
       } else {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+        localStorage.removeItem("token");
+        window.location.href = "/login";
       }
     }
 
     // Nếu đã ở trang /login mà sai pass thì backendMessage sẽ được lấy và ném ra
     if (backendMessage) {
-      return Promise.reject(new Error(backendMessage));
+      error.message = backendMessage;
     }
     
+    // Bắt buộc phải reject để các nơi gọi API nhận biết đây là lỗi
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

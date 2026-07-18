@@ -3,8 +3,8 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Mic, MicOff, Video as VideoIcon, VideoOff, 
   PhoneOff, MessageSquare, Settings, 
-  Shield, Clock, BrainCircuit,
-  X, Zap, Bot, User, Moon, Sun, Circle, ListOrdered, ChevronRight
+   BrainCircuit,
+  X, User, Moon, Sun, Circle, ListOrdered, ChevronRight
 } from 'lucide-react';
 import { cn } from '../shared/utils/cn';
 import { InterviewProgressCard } from '../features/interviews/components/InterviewProgressCard';
@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { LoadingIndicator } from '../shared/components/LoadingIndicator';
 import { PERSONA_DETAILS } from '../shared/constants/personas';
 import { InterviewPersona } from '../shared/types/interview';
+import { toast } from 'sonner';
 
 const InterviewRoomVideoPage: React.FC = () => {
   const location = useLocation();
@@ -59,16 +60,34 @@ const InterviewRoomVideoPage: React.FC = () => {
     if (text) setRawStreamText(text);
   });
 
+  // Tự động chuyển tiếp sang phòng chờ hoặc trang báo cáo dựa trên trạng thái sessionData
+  useEffect(() => {
+    if (sessionData?.status === 'EVALUATING') {
+      toast.success("Nộp bài thành công! Đang chuyển hướng sang phòng chờ chấm điểm...");
+      const timer = setTimeout(() => {
+        navigate(`/interview/waiting?sessionId=${sessionId}`);
+      }, 4000);
+      return () => clearTimeout(timer);
+    } 
+  }, [sessionData?.status, sessionId, navigate]);
+
   const { isSpeaking, spokenText } = useTTSPlayer(sessionId, rawStreamText);
 
   useEffect(() => {
     if (sessionData.duration) {
-      setTimeLeft(sessionData.duration * 60);
+      if (sessionData.startedAt) {
+        const startTime = new Date(sessionData.startedAt).getTime();
+        const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        const remaining = sessionData.duration * 60 - elapsedSeconds;
+        setTimeLeft(remaining > 0 ? remaining : 0);
+      } else {
+        setTimeLeft(sessionData.duration * 60);
+      }
     }
     if (sessionData.status) {
       setCurrentStatus(sessionData.status);
     }
-  }, [sessionData.duration, sessionData.status]);
+  }, [sessionData.duration, sessionData.status, sessionData.startedAt]);
 
   // Mảng tin nhắn (xóa mock data, để mảng rỗng ban đầu)
   const [messages, setMessages] = useState<any[]>([]);
@@ -256,16 +275,12 @@ const InterviewRoomVideoPage: React.FC = () => {
   };
 
   const currentPersona = PERSONA_DETAILS[currentConfig.persona as InterviewPersona] || PERSONA_DETAILS[InterviewPersona.PROFESSIONAL];
-  const isCompleted = currentStatus === 'COMPLETED';
 
   const handleEndInterview = () => {
     if (window.confirm('Bạn có chắc chắn muốn kết thúc buổi phỏng vấn ngay bây giờ?')) {
-      submitInterviewMutation.mutate(undefined, {
-        onSuccess: () => navigate(`/interviews/report?sessionId=${sessionData.id}`)
-      });
+      submitInterviewMutation.mutate();
     }
   };
-
   if (submitInterviewMutation.isPending) {
     return (
       <LoadingIndicator 
@@ -586,33 +601,18 @@ const InterviewRoomVideoPage: React.FC = () => {
             
             <div className={cn("w-px h-8 mx-2", isDarkMode ? "bg-white/10" : "bg-gray-200")} />
 
-            {isCompleted ? (
-              <button 
-                onClick={() => {
-                  submitInterviewMutation.mutate(undefined, {
-                    onSuccess: () => navigate(`/interviews/report?sessionId=${sessionData.id}`)
-                  });
-                }}
-                disabled={submitInterviewMutation.isPending}
-                className="flex items-center gap-3 px-6 h-12 rounded-2xl transition-all border shadow-lg font-bold text-[11px] uppercase bg-emerald-500 hover:bg-emerald-600 text-white border-emerald-400 shadow-emerald-500/20 disabled:opacity-50"
-              >
-                {submitInterviewMutation.isPending ? 'Đang xử lý...' : 'Xem báo cáo'}
-                {!submitInterviewMutation.isPending && <ChevronRight size={16} />}
-              </button>
-            ) : (
-              <button 
-                onClick={() => setIsRecording(!isRecording)}
-                className={cn(
-                  "flex items-center gap-3 px-6 h-12 rounded-2xl transition-all border shadow-sm font-bold text-[11px] uppercase",
-                  isRecording 
-                    ? "bg-rose-50 border-rose-200 text-rose-500 animate-pulse" 
-                    : (isDarkMode ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100")
-                )}
-              >
-                <Circle size={16} fill={isRecording ? "currentColor" : "none"} />
-                {isRecording ? 'Đang ghi âm...' : 'Bắt đầu ghi âm'}
-              </button>
-            )}
+            <button 
+              onClick={() => setIsRecording(!isRecording)}
+              className={cn(
+                "flex items-center gap-3 px-6 h-12 rounded-2xl transition-all border shadow-sm font-bold text-[11px] uppercase",
+                isRecording 
+                  ? "bg-rose-50 border-rose-200 text-rose-500 animate-pulse" 
+                  : (isDarkMode ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100")
+              )}
+            >
+              <Circle size={16} fill={isRecording ? "currentColor" : "none"} />
+              {isRecording ? 'Đang ghi âm...' : 'Bắt đầu ghi âm'}
+            </button>
 
             <div className={cn("w-px h-8 mx-2", isDarkMode ? "bg-white/10" : "bg-gray-200")} />
 

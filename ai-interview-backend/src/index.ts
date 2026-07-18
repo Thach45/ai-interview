@@ -46,7 +46,8 @@ import { notificationWorker } from './workers/notification.worker';
 import { emailWorker } from './workers/email.worker';
 import { analysisCvWorker } from './workers/analysis-cv.worker';
 import { optimizeCvWorker } from './workers/optimize-cv.worker';
-
+import { interviewTimerWorker } from './workers/interview-timer.worker';
+import { interviewAnalysisWorker } from './workers/interview-analysis.worker';
 // Graceful Shutdown: Đảm bảo tiến trình đang chạy dở của Worker không bị cắt đứt đột ngột khi tắt Server
 const gracefulShutdown = async () => {
   console.log('Shutting down gracefully...');
@@ -57,6 +58,8 @@ const gracefulShutdown = async () => {
       emailWorker.close(),
       analysisCvWorker.close(),
       optimizeCvWorker.close(),
+      interviewTimerWorker.close(),
+      interviewAnalysisWorker.close(),
     ]);
     console.log('BullMQ Workers closed.');
     process.exit(0);
