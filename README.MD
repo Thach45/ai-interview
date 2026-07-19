@@ -8,7 +8,6 @@ Website chính thức: [Đang cập nhật](#)
 
 - [Giới thiệu về dự án](#giới-thiệu-về-dự-án)
 - [Hình ảnh minh họa (Screenshots)](#hình-ảnh-minh-họa-screenshots)
-- [Thành viên tham gia dự án](#thành-viên-tham-gia-dự-án)
 - [Công nghệ sử dụng (Tech Stack)](#công-nghệ-sử-dụng-tech-stack)
 - [Cấu trúc dự án](#cấu-trúc-dự-án)
 - [Hướng dẫn cấu hình và cài đặt chi tiết](#hướng-dẫn-cấu-hình-và-cài-đặt-chi-tiết)
@@ -96,18 +95,6 @@ Dưới đây là toàn bộ giao diện của hệ thống:
 
 **Quản lý Giao dịch (Admin Transaction)**
 ![Admin Transaction](./data_preview/img/Admin-Transaction-Page.png)
-
----
-
-## Thành viên tham gia dự án
-
-Dưới đây là danh sách các thành viên thực hiện dự án:
-
-| STT | Họ và tên |
-|---|---|
-| 1 | Nguyễn Hoàng Thạch |
-| 2 | Trần Minh Quận |
-| 3 | Đoàn Thị Thu Trang |
 
 ---
 
