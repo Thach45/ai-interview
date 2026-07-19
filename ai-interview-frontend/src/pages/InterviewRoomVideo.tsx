@@ -60,18 +60,39 @@ const InterviewRoomVideoPage: React.FC = () => {
     if (text) setRawStreamText(text);
   });
 
-  // Tự động chuyển tiếp sang phòng chờ hoặc trang báo cáo dựa trên trạng thái sessionData
+  const { isSpeaking, spokenText } = useTTSPlayer(sessionId, rawStreamText);
+
+  const [endCountdown, setEndCountdown] = useState<number | null>(null);
+  const [isFinishing, setIsFinishing] = useState(false);
+
+  // Đánh dấu đã nộp bài khi server trả trạng thái EVALUATING
   useEffect(() => {
     if (sessionData?.status === 'EVALUATING') {
-      toast.success("Nộp bài thành công! Đang chuyển hướng sang phòng chờ chấm điểm...");
-      const timer = setTimeout(() => {
-        navigate(`/interview/waiting?sessionId=${sessionId}`);
-      }, 4000);
-      return () => clearTimeout(timer);
-    } 
-  }, [sessionData?.status, sessionId, navigate]);
+      setIsFinishing(true);
+    }
+  }, [sessionData?.status]);
 
-  const { isSpeaking, spokenText } = useTTSPlayer(sessionId, rawStreamText);
+  // Canh me khi AI ngừng nói hẳn 2.5s thì mới bật đếm ngược 5s
+  useEffect(() => {
+    if (isFinishing && !isSpeaking && endCountdown === null) {
+      const timer = setTimeout(() => {
+        toast.success("Nộp bài thành công! Đang chuyển hướng sang phòng chờ chấm điểm...");
+        setEndCountdown(5);
+      }, 300);
+      return () => clearTimeout(timer); // Hủy nếu AI bất ngờ nói lại
+    }
+  }, [isFinishing, isSpeaking, endCountdown]);
+
+  // Đếm ngược 5s rồi đá ra phòng chờ
+  useEffect(() => {
+    if (endCountdown === null) return;
+    if (endCountdown > 0) {
+      const timer = setTimeout(() => setEndCountdown(endCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      navigate(`/interview/waiting?sessionId=${sessionId}`);
+    }
+  }, [endCountdown, navigate, sessionId]);
 
   useEffect(() => {
     if (sessionData.duration) {
@@ -232,16 +253,26 @@ const InterviewRoomVideoPage: React.FC = () => {
     }
   }, [messages]);
 
+  const [isLobbyMode, setIsLobbyMode] = useState(true);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
   useEffect(() => {
+    if (isLobbyMode) return; // Không đếm lùi khi đang ở sảnh chờ
     const timer = setInterval(() => {
       setTimeLeft((prev: number) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isLobbyMode]);
 
-  // Tự động gọi startInterview khi đã load được thông tin session
+  // Initialize lobby mode based on session status (if already in progress, skip lobby)
   useEffect(() => {
-    if (sessionData.id && messages.length === 0 && !startInterviewMutation.isPending && !startInterviewMutation.isSuccess) {
+    if (sessionData?.status && sessionData.status !== 'PENDING') {
+      setIsLobbyMode(false);
+    }
+  }, [sessionData?.status]);
+
+  const startInterview = () => {
+    if (sessionData.id && !startInterviewMutation.isPending && !startInterviewMutation.isSuccess) {
       startInterviewMutation.mutate(undefined, {
         onSuccess: (res: any) => {
           // Xử lý cả trường hợp API trả về mảng trực tiếp hoặc bọc trong .data
@@ -261,12 +292,36 @@ const InterviewRoomVideoPage: React.FC = () => {
           
           if (messagesData[0] && messagesData[0].content) {
             // Thiết lập raw stream text để AI đọc câu chào đầu tiên
+          
             setRawStreamText(messagesData[0].content);
           }
         }
       });
     }
-  }, [sessionData.id, messages.length]);
+  };
+
+  const handleStartClick = () => {
+    setCountdown(3);
+  };
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCountdown(null);
+      setIsLobbyMode(false);
+      startInterview();
+    }
+  }, [countdown]);
+
+  // Nếu người dùng reload trang khi đang IN_PROGRESS nhưng chưa fetch tin nhắn, tự động fetch
+  useEffect(() => {
+    if (!isLobbyMode && sessionData.id && messages.length === 0 && sessionData.status === 'IN_PROGRESS') {
+      startInterview();
+    }
+  }, [isLobbyMode, sessionData.id, messages.length, sessionData.status]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -385,6 +440,7 @@ const InterviewRoomVideoPage: React.FC = () => {
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex overflow-hidden p-4 pb-0 gap-4 relative">
         
+
         {/* PROGRESS SIDEBAR (LEFT) */}
         <AnimatePresence>
           {isProgressSidebarOpen && (
@@ -576,17 +632,7 @@ const InterviewRoomVideoPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-6">
-            <button 
-              onClick={() => setIsMuted(!isMuted)}
-              className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center transition-all border shadow-sm",
-                isMuted 
-                  ? "bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-500/20" 
-                  : (isDarkMode ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white" : "bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100")
-              )}
-            >
-              {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-            </button>
+            
             <button 
               onClick={() => setIsVideoOn(!isVideoOn)}
               className={cn(
@@ -633,6 +679,75 @@ const InterviewRoomVideoPage: React.FC = () => {
             <Settings size={20} className={isDarkMode ? "text-gray-600" : "text-gray-300"} />
         </div>
       </footer>
+
+      {/* FULL SCREEN LOBBY OVERLAY - GLASSMORPHISM */}
+      <AnimatePresence>
+        {isLobbyMode && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/40 backdrop-blur-md transition-colors duration-500 p-6"
+          >
+            {countdown !== null ? (
+              <motion.div 
+                key={countdown}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-9xl font-bold text-white drop-shadow-2xl"
+              >
+                {countdown}
+              </motion.div>
+            ) : (
+              <div className="flex flex-col items-center text-center max-w-lg p-10 bg-white/10 backdrop-blur-2xl rounded-[32px] border border-white/20 shadow-2xl">
+                <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
+                  Sẵn sàng phỏng vấn?
+                </h2>
+                <p className="text-sm text-gray-200 mb-10 leading-relaxed font-medium">
+                  Đảm bảo không gian yên tĩnh và trang phục chỉnh tề. AI Interviewer sẽ đánh giá biểu cảm và kỹ năng giao tiếp của bạn một cách tự động.
+                </p>
+                <button 
+                  onClick={handleStartClick}
+                  className="w-full py-4 bg-primary hover:bg-primary-deep text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] uppercase tracking-wide text-sm"
+                >
+                  Bắt đầu phỏng vấn
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Ending Countdown Overlay */}
+      <AnimatePresence>
+        {endCountdown !== null && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-2xl bg-black/60"
+          >
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-white text-xl font-medium mb-8"
+            >
+              Nộp bài thành công! Đang chuyển hướng...
+            </motion.h2>
+            <motion.div
+              key={endCountdown}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 1.5, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-[120px] font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+            >
+              {endCountdown}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-scrollbar::-webkit-scrollbar {

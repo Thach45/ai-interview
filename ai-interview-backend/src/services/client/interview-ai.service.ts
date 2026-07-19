@@ -312,7 +312,7 @@ export class InterviewAiService {
           }
         : undefined,
     );
-
+    console.log(aiResponse);
     // 4. Tính toán questionIndex và isFollowUp dựa trên suggestedAction của AI
     let nextQuestionIndex = currIdx;
     let nextIsFollowUp = true;

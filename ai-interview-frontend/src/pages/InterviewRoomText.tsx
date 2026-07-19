@@ -50,7 +50,8 @@ const InterviewRoomTextPage: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
-  const [isStarted, setIsStarted] = useState(false);
+  const [isLobbyMode, setIsLobbyMode] = useState(true);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   // Sử dụng câu hỏi cốt lõi thực tế từ DB nếu có
   const activeQuestions = (session?.coreQuestions || []) as Array<{ title: string; reason: string }>;
@@ -76,16 +77,25 @@ const InterviewRoomTextPage: React.FC = () => {
   // Khởi tạo kết nối SSE để lắng nghe tin nhắn mới (Dùng trực tiếp sessionId từ url để tránh kết nối bị ngắt quãng khi refetch session)
   useInterviewSSE(sessionId, setStreamingText);
 
+  const [endCountdown, setEndCountdown] = useState<number | null>(null);
+
   // Tự động chuyển tiếp sang phòng chờ hoặc trang báo cáo dựa trên trạng thái session
   useEffect(() => {
-    if (session?.status === 'EVALUATING') {
+    if (session?.status === 'EVALUATING' && endCountdown === null) {
       toast.success("Nộp bài thành công! Đang chuyển hướng sang phòng chờ chấm điểm...");
-      const timer = setTimeout(() => {
-        navigate(`/interview/waiting?sessionId=${sessionId}`);
-      }, 2000);
-      return () => clearTimeout(timer);
+      setEndCountdown(5);
     }
-  }, [session?.status, sessionId, navigate]);
+  }, [session?.status, endCountdown]);
+
+  useEffect(() => {
+    if (endCountdown === null) return;
+    if (endCountdown > 0) {
+      const timer = setTimeout(() => setEndCountdown(endCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      navigate(`/interview/waiting?sessionId=${sessionId}`);
+    }
+  }, [endCountdown, navigate, sessionId]);
 
   // Hooks gọi API thực tế
   const startInterviewMutation = useStartInterview(sessionId);
@@ -126,15 +136,17 @@ const InterviewRoomTextPage: React.FC = () => {
 
   // Bộ đếm thời gian
   useEffect(() => {
+    if (isLobbyMode) return; // Không đếm lùi khi đang ở sảnh chờ
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isLobbyMode]);
 
-  // Khi session tải xong, đồng bộ thời gian và gọi API start để nhận câu hỏi đầu tiên từ AI
+  // Đồng bộ thời gian
   useEffect(() => {
-    if (session && !isStarted) {
+    if (session) {
       if (session.startedAt) {
         const startTime = new Date(session.startedAt).getTime();
         const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
@@ -143,9 +155,19 @@ const InterviewRoomTextPage: React.FC = () => {
       } else {
         setTimeLeft(session.duration * 60);
       }
-      setIsStarted(true);
-      setIsBotTyping(true);
+    }
+  }, [session]);
 
+  // Bỏ qua Lobby nếu đã bắt đầu
+  useEffect(() => {
+    if (session?.status && session.status !== 'PENDING') {
+      setIsLobbyMode(false);
+    }
+  }, [session?.status, session?.startedAt]);
+
+  const startInterview = () => {
+    if (session?.id && !startInterviewMutation.isPending && !startInterviewMutation.isSuccess) {
+      setIsBotTyping(true);
       startInterviewMutation.mutate(undefined, {
         onSuccess: (data) => {
           const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -165,7 +187,30 @@ const InterviewRoomTextPage: React.FC = () => {
         },
       });
     }
-  }, [session]);
+  };
+
+  const handleStartClick = () => {
+    setCountdown(3);
+  };
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCountdown(null);
+      setIsLobbyMode(false);
+      startInterview();
+    }
+  }, [countdown]);
+
+  // Tự động load tin nhắn nếu reload khi đang IN_PROGRESS
+  useEffect(() => {
+    if (!isLobbyMode && session?.id && messages.length === 0 && session.status === 'IN_PROGRESS') {
+      startInterview();
+    }
+  }, [isLobbyMode, session?.id, messages.length, session?.status]);
 
   if (isLoading && sessionId) {
     return (
@@ -556,6 +601,75 @@ const InterviewRoomTextPage: React.FC = () => {
         </div>
 
       </main>
+
+      {/* FULL SCREEN LOBBY OVERLAY - GLASSMORPHISM */}
+      <AnimatePresence>
+        {isLobbyMode && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/40 backdrop-blur-md transition-colors duration-500 p-6"
+          >
+            {countdown !== null ? (
+              <motion.div 
+                key={countdown}
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-9xl font-bold text-white drop-shadow-2xl"
+              >
+                {countdown}
+              </motion.div>
+            ) : (
+              <div className="flex flex-col items-center text-center max-w-lg p-10 bg-white/10 backdrop-blur-2xl rounded-[32px] border border-white/20 shadow-2xl">
+                <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
+                  Sẵn sàng phỏng vấn?
+                </h2>
+                <p className="text-sm text-gray-200 mb-10 leading-relaxed font-medium">
+                  Hãy đảm bảo bạn đã chuẩn bị sẵn sàng. AI Interviewer sẽ đánh giá kiến thức chuyên môn và kỹ năng xử lý vấn đề của bạn một cách tự động.
+                </p>
+                <button 
+                  onClick={handleStartClick}
+                  className="w-full py-4 bg-primary hover:bg-primary-deep text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] uppercase tracking-wide text-sm"
+                >
+                  Bắt đầu phỏng vấn
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Ending Countdown Overlay */}
+      <AnimatePresence>
+        {endCountdown !== null && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-2xl bg-black/60"
+          >
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-white text-xl font-medium mb-8"
+            >
+              Nộp bài thành công! Đang chuyển hướng...
+            </motion.h2>
+            <motion.div
+              key={endCountdown}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 1.5, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-[120px] font-black text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+            >
+              {endCountdown}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Custom Styles */}
       <style dangerouslySetInnerHTML={{ __html: `

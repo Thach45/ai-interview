@@ -433,14 +433,7 @@ const InterviewSetupPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-6 bg-primary/[0.03] rounded-3xl border border-primary/10 flex items-start gap-4">
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                        <BrainCircuit size={20} className="text-primary" />
-                      </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">
-                        AI sẽ cân đối bộ câu hỏi và tiêu chí đánh giá dựa trên trình độ **{formData.level}** mà bạn đã chọn.
-                      </p>
-                    </div>
+                    
                   </div>
                 )}
 
@@ -551,8 +544,14 @@ const InterviewSetupPage: React.FC = () => {
                             value={formData.newSkill}
                             onChange={(e) => setFormData({ ...formData, newSkill: e.target.value })}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter' && formData.newSkill.trim()) {
-                                setFormData({ ...formData, skills: [...formData.skills, formData.newSkill.trim()], newSkill: '' });
+                              if (e.key === 'Enter' && !e.nativeEvent.isComposing && formData.newSkill.trim()) {
+                                e.preventDefault();
+                                const skillToAdd = formData.newSkill.trim();
+                                if (!formData.skills.includes(skillToAdd)) {
+                                  setFormData({ ...formData, skills: [...formData.skills, skillToAdd], newSkill: '' });
+                                } else {
+                                  setFormData({ ...formData, newSkill: '' });
+                                }
                               }
                             }}
                           />

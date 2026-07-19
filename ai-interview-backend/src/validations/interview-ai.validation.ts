@@ -60,7 +60,7 @@ export const interviewAISchema = z.object({
       duration: z
         .number()
         .min(5, 'Thời lượng tối thiểu là 5 phút')
-        .max(120, 'Thời lượng tối đa là 120 phút'),
+        .max(60, 'Thời lượng tối đa là 60 phút'),
 
       difficulty: z.number().min(1, 'Độ khó tối thiểu là 1').max(5, 'Độ khó tối đa là 5'),
 
