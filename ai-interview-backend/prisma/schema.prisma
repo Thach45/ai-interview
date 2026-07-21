@@ -81,6 +81,11 @@ enum InterviewPersona {
 
 // ================= THỰC THỂ CỐT LÕI (CORE ENTITIES) =================
 
+enum CvSourceType {
+  UPLOADED
+  BUILDER
+}
+
 // 1. BẢNG NGƯỜI DÙNG
 model User {
   id               String           @id @default(auto()) @map("_id") @db.ObjectId
@@ -104,26 +109,42 @@ model User {
   cvAnalyses       CvAnalysis[]
   recruiterRooms   RecruiterRoom[]  
   transactions     Transaction[]
-  optimizedCvs     OptimizedCv[]
-  notifications    Notification[]
+      notifications    Notification[]
 }
 
 // 2. BẢNG HỒ SƠ CV
 model UserCv {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String   @db.ObjectId
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String          @db.ObjectId
   title            String   
-  fileUrl          String   
-  contentExtracted String   // MongoDB tự hiểu chuỗi dài, không cần @db.Text
+  sourceType       CvSourceType    @default(UPLOADED)
   
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  // Core Data
+  cvData           CvDataStructure? 
+  
+  // Metadata
+  templateId       String?         @db.ObjectId
+  renderedHtml     String?
+  fileUrl          String?   
+  
+  // AI Optimization
+  originalCvId     String?         @db.ObjectId
+  cvAnalysisId     String?         @db.ObjectId
+  aiModifications  AiModification[]
+  
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template         CvTemplate?     @relation(fields: [templateId], references: [id])
+  
+  originalCv       UserCv?         @relation("OptimizedVersions", fields: [originalCvId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  optimizedCvs     UserCv[]        @relation("OptimizedVersions")
+  
+  cvAnalysis       CvAnalysis?     @relation("OptimizedCvToCvAnalysis", fields: [cvAnalysisId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   sessions         InterviewSession[]
-  analyses         CvAnalysis[]
+  analyses         CvAnalysis[]    @relation("CvAnalysisToUserCv")
 }
-
 // 3. BẢNG DANH MỤC PHÂN CẤP (Nhóm nghề -> Nghề -> Vị trí)
 model JobCategory {
   id          String         @id @default(auto()) @map("_id") @db.ObjectId
@@ -399,10 +420,10 @@ model CvAnalysis {
   createdAt              DateTime @default(now())
 
   user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cv                     UserCv      @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  cv                     UserCv      @relation("CvAnalysisToUserCv", fields: [cvId], references: [id], onDelete: Cascade)
   jobTemplate            JobTemplate? @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade)
   
-  optimizedCv            OptimizedCv?
+  optimizedCvs           UserCv[]      @relation("OptimizedCvToCvAnalysis")
 }
 
 // 8.5 BẢNG CV ĐÃ TỐI ƯU (Sau phân tích)
@@ -413,91 +434,77 @@ type AiModification {
   desc   String
 }
 
-type OptimizedContact {
+type CvContact {
   phone    String?
   email    String?
   birthday String?
   address  String?
 }
 
-type OptimizedExperience {
-  company String
-  period  String
-  role    String
+type CvExperience {
+  company String?
+  period  String?
+  role    String?
   details String[]
 }
 
-type OptimizedProject {
-  name    String
-  period  String
-  role    String
+type CvProject {
+  name    String?
+  period  String?
+  role    String?
   details String[]
 }
 
-type OptimizedSkill {
-  name  String
+type CvSkill {
+  name  String?
   level String?
 }
 
-type OptimizedEducation {
-  period   String
-  school   String
+type CvEducation {
+  period   String?
+  school   String?
   degree   String?
   details  String[]
 }
 
-type OptimizedCertification {
-  name    String
-  issuer  String
+type CvCertification {
+  name    String?
+  issuer  String?
   year    String?
 }
 
-type OptimizedActivity {
-  name    String
-  period  String
-  role    String
+type CvActivity {
+  name    String?
+  period  String?
+  role    String?
   details String[]
 }
 
-type OptimizedReference {
-  name    String
-  role    String
-  phone   String
+type CvReference {
+  name    String?
+  role    String?
+  phone   String?
 }
 
-type OptimizedCvData {
+type CvDataStructure {
   fullName        String
   jobTitle        String
   objective       String?
-  contact         OptimizedContact
+  contact         CvContact
   
-  experiences     OptimizedExperience[]
-  projects        OptimizedProject[]
+  experiences     CvExperience[]
+  projects        CvProject[]
   
   hardSkills      String[]
-  computerSkills  OptimizedSkill[]
-  languages       OptimizedSkill[]
+  computerSkills  CvSkill[]
+  languages       CvSkill[]
   
-  education       OptimizedEducation[]
-  certifications  OptimizedCertification[]
-  activities      OptimizedActivity[]
-  references      OptimizedReference[]
+  education       CvEducation[]
+  certifications  CvCertification[]
+  activities      CvActivity[]
+  references      CvReference[]
 }
 
-model OptimizedCv {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String          @db.ObjectId
-  cvAnalysisId   String          @unique @db.ObjectId // Liên kết 1-1 với phân tích
-  
-  optimizedData  OptimizedCvData
-  modifications  AiModification[]
-  finalHtml      String?
-
-  createdAt      DateTime        @default(now())
-
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cvAnalysis     CvAnalysis      @relation(fields: [cvAnalysisId], references: [id], onDelete: Cascade)
-}
 
 // 9. BẢNG PHÒNG TUYỂN DỤNG (Recruiter Mode)
 model RecruiterRoom {
@@ -545,17 +552,19 @@ type CoreQuestion {
   criteria     RubricCriterion[]
 }
 
+
 // 11. BẢNG MẪU CV (Template)
 model CvTemplate {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String   
-  thumbnailUrl  String   
-  htmlStructure String   
-  cssStyles     String?   
+  name          String
+  thumbnailUrl  String
+  htmlStructure String
+  cssStyles     String?
   isActive      Boolean  @default(true)
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  userCvs       UserCv[]
 }
 
 // 12. Thông báo

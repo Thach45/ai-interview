@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { useJobCategories } from '../../features/jobs/hooks/useJobCategoriesAdmin';
-import { CategoryModal } from './components/CategoryModal';
+import { CategoryModal } from '../../features/jobs/components/CategoryModal';
 import type { JobCategory } from '../../features/jobs/api/jobCategoryAdmin.api';
 
 export const AdminCategoriesPage: React.FC = () => {

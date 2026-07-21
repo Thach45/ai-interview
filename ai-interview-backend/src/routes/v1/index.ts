@@ -17,7 +17,7 @@ import ttsRoute from './shared/tts.route';
 import dashboardAdminRoute from './admin/dashboard.route';
 import adminCvTemplateRoute from './admin/cv-template.route';
 import adminNotificationRoute from './admin/notificationAdmin.route';
-import cvTemplateRoute from './client/cv-template.route';
+import builderCvRoute from './client/builder-cv.route';
 
 const router: Router = Router();
 
@@ -33,7 +33,7 @@ router.use('/categories', jobCategoryRoute);
 router.use('/interview-ai', interviewAIRoute);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/notifications', notificationRoutes);
-router.use('/cv-templates', cvTemplateRoute);
+router.use('/cv-builder', builderCvRoute);
 
 // ==========================
 // SHARED ROUTES (Dùng chung)

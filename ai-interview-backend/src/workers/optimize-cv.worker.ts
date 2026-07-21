@@ -8,19 +8,19 @@ export const optimizeCvWorker = new Worker<any>(
   'optimizeCvQueue',
   async (job: Job) => {
     try {
-      const { userId, analysisId } = job.data;
+      const { userId, analysisId, templateId } = job.data;
       if (!userId || !analysisId) {
         throw new Error('Thiếu userId hoặc analysisId trong payload của Job');
       }
 
-      const result = await cvOptimizationService.optimizeCV(userId, analysisId);
+      const result = await cvOptimizationService.optimizeCV(userId, analysisId, templateId);
 
       await notificationService.createNotification(
         userId,
         NotificationType.AI_PROCESS,
         'Tối ưu CV hoàn tất! 🎉',
         'AI đã hoàn thành việc nâng cấp CV của bạn. Nhấn vào để xem ngay!',
-        `/jobs/cv-analysis/${analysisId}/optimize`,
+        `/cv-builder/${result.templateId}?id=${result.id}`,
       );
 
       return { success: true, optimizedId: result?.id };

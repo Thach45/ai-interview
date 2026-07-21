@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SelectCvModal from '../../cvs/components/SelectCvModal';
+import SelectCvModal from '../../cvs/components/my-cv/SelectCvModal';
 import { useCvAnalysis } from '../../cvs/hooks/useCvAnalysis';
 
 interface JobDetailProps {

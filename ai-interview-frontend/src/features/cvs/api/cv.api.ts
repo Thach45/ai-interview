@@ -81,9 +81,10 @@ export const cvApi = {
   /**
    * Tối ưu CV dựa trên bản phân tích
    */
-  optimizeCv: async (analysisId: string): Promise<any> => {
+  optimizeCv: async (payload: { analysisId: string; templateId?: string }): Promise<any> => {
     const response = await apiClient.post<any, { success: boolean; data: any }>('/analysis-cv/optimize', {
-      analysisId,
+      analysisId: payload.analysisId,
+      templateId: payload.templateId,
     });
     return response.data;
   },

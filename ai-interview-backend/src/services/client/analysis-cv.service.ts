@@ -5,7 +5,7 @@ import { creditsService, CreditsService } from '../../shared/services/credits.se
 import dotenv from 'dotenv';
 dotenv.config();
 
-const CREDIT_PRICE_PER_ANALYSIS = Number(process.env.CREDIT_PRICE_PER_ANALYSIS);
+const CREDIT_PRICE_PER_ANALYSIS = Number(process.env.CREDIT_PRICE_PER_ANALYSIS) || 5;
 
 export class AnalysisCVService {
   constructor(
@@ -44,13 +44,17 @@ export class AnalysisCVService {
       },
     });
 
+    if (!userCv.cvData || Object.keys(userCv.cvData).length === 0) {
+      throw new Error('Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.');
+    }
+
     // 3. Gọi AI phân tích (Sử dụng các trường content đã trích xuất)
     const analysisResult = await this.analysisCV(
       userId,
       cvId,
       jobTemplateId,
       null,
-      userCv.contentExtracted,
+      JSON.stringify(userCv.cvData || {}),
       jobTemplate.aiExtractedContext,
     );
     return analysisResult;
@@ -65,13 +69,17 @@ export class AnalysisCVService {
       },
     });
 
+    if (!userCv.cvData || Object.keys(userCv.cvData).length === 0) {
+      throw new Error('Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.');
+    }
+
     // 3. Gọi AI phân tích (Sử dụng các trường content đã trích xuất)
     const analysisResult = await this.analysisCV(
       userId,
       cvId,
       null, // jobTemplateId is null
       externalJobDescription, // externalJobDescription
-      userCv.contentExtracted,
+      JSON.stringify(userCv.cvData || {}),
       externalJobDescription,
     );
     return analysisResult;
@@ -142,7 +150,7 @@ export class AnalysisCVService {
         externalJobDescription: true,
         cv: { select: { title: true } },
         jobTemplate: { select: { title: true } },
-        optimizedCv: { select: { id: true } },
+        optimizedCvs: { select: { id: true } },
       },
 
       orderBy: {
@@ -152,8 +160,8 @@ export class AnalysisCVService {
     if (existingAnalysis) {
       return existingAnalysis.map((item) => ({
         ...item,
-        isOptimized: !!item.optimizedCv,
-        optimizedCv: undefined,
+        isOptimized: !!item.optimizedCvs?.[0],
+        optimizedCvs: undefined,
       }));
     }
     return null;

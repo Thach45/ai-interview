@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { PDFParse } from 'pdf-parse';
+
 import prisma from '../../config/prisma';
 import { uploadService, UploadService } from '../../shared/services/upload.service';
 
@@ -72,32 +72,14 @@ export class UserService {
     });
   }
 
-  async uploadCv(userId: string, file: Express.Multer.File, title: string) {
-    // 1. Trích xuất văn bản từ PDF
-    let contentExtracted = '';
-    if (file.mimetype === 'application/pdf') {
-      const parser = new PDFParse({ data: file.buffer });
-      const result = await parser.getText();
-      contentExtracted = result.text;
-    }
-
-    // 2. Upload file lên cloud thông qua Shared Service
-    const fileUrl = await this._uploadService.uploadFile(file, 'cvs');
-
-    // 3. Lưu record vào DB
-    return await this._prisma.userCv.create({
-      data: {
-        userId,
-        title: title || file.originalname,
-        fileUrl,
-        contentExtracted,
-      },
-    });
-  }
-
   async getMyCvs(userId: string) {
     return await this._prisma.userCv.findMany({
       where: { userId },
+      include: {
+        template: {
+          select: { id: true, name: true, htmlStructure: true, cssStyles: true, thumbnailUrl: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }

@@ -1,14 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import DashboardPage from '../pages/Dashboard';
-import JobsPage from '../pages/Jobs';
-import InterviewSetupPage from '../pages/InterviewSetup';
+import DashboardPage from '../pages/client/Dashboard';
+import JobsPage from '../pages/client/Jobs';
+import InterviewSetupPage from '../pages/client/InterviewSetup';
 
-import InterviewResultPage from '../pages/InterviewResult';
-import InterviewRoomVideoPage from '../pages/InterviewRoomVideo';
-import InterviewRoomTextPage from '../pages/InterviewRoomText';
-import { WaitingRoom } from '../pages/WaitingRoom';
-import NotFoundPage from '../pages/NotFound';
+import InterviewResultPage from '../pages/client/InterviewResult';
+import InterviewRoomVideoPage from '../pages/client/InterviewRoomVideo';
+import InterviewRoomTextPage from '../pages/client/InterviewRoomText';
+import { WaitingRoom } from '../pages/client/WaitingRoom';
+import NotFoundPage from '../pages/client/NotFound.tsx';
+
 
 
 import { AdminDashboardPage } from '../pages/admin/AdminDashboardPage';
@@ -25,17 +26,18 @@ import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
 import { VerifyOTPPage } from '../pages/auth/VerifyOTPPage';
 
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
-import ProfilePage from "../pages/ProfilePage.tsx";
+import ProfilePage from "../pages/client/ProfilePage.tsx";
 import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
-import CVAnalysisResultPage from '../pages/CVAnalysisResult';
+import CVAnalysisResultPage from '../pages/client/CVAnalysisResult';
 
-import MyCvsPage from '../pages/MyCvs';
-import SubscriptionPage from '../pages/SubscriptionPage';
-import { LoadingTestPage } from '../pages/LoadingTestPage';
-import CvOptimizationPage from '../pages/CvOptimizationPage.tsx';
+import MyCvsPage from '../pages/client/MyCvs.tsx';
+import SubscriptionPage from '../pages/client/SubscriptionPage';
+import { LoadingTestPage } from '../pages/client/LoadingTestPage';
+import CvBuilderPage from '../pages/client/CvBuilderPage.tsx';
 
 
-import LandingPage from '../pages/LandingPage';
+import LandingPage from '../pages/client/LandingPage';
+import { CvTemplatesPage } from '../pages/client/CvTemplatesPage.tsx';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -71,6 +73,16 @@ export const AppRoutes: React.FC = () => {
         <Route path="/subscription" element={
           <ProtectedRoute>
             <SubscriptionPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/cv-builder/templates" element={
+          <ProtectedRoute>
+            <CvTemplatesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/cv-builder/:templateId" element={
+          <ProtectedRoute>
+            <CvBuilderPage />
           </ProtectedRoute>
         } />
         <Route path="/interviews/setup" element={
@@ -112,11 +124,6 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         } />
 
-        <Route path="/jobs/cv-analysis/:analysisId/optimize" element={
-          <ProtectedRoute>
-            <CvOptimizationPage />
-          </ProtectedRoute>
-        } />
 
         {/* Admin Routes (Chỉ ADMIN mới vào được) */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />

@@ -1,395 +1,140 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import subscriptionApi from '../../features/subscription/api/subscription.api';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
+import { TransactionStats } from '../../features/subscription/components/admin/TransactionStats';
+import { TransactionFilters } from '../../features/subscription/components/admin/TransactionFilters';
+import { TransactionTable } from '../../features/subscription/components/admin/TransactionTable';
 
 interface Transaction {
   id: string;
-  userId: string;
-  user: {
-    fullName: string;
-    email: string;
-  };
+  userId?: string;
+  user?: { fullName: string; email: string };
   amount: number;
   creditsAdded: number;
-  type: 'DEPOSIT' | 'COMPENSATION' | 'PROMOTION';
-  status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  type: string;
+  status: string;
   paymentRefId?: string;
   sepayTransactionId?: string;
   createdAt: string;
 }
 
-export const AdminTransactionsPage: React.FC = () => {
+export const AdminTransactionsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<string>('ALL');
+  const [typeFilter, setTypeFilter] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // Live Database States
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [stats, setStats] = useState({
-    totalRevenue: 0,
-    creditsDeposited: 0,
-    creditsCompensated: 0,
-    pendingTransactions: 0
-  });
+  const [stats, setStats] = useState({ totalRevenue: 0, creditsDeposited: 0, creditsCompensated: 0, pendingTransactions: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Manual Credit Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const [creditsAdded, setCreditsAdded] = useState<number>(10);
+  const [creditsAdded, setCreditsAdded] = useState(10);
   const [manualType, setManualType] = useState<'COMPENSATION' | 'PROMOTION'>('COMPENSATION');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Transaction Detail Modal States
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Gọi API tải dữ liệu danh sách giao dịch & stats
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [transRes, statsRes] = await Promise.all([
-        subscriptionApi.adminGetTransactions({
-          type: typeFilter,
-          search: searchTerm,
-          page: currentPage,
-          limit: pageSize
-        }),
-        subscriptionApi.adminGetTransactionStats()
+        subscriptionApi.adminGetTransactions({ type: typeFilter, search: searchTerm, page: currentPage, limit: pageSize }),
+        subscriptionApi.adminGetTransactionStats(),
       ]);
-
       if (transRes.success && transRes.data) {
         setTransactions(transRes.data.transactions);
         setTotalPages(transRes.data.pagination.totalPages);
         setTotalCount(transRes.data.pagination.total);
       }
-      if (statsRes.success && statsRes.data) {
-        setStats(statsRes.data);
-      }
-    } catch (error: any) {
-      console.error('Lỗi tải dữ liệu giao dịch:', error);
+      if (statsRes.success && statsRes.data) setStats(statsRes.data);
+    } catch {
       toast.error('Không thể kết nối API giao dịch');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Debouncing tìm kiếm tránh spam backend
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchData();
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
+    } finally { setIsLoading(false); }
   }, [searchTerm, typeFilter, currentPage]);
 
-  // Xử lý submit nạp Credit thủ công
-  const handleManualSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    const timer = setTimeout(fetchData, 400);
+    return () => clearTimeout(timer);
+  }, [fetchData]);
+
+  const handleManualSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!userEmail) return;
-
     setIsSubmitting(true);
     try {
-      const res = await subscriptionApi.adminCreateManualTransaction({
-        userEmail,
-        creditsAdded,
-        type: manualType,
-        reason: reason || undefined
-      });
-
-      if (res.success) {
-        toast.success('Cấp nạp Credit cho học viên thành công! 🎉');
-        setIsModalOpen(false);
-        // Reset form
-        setUserEmail('');
-        setCreditsAdded(10);
-        setReason('');
-        // Reload bảng
-        fetchData();
-      }
-    } catch (error: any) {
-      console.error('Lỗi khi nạp credit tay:', error);
-      const msg = error.message || 'Lỗi hệ thống khi nạp credit';
-      toast.error(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+      const res = await subscriptionApi.adminCreateManualTransaction({ userEmail, creditsAdded, type: manualType, reason: reason || undefined });
+      if (res.success) { toast.success('Cấp nạp Credit cho học viên thành công! 🎉'); setIsModalOpen(false); resetForm(); fetchData(); }
+    } catch (error: any) { toast.error(error.message || 'Lỗi hệ thống khi nạp credit'); }
+    finally { setIsSubmitting(false); }
   };
 
-  // Admin Duyệt tay hoặc Hủy giao dịch PENDING
+  const resetForm = () => { setUserEmail(''); setCreditsAdded(10); setReason(''); };
+
   const handleUpdateStatus = async (id: string, status: 'SUCCESS' | 'FAILED') => {
     setIsUpdatingStatus(true);
     try {
       const res = await subscriptionApi.adminUpdateTransactionStatus(id, status);
-      if (res.success) {
-        toast.success(
-          status === 'SUCCESS' 
-            ? 'Đã duyệt nạp thành công! Credit đã cộng cho học viên!' 
-            : 'Đã hủy bỏ giao dịch!'
-        );
-        setSelectedTransaction(null);
-        fetchData();
-      }
-    } catch (error: any) {
-      console.error('Lỗi khi cập nhật trạng thái giao dịch:', error);
-      const msg = error.message || 'Lỗi hệ thống khi xử lý duyệt giao dịch';
-      toast.error(msg);
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+      if (res.success) { toast.success(status === 'SUCCESS' ? 'Đã duyệt nạp thành công!' : 'Đã hủy giao dịch!'); setSelectedTransaction(null); fetchData(); }
+    } catch (error: any) { toast.error(error.message || 'Lỗi hệ thống'); }
+    finally { setIsUpdatingStatus(false); }
   };
 
-  // Admin Xóa vĩnh viễn giao dịch
   const handleDeleteTransaction = async (id: string) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa vĩnh viễn giao dịch này khỏi hệ thống đối soát? Hành động này không thể hoàn tác!')) {
-      return;
-    }
-
+    if (!window.confirm('Xóa vĩnh viễn giao dịch này? Không thể hoàn tác!')) return;
     setIsDeleting(true);
     try {
       const res = await subscriptionApi.adminDeleteTransaction(id);
-      if (res.success) {
-        toast.success('Đã xóa giao dịch thành công khỏi cơ sở dữ liệu! 🎉');
-        setSelectedTransaction(null);
-        fetchData();
-      }
-    } catch (error: any) {
-      console.error('Lỗi khi xóa giao dịch:', error);
-      const msg = error.message || 'Lỗi hệ thống khi xóa giao dịch';
-      toast.error(msg);
-    } finally {
-      setIsDeleting(false);
-    }
+      if (res.success) { toast.success('Đã xóa giao dịch! 🎉'); setSelectedTransaction(null); fetchData(); }
+    } catch (error: any) { toast.error(error.message || 'Lỗi hệ thống'); }
+    finally { setIsDeleting(false); }
   };
 
-  // Định dạng ngày giờ việt nam
   const formatDate = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return dateStr;
-    }
+    try { return new Date(dateStr).toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+    catch { return dateStr; }
   };
-
-  // Header Actions
-  const headerActions = (
-    <div className="flex items-center gap-3">
-      <button 
-        onClick={() => setIsModalOpen(true)}
-        className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-[12px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
-      >
-        <span className="material-symbols-outlined text-[18px]">add_card</span>
-        Tạo giao dịch nạp tay
-      </button>
-    </div>
-  );
 
   return (
-    <AdminLayout title="Quản lý Giao dịch & Credit" rightAction={headerActions}>
+    <AdminLayout
+      title="Quản lý Giao dịch & Credit"
+      rightAction={
+        <button onClick={() => setIsModalOpen(true)} className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-[12px] hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">add_card</span>Tạo giao dịch nạp tay
+        </button>
+      }
+    >
       <div className="flex flex-col gap-6 pb-12">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-           <div className="bg-white border border-border-hairline p-5 rounded-2xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Tổng doanh thu thực</div>
-              <div className="text-xl font-black text-text-primary">{(stats.totalRevenue || 0).toLocaleString()}đ</div>
-           </div>
-           <div className="bg-white border border-border-hairline p-5 rounded-2xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Credit đã được nạp</div>
-              <div className="text-xl font-black text-primary">{(stats.creditsDeposited || 0).toLocaleString()} CR</div>
-           </div>
-           <div className="bg-white border border-border-hairline p-5 rounded-2xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Đền bù & Khuyến mãi</div>
-              <div className="text-xl font-black text-orange-600">{(stats.creditsCompensated || 0).toLocaleString()} CR</div>
-           </div>
-           <div className="bg-white border border-border-hairline p-5 rounded-2xl shadow-sm">
-              <div className="text-[11px] font-bold text-text-tertiary uppercase mb-1">Giao dịch chờ xử lý</div>
-              <div className="text-xl font-black text-amber-500">{stats.pendingTransactions} GD</div>
-           </div>
-        </div>
-
-        {/* Search & Filter Bar */}
-        <div className="flex flex-col md:flex-row items-center gap-4">
-          <div className="relative flex-1 group w-full">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary group-focus-within:text-primary transition-colors">search</span>
-            <input 
-              type="text" 
-              placeholder="Tìm theo tên học viên, email, mã đối soát, Sepay ID..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-border-hairline rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[13px] shadow-sm"
-            />
-          </div>
-          <div className="w-full md:w-64">
-             <select 
-               value={typeFilter}
-               onChange={(e) => {
-                 setTypeFilter(e.target.value);
-                 setCurrentPage(1);
-               }}
-               className="w-full px-4 py-3 bg-white border border-border-hairline rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[13px] font-bold text-text-secondary shadow-sm"
-             >
-                <option value="ALL">Tất cả loại giao dịch</option>
-                <option value="DEPOSIT">Nạp qua QR (Deposit)</option>
-                <option value="COMPENSATION">Cấp đền bù (Compensation)</option>
-                <option value="PROMOTION">Quà khuyến mãi (Promotion)</option>
-             </select>
-          </div>
-        </div>
-
-        {/* Transactions Table */}
-        <div className="bg-white rounded-2xl border border-border-hairline shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left min-w-[800px]">
-              <thead>
-                <tr className="bg-bg-surface-soft border-b border-border-hairline">
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Học viên</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Phân loại</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Credit nạp</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Số tiền</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Mã đối soát / Lý do</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Trạng thái</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px]">Thời gian</th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-text-tertiary uppercase tracking-[0.5px] text-right">Chi tiết</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-hairline">
-                {isLoading ? (
-                  /* Loading Shimmer Rows */
-                  [...Array(5)].map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-24 mb-1" /><div className="h-3 bg-gray-100 rounded w-32" /></td>
-                      <td className="px-6 py-4"><div className="h-5 bg-gray-100 rounded w-16" /></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-12" /></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-16" /></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-28" /></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-20" /></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-24" /></td>
-                      <td className="px-6 py-4 text-right"><div className="h-8 bg-gray-100 rounded w-8 ml-auto" /></td>
-                    </tr>
-                  ))
-                ) : (
-                  transactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-bg-surface-soft/40 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className="font-semibold text-text-primary text-[13px]">{t.user?.fullName || 'Người dùng'}</div>
-                          <div className="text-text-secondary text-[11px]">{t.user?.email || 'Chưa cập nhật'}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase border ${
-                          t.type === 'DEPOSIT' ? 'text-blue-600 bg-blue-50 border-blue-100' : 
-                          t.type === 'COMPENSATION' ? 'text-orange-600 bg-orange-50 border-orange-100' :
-                          'text-green-600 bg-green-50 border-green-100'
-                        }`}>
-                          {t.type === 'DEPOSIT' ? 'Nạp qua QR' : t.type === 'COMPENSATION' ? 'Đền bù' : 'Khuyến mãi'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-black text-text-primary text-[13px]">
-                        {t.creditsAdded === -1 ? 'VÔ HẠN' : `+${t.creditsAdded} CR`}
-                      </td>
-                      <td className="px-6 py-4 text-[13px] font-bold text-text-secondary">
-                        {t.amount > 0 ? `${t.amount.toLocaleString()}đ` : '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-[12px] font-mono text-text-primary select-all max-w-[180px] truncate" title={t.paymentRefId}>
-                          {t.paymentRefId || '-'}
-                        </div>
-                        {t.sepayTransactionId && (
-                          <div className="text-[10px] text-text-tertiary">Sepay: {t.sepayTransactionId}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                          t.status === 'SUCCESS' ? 'text-green-600 bg-green-50 border-green-100' : 
-                          t.status === 'PENDING' ? 'text-amber-600 bg-amber-50 border-amber-100' : 
-                          'text-red-600 bg-red-50 border-red-100'
-                        }`}>
-                          {t.status === 'SUCCESS' ? 'Thành công' : t.status === 'PENDING' ? 'Chờ xử lý' : 'Thất bại'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-[12px] text-text-secondary">
-                        {formatDate(t.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => setSelectedTransaction(t)}
-                          className="p-1.5 hover:bg-bg-surface text-text-tertiary hover:text-primary rounded-lg transition-all"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">info</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {!isLoading && transactions.length === 0 && (
-            <div className="py-20 flex flex-col items-center justify-center text-text-tertiary bg-white">
-              <span className="material-symbols-outlined text-[48px] mb-2 opacity-20">search_off</span>
-              <p className="text-[13px] font-medium">Không tìm thấy giao dịch nào phù hợp</p>
-            </div>
-          )}
-
-          {/* Pagination Controls */}
-          {!isLoading && totalPages > 1 && (
-            <div className="px-6 py-4 bg-bg-surface-soft/50 border-t border-border-hairline flex items-center justify-between">
-              <div className="text-[12px] text-text-secondary">
-                Hiển thị <span className="font-bold text-text-primary">{(currentPage-1)*pageSize + 1}-{Math.min(currentPage*pageSize, totalCount)}</span> trên <span className="font-bold text-text-primary">{totalCount}</span> giao dịch
-              </div>
-              <div className="flex items-center gap-2">
-                <button 
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => prev - 1)}
-                  className="size-8 rounded-lg border border-border-hairline bg-white flex items-center justify-center hover:bg-bg-surface disabled:opacity-30 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>
-                <div className="flex items-center gap-1">
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button 
-                      key={i}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`size-8 rounded-lg text-[12px] font-bold transition-all ${
-                        currentPage === i + 1 
-                        ? 'bg-primary text-white shadow-md shadow-primary/20' 
-                        : 'bg-white border border-border-hairline text-text-secondary hover:bg-bg-surface'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-                <button 
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => prev + 1)}
-                  className="size-8 rounded-lg border border-border-hairline bg-white flex items-center justify-center hover:bg-bg-surface disabled:opacity-30 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <TransactionStats
+          totalRevenue={stats.totalRevenue}
+          creditsDeposited={stats.creditsDeposited}
+          creditsCompensated={stats.creditsCompensated}
+          pendingTransactions={stats.pendingTransactions}
+        />
+        <TransactionFilters
+          searchTerm={searchTerm}
+          typeFilter={typeFilter}
+          onSearchChange={(v) => { setSearchTerm(v); setCurrentPage(1); }}
+          onTypeChange={(v) => { setTypeFilter(v); setCurrentPage(1); }}
+        />
+        <TransactionTable
+          transactions={transactions}
+          isLoading={isLoading}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onSelectTransaction={(tx) => setSelectedTransaction(tx)}
+        />
       </div>
 
       {/* Modal nạp Credit thủ công cực sang xịn */}

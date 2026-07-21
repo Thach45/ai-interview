@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "cd .. && husky install ai-interview-backend/.husky"
+    "prepare": "cd .. && husky install ai-interview-backend/.husky",
+    "seed:template": "tsx prisma/seed-cv-template.ts"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.4.1",

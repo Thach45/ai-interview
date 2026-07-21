@@ -3,7 +3,7 @@ import { AdminLayout } from '../../layouts/AdminLayout';
 import { useCvTemplatesAdmin } from '../../features/cvs/hooks/useCvTemplatesAdmin';
 import { Plus, Edit2, Trash2, Eye } from 'lucide-react';
 
-import { CvTemplateModal } from './components/CvTemplateModal';
+import { CvTemplateModal } from '../../features/cvs/components/CvTemplateModal';
 import type { CvTemplate } from '../../features/cvs/api/cvTemplateAdmin.api';
 
 export const AdminCvTemplatesPage: React.FC = () => {

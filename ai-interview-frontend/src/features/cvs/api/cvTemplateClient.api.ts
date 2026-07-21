@@ -6,7 +6,7 @@ export const cvTemplateClientApi = {
    * Lấy danh sách CV Template cho Client (chỉ lấy template có isActive: true)
    */
   getAll: async (): Promise<CvTemplate[]> => {
-    const response = await apiClient.get<any, { success: boolean; data: CvTemplate[] }>('/cv-templates');
+    const response = await apiClient.get<any, { success: boolean; data: CvTemplate[] }>('/cv-builder/templates');
     return response.data;
   },
 
@@ -14,7 +14,7 @@ export const cvTemplateClientApi = {
    * Lấy chi tiết 1 CV Template
    */
   getById: async (id: string): Promise<CvTemplate> => {
-    const response = await apiClient.get<any, { success: boolean; data: CvTemplate }>(`/cv-templates/${id}`);
+    const response = await apiClient.get<any, { success: boolean; data: CvTemplate }>(`/cv-builder/templates/${id}`);
     return response.data;
   },
 };

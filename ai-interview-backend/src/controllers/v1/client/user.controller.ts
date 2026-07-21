@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { userService, UserService } from '../../../services/client/user.service';
+import { builderCvService } from '../../../services/client/builder-cv.service';
 import { asyncHandler } from '../../../utils/asyncHandler';
 import { sendResponse } from '../../../utils/apiResponse';
 import { BadRequestException, UnauthorizedException, NotFoundException } from '../../../exceptions';
@@ -79,7 +80,7 @@ class UserController {
     }
 
     const { title } = req.body;
-    const result = await this.userService.uploadCv(userId, file, title);
+    const result = await builderCvService.uploadCv(userId, file, title);
 
     return sendResponse(res, 201, 'Tải CV lên thành công', result);
   });

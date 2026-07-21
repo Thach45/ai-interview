@@ -61,7 +61,7 @@ export class InterviewAiService {
 
     // 4. Gọi Gemini AI thông qua AiService để tạo sẵn danh sách câu hỏi chính có cấu trúc (Core Questions)
     const coreQuestions = await aiService.createQuestionForInterview({
-      cvText: cv.contentExtracted,
+      cvText: JSON.stringify(cv.cvData),
       jdText: jdText,
       position: body.position,
       companyName: body.nameCompany,
@@ -158,7 +158,7 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = session.cv?.contentExtracted || '';
+    const cvText = session.cv?.cvData ? JSON.stringify(session.cv.cvData) : '';
     const coreQuestions = session.coreQuestions as Array<{ title: string; reason: string }>;
 
     if (!coreQuestions || coreQuestions.length === 0) {
@@ -287,7 +287,7 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = session.cv?.contentExtracted || '';
+    const cvText = session.cv?.cvData ? JSON.stringify(session.cv.cvData) : '';
 
     // 3. Gọi AI phản hồi (kèm callback để bắn SSE stream)
     const aiResponse = await aiService.chatInterview(
@@ -395,7 +395,7 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = session.cv?.contentExtracted || '';
+    const cvText = session.cv?.cvData ? JSON.stringify(session.cv.cvData) : '';
     const coreQuestions = session.coreQuestions as Array<{
       title: string;
       reason: string;

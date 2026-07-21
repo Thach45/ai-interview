@@ -2,12 +2,12 @@ import { PrismaClient } from '@prisma/client';
 import prisma from '../../config/prisma';
 import puppeteer from 'puppeteer';
 import { AiService, aiService } from '../core/ai.service';
-import { NotFoundException } from '../../exceptions';
+import { NotFoundException, BadRequestException } from '../../exceptions';
 import { CreditsService, creditsService } from '../../shared/services/credits.service';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const CREDIT_PRICE_PER_OPTIMIZATION = Number(process.env.CREDIT_PRICE_PER_OPTIMIZATION);
+const CREDIT_PRICE_PER_OPTIMIZATION = Number(process.env.CREDIT_PRICE_PER_OPTIMIZATION) || 5;
 
 export class CvOptimizationService {
   constructor(
@@ -16,9 +16,9 @@ export class CvOptimizationService {
     private readonly _creditsService: CreditsService,
   ) {}
 
-  async optimizeCV(userId: string, analysisId: string) {
+  async optimizeCV(userId: string, analysisId: string, templateId?: string) {
     // 1. Kiểm tra xem bản phân tích này đã được tối ưu chưa (Caching)
-    const existingOptimizedCv = await this._prisma.optimizedCv.findUnique({
+    const existingOptimizedCv = await this._prisma.userCv.findFirst({
       where: {
         cvAnalysisId: analysisId,
       },
@@ -31,7 +31,7 @@ export class CvOptimizationService {
     await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_OPTIMIZATION);
 
     // 2. Lấy thông tin bản phân tích
-    const analysis = await this._prisma.cvAnalysis.findUnique({
+    const analysis = await this._prisma.cvAnalysis.findFirst({
       where: {
         id: analysisId,
         userId: userId, // Đảm bảo đúng chủ sở hữu
@@ -47,9 +47,15 @@ export class CvOptimizationService {
       );
     }
 
+    if (!analysis.cv.cvData || Object.keys(analysis.cv.cvData).length === 0) {
+      throw new BadRequestException(
+        'Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi tối ưu.',
+      );
+    }
+
     // 3. Gọi AI phân tích (Truyền CV gốc, từ khóa thiếu và đề xuất)
     const aiResult = await this._aiService.optimizeCV(
-      analysis.cv.contentExtracted,
+      JSON.stringify(analysis.cv.cvData || {}),
       analysis.missingKeywords,
       analysis.improvementSuggestions,
     );
@@ -58,16 +64,19 @@ export class CvOptimizationService {
     const savedOptimizedCv = await this._prisma.$transaction(async (tx) => {
       await this._creditsService.decrementCredits(userId, CREDIT_PRICE_PER_OPTIMIZATION, tx);
 
-      const optimizedCv = await tx.optimizedCv.create({
+      const optimizedCv = await tx.userCv.create({
         data: {
           userId: userId,
           cvAnalysisId: analysisId,
-          optimizedData: aiResult.optimizedData,
-          modifications: aiResult.modifications,
+          cvData: aiResult.optimizedData as any,
+          aiModifications: aiResult.modifications as any,
+          title: analysis.cv.title + ' (Optimized)',
+          originalCvId: analysis.cvId,
+          templateId: templateId || analysis.cv.templateId, // Dùng template do User chọn, hoặc kế thừa từ CV gốc
         },
       });
 
-      return optimizedCv;
+      return { ...optimizedCv, optimizedData: optimizedCv.cvData };
     });
 
     return savedOptimizedCv;
@@ -75,12 +84,12 @@ export class CvOptimizationService {
 
   async exportPdf(userId: string, analysisId: string, html: string): Promise<Uint8Array> {
     // 1. Lưu html vào DB (cột finalHtml)
-    await this._prisma.optimizedCv.update({
+    await this._prisma.userCv.updateMany({
       where: {
         cvAnalysisId: analysisId, // wait, is the id primary key or cvAnalysisId?
       },
       data: {
-        finalHtml: html,
+        renderedHtml: html,
       },
     });
 
@@ -94,7 +103,7 @@ export class CvOptimizationService {
       const page = await browser.newPage();
 
       // Đặt content và chờ mạng tĩnh để Tailwind CDN render
-      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      await page.setContent(html, { waitUntil: 'networkidle0' as any });
 
       // Xuất PDF
       const pdfBuffer = await page.pdf({
@@ -110,7 +119,7 @@ export class CvOptimizationService {
   }
 
   async getOptimizedCv(userId: string, analysisId: string) {
-    const optimizedCv = await this._prisma.optimizedCv.findUnique({
+    const optimizedCv = await this._prisma.userCv.findFirst({
       where: {
         cvAnalysisId: analysisId,
       },
@@ -120,7 +129,7 @@ export class CvOptimizationService {
       throw new NotFoundException('Không tìm thấy dữ liệu CV đã tối ưu');
     }
 
-    return optimizedCv;
+    return { ...optimizedCv, optimizedData: optimizedCv.cvData };
   }
 }
 

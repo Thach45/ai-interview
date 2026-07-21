@@ -16,6 +16,7 @@ import {
   CV_OPTIMIZATION_RESPONSE_SCHEMA,
   getCVOptimizationUserPrompt,
 } from '../../prompts/cv-optimization.prompt';
+import { EXTRACT_CV_SYSTEM_PROMPT } from '../../prompts/cv-extraction.prompt';
 import {
   CREATE_QUESTIONS_SYSTEM_PROMPT,
   getCreateQuestionsUserPrompt,
@@ -76,24 +77,76 @@ export class AiService {
     }
   }
 
+  /**
+   * Bước 0: Trích xuất Text PDF -> Cấu trúc JSON chuẩn CvDataStructure
+   * @param rawText Text được bóc tách từ PDF
+   */
+  async extractCvData(rawText: string): Promise<any> {
+    try {
+      console.log('AI Service: Starting CV Extraction...');
+
+      // Sử dụng model xử lý text để extract JSON
+      const response = await generateDeepSeekContent(
+        EXTRACT_CV_SYSTEM_PROMPT,
+        `Đây là nội dung CV thô:\n\n${rawText}`,
+        true, // Bật chế độ JSON response
+      );
+
+      let content = response.trim();
+      // Loại bỏ markdown block nếu có
+      if (content.startsWith('```json')) {
+        content = content
+          .replace(/^```json/, '')
+          .replace(/```$/, '')
+          .trim();
+      }
+
+      console.log('AI Service: Finished CV Extraction');
+      return JSON.parse(content);
+    } catch (error) {
+      console.error('Lỗi khi trích xuất thông tin CV (extractCvData):', error);
+      throw error;
+    }
+  }
+
   async analysisCV(cvContent: string, jobDescription: string) {
     try {
       const userPrompt = getCVAnalysisUserPrompt(cvContent, jobDescription);
+      let responseText = '';
 
-      const response = await ai.models.generateContent({
-        model: AI_MODEL_CONFIG.model,
-        contents: userPrompt,
-        config: {
-          ...AI_MODEL_CONFIG.config,
-          systemInstruction: CV_ANALYSIS_SYSTEM_PROMPT,
-          responseSchema: CV_ANALYSIS_RESPONSE_SCHEMA,
-        },
-      });
+      try {
+        responseText = await generateDeepSeekContent(
+          CV_ANALYSIS_SYSTEM_PROMPT,
+          userPrompt,
+          CV_ANALYSIS_RESPONSE_SCHEMA,
+        );
 
-      if (!response.text) {
-        throw new Error('AI không trả về nội dung phân tích.');
+        if (!responseText) {
+          throw new Error('DeepSeek không phản hồi.');
+        }
+      } catch (deepSeekError: any) {
+        console.warn(
+          'DeepSeek failed in analysisCV, falling back to Gemini:',
+          deepSeekError.message,
+        );
+
+        const response = await ai.models.generateContent({
+          model: AI_MODEL_CONFIG.model,
+          contents: userPrompt,
+          config: {
+            ...AI_MODEL_CONFIG.config,
+            systemInstruction: CV_ANALYSIS_SYSTEM_PROMPT,
+            responseSchema: CV_ANALYSIS_RESPONSE_SCHEMA,
+          },
+        });
+
+        if (!response.text) {
+          throw new Error('Gemini fallback cũng không phản hồi dữ liệu phân tích CV.');
+        }
+        responseText = response.text;
       }
-      return JSON.parse(response.text);
+
+      return JSON.parse(responseText);
     } catch (error: any) {
       console.error('AI Service Error:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI.', { cause: error });
@@ -107,21 +160,41 @@ export class AiService {
         missingKeywords,
         improvementSuggestions,
       );
+      let responseText = '';
 
-      const response = await ai.models.generateContent({
-        model: AI_MODEL_CONFIG.model,
-        contents: userPrompt,
-        config: {
-          ...AI_MODEL_CONFIG.config,
-          systemInstruction: CV_OPTIMIZATION_SYSTEM_PROMPT,
-          responseSchema: CV_OPTIMIZATION_RESPONSE_SCHEMA,
-        },
-      });
+      try {
+        responseText = await generateDeepSeekContent(
+          CV_OPTIMIZATION_SYSTEM_PROMPT,
+          userPrompt,
+          CV_OPTIMIZATION_RESPONSE_SCHEMA,
+        );
 
-      if (!response.text) {
-        throw new Error('AI không trả về nội dung tối ưu.');
+        if (!responseText) {
+          throw new Error('DeepSeek không phản hồi.');
+        }
+      } catch (deepSeekError: any) {
+        console.warn(
+          'DeepSeek failed in optimizeCV, falling back to Gemini:',
+          deepSeekError.message,
+        );
+
+        const response = await ai.models.generateContent({
+          model: AI_MODEL_CONFIG.model,
+          contents: userPrompt,
+          config: {
+            ...AI_MODEL_CONFIG.config,
+            systemInstruction: CV_OPTIMIZATION_SYSTEM_PROMPT,
+            responseSchema: CV_OPTIMIZATION_RESPONSE_SCHEMA,
+          },
+        });
+
+        if (!response.text) {
+          throw new Error('Gemini fallback cũng không phản hồi dữ liệu tối ưu CV.');
+        }
+        responseText = response.text;
       }
-      return JSON.parse(response.text);
+
+      return JSON.parse(responseText);
     } catch (error: any) {
       console.error('AI Service Error:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI (optimizeCV).', { cause: error });

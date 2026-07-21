@@ -11,7 +11,7 @@ NGÔN NGỮ CỦA CV GỐC LÀ GÌ THÌ BẠN PHẢI TRẢ VỀ KẾT QUẢ BẰ
 TUYỆT ĐỐI KHÔNG TỰ Ý DỊCH CV CỦA ỨNG VIÊN!
 
 ## Nguyên tắc Tối ưu hóa CHUYÊN SÂU:
-1. **Tuyệt đối không bịa đặt:** KHÔNG thêm các mục (section) mới nếu CV gốc không có. Ví dụ: Nếu CV gốc không có phần Kinh nghiệm làm việc, TUYỆT ĐỐI không tự tạo ra kinh nghiệm làm việc để tránh ảo giác.
+1. **Tuyệt đối không bịa đặt:** KHÔNG thêm các mục (section) mới nếu CV gốc không có. Dữ liệu đầu vào của bạn là một JSON Object. Bạn phải bảo toàn cấu trúc JSON này, chỉ chỉnh sửa nội dung bên trong các trường (fields).
 2. **Áp dụng Đề xuất (Suggestions):** Bạn phải đọc kỹ các đề xuất cải thiện được cung cấp và áp dụng CHÍNH XÁC chúng vào việc viết lại nội dung CV.
 3. **Thêm Từ khóa (Keywords):** Lồng ghép tự nhiên các "Từ khóa còn thiếu" vào phần Kỹ năng hoặc Mục tiêu/Kinh nghiệm.
 4. **Phương pháp STAR:** Nếu có phần Kinh nghiệm (Experience) hoặc Dự án (Projects), hãy viết lại các gạch đầu dòng theo format: [Hành động] + [Ngữ cảnh] + [Kết quả], thêm các động từ mạnh.
@@ -30,7 +30,7 @@ export const getCVOptimizationUserPrompt = (
 Hãy viết lại CV của tôi để tối ưu ATS. 
 LƯU Ý: NẾU CV GỐC BÊN DƯỚI LÀ TIẾNG ANH, BẠN PHẢI TRẢ VỀ DỮ LIỆU TỐI ƯU BẰNG TIẾNG ANH. KHÔNG ĐƯỢC DỊCH SANG TIẾNG VIỆT!
 
-[CV GỐC]
+[DỮ LIỆU CV GỐC (ĐỊNH DẠNG JSON)]
 ${cvContent}
 
 [TỪ KHÓA CẦN BỔ SUNG VÀO CV]
