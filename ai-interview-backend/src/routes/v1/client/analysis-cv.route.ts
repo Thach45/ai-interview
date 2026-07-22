@@ -16,7 +16,12 @@ import { analysisCVRateLimiter } from '../../../middlewares/rate-limit.middlewar
 const router = express.Router();
 
 router.get('/result', auth, validate(getAnalysisCvSchema), analysisCVController.getAnalysisCV);
-router.get('/history', auth, validate(getHistoryAnalysisCvSchema), analysisCVController.getHistoryAnalysisCvResult);
+router.get(
+  '/history',
+  auth,
+  validate(getHistoryAnalysisCvSchema),
+  analysisCVController.getHistoryAnalysisCvResult,
+);
 router.get('/:id', auth, validate(getAnalysisCvByIdSchema), analysisCVController.getAnalysisCvById);
 router.post(
   '/analyze/template',

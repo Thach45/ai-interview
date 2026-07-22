@@ -21,13 +21,9 @@ export class AnalysisCVService {
    * 3. Lưu kết quả chi tiết vào database
    */
   async analysisCVByJobTemplateId(userId: string, cvId: string, jobTemplateId: string) {
-    // Xóa bản phân tích cũ nếu có để phân tích lại từ đầu
+    // Tìm bản phân tích cũ nếu có
     const cachedAnalysis = await this.getAnalysisCV(userId, cvId, jobTemplateId);
-    if (cachedAnalysis) {
-      await this._prisma.cvAnalysis.delete({
-        where: { id: cachedAnalysis.id },
-      });
-    }
+    
     await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_ANALYSIS);
     // 1. Lấy nội dung CV của người dùng
     const userCv = await this._prisma.userCv.findFirstOrThrow({
@@ -56,6 +52,7 @@ export class AnalysisCVService {
       null,
       JSON.stringify(userCv.cvData || {}),
       jobTemplate.aiExtractedContext,
+      cachedAnalysis?.id,
     );
     return analysisResult;
   }
@@ -73,6 +70,15 @@ export class AnalysisCVService {
       throw new Error('Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.');
     }
 
+    // Tìm bản phân tích cũ nếu có
+    const cachedAnalysis = await this._prisma.cvAnalysis.findFirst({
+      where: {
+        userId,
+        cvId,
+        externalJobDescription,
+      },
+    });
+
     // 3. Gọi AI phân tích (Sử dụng các trường content đã trích xuất)
     const analysisResult = await this.analysisCV(
       userId,
@@ -81,6 +87,7 @@ export class AnalysisCVService {
       externalJobDescription, // externalJobDescription
       JSON.stringify(userCv.cvData || {}),
       externalJobDescription,
+      cachedAnalysis?.id,
     );
     return analysisResult;
   }
@@ -91,6 +98,7 @@ export class AnalysisCVService {
     externalJobDescription: string | null,
     contentExtracted: string,
     aiExtractedContext: string,
+    existingAnalysisId?: string,
   ) {
     const analysisResult = await this._aiService.analysisCV(contentExtracted, aiExtractedContext);
 
@@ -99,26 +107,37 @@ export class AnalysisCVService {
       // 4.1 Trừ tiền user
       await this._creditsService.decrementCredits(userId, CREDIT_PRICE_PER_ANALYSIS, tx);
 
-      // 4.2 Lưu kết quả
-      const created = await tx.cvAnalysis.create({
-        data: {
-          userId,
-          cvId,
-          jobTemplateId: jobTemplateId,
-          externalJobDescription: externalJobDescription,
-          matchScore: analysisResult.matchScore,
-          summary: analysisResult.summary,
-          scoringDetails: analysisResult.scoringDetails,
-          strengths: analysisResult.strengths,
-          weaknesses: analysisResult.weaknesses,
-          skillsAnalysis: analysisResult.skillsAnalysis,
-          foundKeywords: analysisResult.foundKeywords,
-          missingKeywords: analysisResult.missingKeywords,
-          improvementSuggestions: analysisResult.improvementSuggestions,
-        },
-      });
+      // 4.2 Lưu kết quả hoặc Cập nhật
+      const dataToSave = {
+        userId,
+        cvId,
+        jobTemplateId: jobTemplateId,
+        externalJobDescription: externalJobDescription,
+        matchScore: analysisResult.matchScore,
+        summary: analysisResult.summary,
+        scoringDetails: analysisResult.scoringDetails,
+        strengths: analysisResult.strengths,
+        weaknesses: analysisResult.weaknesses,
+        skillsAnalysis: analysisResult.skillsAnalysis,
+        foundKeywords: analysisResult.foundKeywords,
+        missingKeywords: analysisResult.missingKeywords,
+        improvementSuggestions: analysisResult.improvementSuggestions,
+      };
 
-      return created;
+      if (existingAnalysisId) {
+        // PA3: Cập nhật đè bản cũ, giữ nguyên ID để không vỡ liên kết khóa ngoại
+        const updated = await tx.cvAnalysis.update({
+          where: { id: existingAnalysisId },
+          data: dataToSave,
+        });
+        return updated;
+      } else {
+        // Tạo mới
+        const created = await tx.cvAnalysis.create({
+          data: dataToSave,
+        });
+        return created;
+      }
     });
 
     return savedAnalysis;

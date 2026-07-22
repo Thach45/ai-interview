@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit } from 'lucide-react';
 import { MainLayout } from '../../layouts/MainLayout';
 import UploadCvModal from '../../features/cvs/components/my-cv/UploadCvModal';
+import { CvHtmlPreview } from '../../features/cvs/components/my-cv/CvHtmlPreview';
 import { useCvs } from '../../features/cvs/hooks/useCvs';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -18,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 
 const MyCvs: React.FC = () => {
   const navigate = useNavigate();
-  const { cvs, isLoading, refetch } = useCvs();
+  const { cvs, isLoading, refetch, deleteCv, isDeleting } = useCvs();
   const { data: historyResponse, isLoading: isLoadingHistory } = useCvAnalysisHistory();
   const historyData = historyResponse?.data || [];
   
@@ -129,9 +130,15 @@ const MyCvs: React.FC = () => {
                         <button 
                           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                           title="Xóa CV"
+                          disabled={isDeleting}
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Add delete logic here
+                            if (window.confirm("Bạn có chắc chắn muốn xoá CV này không? Hành động này không thể hoàn tác.")) {
+                              deleteCv(cv.id);
+                              if (selectedCvId === cv.id) {
+                                setSelectedCvId(null);
+                              }
+                            }
                           }}
                         >
                           <Trash2 size={16} />
@@ -144,6 +151,16 @@ const MyCvs: React.FC = () => {
                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Đã trích xuất</span>
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/cv-analysis?cvId=${cv.id}`);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition-colors text-[11px] font-bold"
+                      >
+                        <BrainCircuit size={12} />
+                        Phân tích
+                      </button>
                     </div>
                   </div>
                 ))
@@ -237,13 +254,8 @@ const MyCvs: React.FC = () => {
                   </Worker>
                 </div>
               ) : selectedCv?.renderedHtml ? (
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <iframe
-                    title="CV Preview"
-                    srcDoc={selectedCv.renderedHtml}
-                    className="flex-1 w-full border-none"
-                    sandbox="allow-same-origin allow-scripts"
-                  />
+                <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#f3f4f6] p-4 flex justify-center items-start custom-scrollbar">
+                  <CvHtmlPreview html={selectedCv.renderedHtml} />
                 </div>
               ) : selectedCv?.templateId ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-gray-50/50">

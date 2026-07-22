@@ -115,9 +115,48 @@ export const useOptimizeCv = () => {
       toast.error(err.message);
     },
   });
-
   return {
     optimizeCv: optimizeMutation.mutate,
     isOptimizing: optimizeMutation.isPending,
+  };
+};
+
+export const useAnalyzeCvExternal = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const analyzeExternalMutation = useMutation({
+    mutationFn: (payload: { cvId: string; jobDescription: string }) =>
+      cvApi.analyzeCvExternal(payload.cvId, payload.jobDescription),
+    onSuccess: (response) => {
+      const analysisId =
+        response?.data?.id || response?.id || `job_${Date.now()}`;
+
+      // Thêm job chạy ngầm
+      const addJob = useBackgroundJobStore.getState().addJob;
+      addJob({
+        id: analysisId,
+        title: "Đánh giá mức độ phù hợp của CV",
+        status: "processing",
+      });
+
+      toast.info("Đã đưa yêu cầu phân tích đến hệ thống!");
+
+      // Invalidate cache
+      queryClient.invalidateQueries({ queryKey: ["cv-analysis-history"] });
+    },
+    onError: (err: any) => {
+      console.error(err);
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Có lỗi xảy ra, vui lòng thử lại.";
+      toast.error(message);
+    },
+  });
+
+  return {
+    analyzeCvExternal: analyzeExternalMutation.mutateAsync,
+    isSubmitting: analyzeExternalMutation.isPending,
   };
 };

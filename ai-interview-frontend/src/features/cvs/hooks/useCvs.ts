@@ -32,11 +32,39 @@ export const useCvs = (options: { enabled?: boolean } = {}) => {
     },
   });
 
+  /**
+   * Xoá CV
+   */
+  const deleteMutation = useMutation({
+    mutationFn: (cvId: string) => cvApi.deleteCv(cvId),
+    onSuccess: () => {
+      toast.success("Xoá CV thành công! 🗑️");
+      queryClient.invalidateQueries({ queryKey: ["my-cvs"] });
+    },
+    onError: (error: any) => {
+      const message = error.message || "Xoá thất bại";
+      toast.error(message);
+    },
+  });
+
   return {
     cvs: cvsResponse || [],
     isLoading,
     refetch,
     uploadCv: uploadMutation.mutateAsync,
     isUploading: uploadMutation.isPending,
+    deleteCv: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
   };
+};
+
+/**
+ * Hook lấy thông tin một CV theo ID
+ */
+export const useCv = (cvId: string | null | undefined) => {
+  return useQuery({
+    queryKey: ["cv", cvId],
+    queryFn: () => cvApi.getCvById(cvId!),
+    enabled: !!cvId,
+  });
 };

@@ -3,22 +3,38 @@ import { Link, useLocation } from 'react-router-dom';
 import { useProfile } from '../../features/profile/hooks/useProfile';
 import { NotificationDropdown } from '../../features/notifications/components/NotificationDropdown';
 import { useAuthStore } from '../../store/authStore';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   hideSearch?: boolean;
 }
 
-const PUBLIC_NAV_ITEMS = [
+type NavItem = {
+  id: string;
+  label: string;
+  href: string;
+  children?: { id: string; label: string; href: string }[];
+};
+
+const PUBLIC_NAV_ITEMS: NavItem[] = [
   { id: 'features', label: 'Giải pháp', href: '/#features' },
   { id: 'how-it-works', label: 'Luồng hoạt động', href: '/#how-it-works' },
   { id: 'subscription', label: 'Gói dịch vụ', href: '/subscription' },
 ];
 
-const PRIVATE_NAV_ITEMS = [
+const PRIVATE_NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Trang chủ', href: '/dashboard' },
   { id: 'jobs', label: 'Việc làm', href: '/jobs' },
-  { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs' },
+  { 
+    id: 'ai-cv', 
+    label: 'AI CV', 
+    href: '#',
+    children: [
+      { id: 'cvs', label: 'Quản lý CV', href: '/my-cvs' },
+      { id: 'cv-builder', label: 'Tạo CV', href: '/cv-builder/templates' },
+      { id: 'analyze-external', label: 'Phân tích JD', href: '/cv-analysis' },
+    ]
+  },
   { id: 'interview', label: 'Phỏng vấn AI', href: '/interviews/setup' },
   { id: 'subscription', label: 'Gói dịch vụ', href: '/subscription' },
 ];
@@ -47,12 +63,44 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
         
         {/* Navigation Container */}
         <div 
-          className="hidden lg:flex items-center overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
-          style={{ width: isNavCollapsed ? '0px' : '480px', opacity: isNavCollapsed ? 0 : 1 }}
+          className="hidden lg:flex items-center transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
+          style={{ width: isNavCollapsed ? '0px' : '650px', opacity: isNavCollapsed ? 0 : 1, overflow: isNavCollapsed ? 'hidden' : 'visible' }}
         >
-          <nav className="flex items-center gap-6 ml-4 w-[480px]">
+          <nav className="flex items-center gap-6 ml-4 w-[650px]">
             {navItems.map((item) => {
               const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href));
+              
+              if (item.children) {
+                const isChildActive = item.children.some(child => location.pathname === child.href || (child.href !== '/' && location.pathname.startsWith(child.href)));
+                return (
+                  <div key={item.id} className="relative group py-5 z-50">
+                    <button className={`flex items-center gap-1 text-[14px] font-medium transition-colors whitespace-nowrap outline-none ${isChildActive ? 'text-gray-900' : 'text-gray-500 group-hover:text-gray-900'}`}>
+                      {item.label}
+                      <ChevronDown size={14} className={`transition-transform duration-200 group-hover:-rotate-180 ${isChildActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-900'}`} />
+                    </button>
+                    {isChildActive && (
+                      <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-900 rounded-t-full" />
+                    )}
+                    <div className="absolute top-[90%] left-0 mt-0 w-48 bg-white border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden translate-y-2 group-hover:translate-y-0">
+                      <div className="py-2">
+                        {item.children.map(child => {
+                          const childActive = location.pathname === child.href || (child.href !== '/' && location.pathname.startsWith(child.href));
+                          return (
+                            <Link
+                              key={child.id}
+                              to={child.href}
+                              className={`block px-4 py-2.5 text-[13px] font-medium transition-colors ${childActive ? 'text-primary bg-primary/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}
+                            >
+                              {child.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
               return item.href.startsWith('/#') ? (
                 <a
                   key={item.id}

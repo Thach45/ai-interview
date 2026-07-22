@@ -77,7 +77,13 @@ export class UserService {
       where: { userId },
       include: {
         template: {
-          select: { id: true, name: true, htmlStructure: true, cssStyles: true, thumbnailUrl: true },
+          select: {
+            id: true,
+            name: true,
+            htmlStructure: true,
+            cssStyles: true,
+            thumbnailUrl: true,
+          },
         },
       },
       orderBy: { createdAt: 'desc' },

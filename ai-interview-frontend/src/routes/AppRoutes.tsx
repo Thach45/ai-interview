@@ -34,7 +34,7 @@ import MyCvsPage from '../pages/client/MyCvs.tsx';
 import SubscriptionPage from '../pages/client/SubscriptionPage';
 import { LoadingTestPage } from '../pages/client/LoadingTestPage';
 import CvBuilderPage from '../pages/client/CvBuilderPage.tsx';
-
+import AnalyzeExternalCvPage from '../pages/client/AnalyzeExternalCvPage.tsx';
 
 import LandingPage from '../pages/client/LandingPage';
 import { CvTemplatesPage } from '../pages/client/CvTemplatesPage.tsx';
@@ -71,9 +71,9 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         } />
         <Route path="/subscription" element={
-          <ProtectedRoute>
+          
             <SubscriptionPage />
-          </ProtectedRoute>
+          
         } />
         <Route path="/cv-builder/templates" element={
           <ProtectedRoute>
@@ -83,6 +83,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/cv-builder/:templateId" element={
           <ProtectedRoute>
             <CvBuilderPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/cv-analysis" element={
+          <ProtectedRoute>
+            <AnalyzeExternalCvPage />
           </ProtectedRoute>
         } />
         <Route path="/interviews/setup" element={

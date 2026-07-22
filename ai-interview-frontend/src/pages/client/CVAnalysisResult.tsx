@@ -4,11 +4,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCvs } from '../../features/cvs/hooks/useCvs';
 import { useCvAnalysisById, useOptimizeCv } from '../../features/cvs/hooks/useCvAnalysis';
 import { useCvTemplatesClient } from '../../features/cvs/hooks/useCvTemplatesClient';
-import { XCircle, AlertTriangle, Target, BrainCircuit, Lightbulb, Sparkles, ChevronDown } from 'lucide-react';
+import { XCircle, AlertTriangle, Target, BrainCircuit, Lightbulb, Sparkles, ChevronDown, Loader2, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingIndicator } from '../../shared/components/LoadingIndicator';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { CvHtmlPreview } from '../../features/cvs/components/my-cv/CvHtmlPreview';
 
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
@@ -114,13 +115,47 @@ export default function CVAnalysisResultPage() {
       <div className="flex gap-6 h-[calc(100vh-140px)] p-3">
         {/* LEFT COLUMN: PDF / CV Viewer */}
         <div className="w-[45%] flex flex-col bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden relative">
-          <div className="flex-1 overflow-hidden relative">
-            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-              <Viewer
-                fileUrl={selectedCv?.fileUrl || ''}
-                plugins={[defaultLayoutPluginInstance]}
-              />
-            </Worker>
+          <div className="flex-1 min-h-0 relative">
+            {!selectedCv ? (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-50/50">
+                <Loader2 className="animate-spin text-primary" size={28} />
+              </div>
+            ) : selectedCv.fileUrl ? (
+              <div className="absolute inset-0 overflow-hidden">
+                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                  <Viewer
+                    fileUrl={selectedCv.fileUrl}
+                    plugins={[defaultLayoutPluginInstance]}
+                  />
+                </Worker>
+              </div>
+            ) : selectedCv.renderedHtml ? (
+              <div className="absolute inset-0 overflow-y-auto overflow-x-hidden bg-[#f3f4f6] p-4 flex justify-center items-start custom-scrollbar">
+                <CvHtmlPreview html={selectedCv.renderedHtml} />
+              </div>
+            ) : selectedCv.templateId ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-gray-50/50 overflow-y-auto">
+                <BrainCircuit className="text-indigo-500 mb-4" size={40} />
+                <h3 className="text-base font-bold text-gray-800 mb-1">CV từ Builder</h3>
+                <p className="text-[13px] text-gray-400 max-w-xs mx-auto mb-4">
+                  Mở trong CV Builder để xem và chỉnh sửa.
+                </p>
+                <button
+                  onClick={() => navigate(`/cv-builder/${selectedCv.templateId}?id=${selectedCv.id}`)}
+                  className="px-5 py-2.5 bg-primary text-white rounded-xl text-[13px] font-bold shadow-lg shadow-primary/20 hover:bg-primary-pressed transition-all"
+                >
+                  Mở trong CV Builder
+                </button>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-gray-50/50 overflow-y-auto">
+                <ExternalLink className="text-gray-300 mb-4" size={40} />
+                <h3 className="text-base font-bold text-gray-800 mb-1">Xem trước CV</h3>
+                <p className="text-[13px] text-gray-400 max-w-xs mx-auto">
+                  CV này chưa có dữ liệu xem trước.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

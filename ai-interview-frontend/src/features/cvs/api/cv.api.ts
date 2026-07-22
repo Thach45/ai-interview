@@ -13,6 +13,14 @@ export const cvApi = {
   },
 
   /**
+   * Lấy thông tin chi tiết một CV theo ID
+   */
+  getCvById: async (cvId: string): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>(`/cv-builder/${cvId}`);
+    return response.data;
+  },
+
+  /**
    * Upload CV mới
    */
   uploadCv: async (file: File, title: string): Promise<UserCv> => {
@@ -25,6 +33,14 @@ export const cvApi = {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return response.data;
+  },
+
+  /**
+   * Xoá CV
+   */
+  deleteCv: async (cvId: string): Promise<any> => {
+    const response = await apiClient.delete<any, { success: boolean; data: any }>(`/cvs/${cvId}`);
     return response.data;
   },
 

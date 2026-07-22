@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import prisma from '../../config/prisma';
 import puppeteer from 'puppeteer';
+import Handlebars from 'handlebars';
 import { AiService, aiService } from '../core/ai.service';
 import { NotFoundException, BadRequestException } from '../../exceptions';
 import { CreditsService, creditsService } from '../../shared/services/credits.service';
@@ -64,6 +65,48 @@ export class CvOptimizationService {
     const savedOptimizedCv = await this._prisma.$transaction(async (tx) => {
       await this._creditsService.decrementCredits(userId, CREDIT_PRICE_PER_OPTIMIZATION, tx);
 
+      const targetTemplateId = templateId || analysis.cv.templateId;
+      let renderedHtml: string | null = null;
+
+      if (targetTemplateId) {
+        const template = await tx.cvTemplate.findUnique({
+          where: { id: targetTemplateId },
+        });
+
+        if (template) {
+          try {
+            const compiled = Handlebars.compile(template.htmlStructure);
+            const rawData = aiResult.optimizedData as any;
+
+            const templateData = {
+              fullName: rawData.fullName || 'Họ và tên',
+              jobTitle: rawData.jobTitle || 'Vị trí ứng tuyển',
+              objective: rawData.objective || '',
+              cssStyles: '',
+              contact: {
+                address: rawData.contact?.address || '',
+                phone: rawData.contact?.phone || '',
+                email: rawData.contact?.email || '',
+                birthday: rawData.contact?.birthday || '',
+              },
+              experiences: (rawData.experiences || []).filter((e: any) => e.company || e.role),
+              education: (rawData.education || []).filter((e: any) => e.school),
+              projects: (rawData.projects || []).filter((p: any) => p.name),
+              hardSkills: (rawData.hardSkills || []).filter((s: any) => s && s.trim()),
+              computerSkills: (rawData.computerSkills || []).filter((c: any) => c.name),
+              languages: (rawData.languages || []).filter((l: any) => l.name),
+              certifications: (rawData.certifications || []).filter((c: any) => c.name),
+              activities: (rawData.activities || []).filter((a: any) => a.name),
+              references: (rawData.references || []).filter((r: any) => r.name),
+            };
+
+            renderedHtml = compiled(templateData);
+          } catch (err) {
+            console.error('Lỗi compile HTML ở backend khi optimize CV:', err);
+          }
+        }
+      }
+
       const optimizedCv = await tx.userCv.create({
         data: {
           userId: userId,
@@ -72,7 +115,8 @@ export class CvOptimizationService {
           aiModifications: aiResult.modifications as any,
           title: analysis.cv.title + ' (Optimized)',
           originalCvId: analysis.cvId,
-          templateId: templateId || analysis.cv.templateId, // Dùng template do User chọn, hoặc kế thừa từ CV gốc
+          templateId: targetTemplateId,
+          renderedHtml: renderedHtml,
         },
       });
 

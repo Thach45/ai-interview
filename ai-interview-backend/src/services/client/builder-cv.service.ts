@@ -173,6 +173,12 @@ export class BuilderCvService {
       throw new NotFoundException('Không tìm thấy CV Builder hoặc bạn không có quyền xoá');
     }
 
+    // Ngắt liên kết các CV tối ưu được sinh ra từ CV này (để tránh lỗi khóa ngoại)
+    await this._prisma.userCv.updateMany({
+      where: { originalCvId: id },
+      data: { originalCvId: null },
+    });
+
     await this._prisma.userCv.delete({ where: { id } });
     return { message: 'Xoá CV Builder thành công' };
   }

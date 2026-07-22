@@ -44,7 +44,8 @@ optimizeCvWorker.on('failed', async (job, err) => {
         job.data.userId,
         NotificationType.AI_PROCESS,
         'Tối ưu CV thất bại ❌',
-        'Hệ thống AI đang quá tải hoặc gặp sự cố. Bạn yên tâm, chúng tôi CHƯA trừ Credit của bạn. Vui lòng thử lại sau ít phút nhé!',
+        'Hệ thống AI đang quá tải hoặc gặp sự cố. Bạn yên tâm, chúng tôi CHƯA trừ Credit của bạn. Vui lòng thử lại sau ít phút nhé! Chi tiết lỗi: ' +
+          (err?.message || String(err)),
       );
     } catch (notifError) {
       console.error(`[Optimize CV Worker] Lỗi khi gửi thông báo thất bại:`, notifError);

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../../../utils/asyncHandler';
 import { sendResponse } from '../../../utils/apiResponse';
 import { builderCvService, BuilderCvService } from '../../../services/client/builder-cv.service';
-import { AppException } from '../../../exceptions';
+import { AppException, UnauthorizedException } from '../../../exceptions';
 
 export class BuilderCvController {
   constructor(private readonly _builderCvService: BuilderCvService) {}
@@ -29,6 +29,26 @@ export class BuilderCvController {
   // ===================== BUILDER CV =====================
 
   /**
+   * Tải CV lên hệ thống (từ file)
+   */
+  uploadCv = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException('Vui lòng đăng nhập');
+    }
+
+    const file = req.file;
+    if (!file) {
+      throw new AppException('Vui lòng chọn file CV (PDF/DOCX)', 400);
+    }
+
+    const { title } = req.body;
+    const result = await this._builderCvService.uploadCv(userId, file, title);
+
+    return sendResponse(res, 201, 'Tải CV lên thành công', result);
+  });
+
+  /**
    * Lưu / Cập nhật CV Builder
    * Body: { id?: string, templateId: string, title: string, cvData: string, renderedHtml: string }
    */
@@ -36,7 +56,10 @@ export class BuilderCvController {
     const { id, templateId, title, cvData, renderedHtml } = req.body;
 
     if (!templateId || !title || !cvData || !renderedHtml) {
-      throw new AppException('Thiếu thông tin bắt buộc (templateId, title, cvData, renderedHtml)', 400);
+      throw new AppException(
+        'Thiếu thông tin bắt buộc (templateId, title, cvData, renderedHtml)',
+        400,
+      );
     }
 
     const result = await this._builderCvService.saveCv(req.user!.id, {
@@ -47,7 +70,12 @@ export class BuilderCvController {
       renderedHtml,
     });
 
-    return sendResponse(res, id ? 200 : 201, id ? 'Cập nhật CV thành công' : 'Lưu CV thành công', result);
+    return sendResponse(
+      res,
+      id ? 200 : 201,
+      id ? 'Cập nhật CV thành công' : 'Lưu CV thành công',
+      result,
+    );
   });
 
   /**
@@ -84,7 +112,11 @@ export class BuilderCvController {
     const { id } = req.params;
     const { html } = req.body;
 
-    const pdfBuffer = await this._builderCvService.exportPdf(req.user!.id, id as string, html || undefined);
+    const pdfBuffer = await this._builderCvService.exportPdf(
+      req.user!.id,
+      id as string,
+      html || undefined,
+    );
 
     // Set headers cho file PDF
     res.setHeader('Content-Type', 'application/pdf');
