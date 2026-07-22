@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from "../../store/authStore";
 import { Briefcase, Target, Zap, BrainCircuit, CheckCircle2, Sparkles, ArrowUpRight } from "lucide-react";
+import { Helmet } from 'react-helmet-async';
 import { Header } from '../../components/layout/Header';
 import { Footer } from '../../components/layout/Footer';
 import { CTASection } from '../../features/landing-page/components/CTASection';
@@ -39,6 +40,15 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#fafafa] font-sans selection:bg-primary/20 selection:text-primary relative cursor-none overflow-x-hidden">
+      <Helmet>
+        <title>AI Interview - Tối ưu CV & Phỏng vấn với AI</title>
+        <meta name="description" content="AI Interview giúp bạn tối ưu hóa CV vượt qua bộ lọc ATS và cung cấp tính năng phỏng vấn thử nghiệm bằng AI, giúp bạn tự tin ứng tuyển mọi vị trí." />
+        <meta name="keywords" content="AI CV Builder, tạo CV bằng AI, phỏng vấn AI, interview prep, tối ưu CV, ATS friendly CV" />
+        <meta property="og:title" content="AI Interview - Nâng tầm sự nghiệp của bạn" />
+        <meta property="og:description" content="Tối ưu CV và luyện phỏng vấn với công nghệ AI tiên tiến nhất." />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
       <CustomCursor />
       
       {/* GLOBAL NOISE TEXTURE (Soft Structuralism) */}

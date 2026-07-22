@@ -114,7 +114,6 @@ export class CvOptimizationService {
           cvData: aiResult.optimizedData as any,
           aiModifications: aiResult.modifications as any,
           title: analysis.cv.title + ' (Optimized)',
-          originalCvId: analysis.cvId,
           templateId: targetTemplateId,
           renderedHtml: renderedHtml,
         },

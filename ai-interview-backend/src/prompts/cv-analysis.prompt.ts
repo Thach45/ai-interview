@@ -45,7 +45,7 @@ ${cvContent}
 Instructions:
 1. Identify 5-7 key skills from the JD for 'skillsAnalysis'.
 2. Provide specific 'solution' for each improvement suggestion.
-3. Ensure all numbers are 0-100.
+3. Ensure ALL numerical scores (matchScore, score, user, required) are STRICTLY on a 0-100 percentage scale. DO NOT use 1-5 or 1-10 scales.
 4. Output must be in Vietnamese for 'summary', 'reason', 'strengths', 'weaknesses', 'title', 'desc', and 'solution'.
 `;
 
@@ -82,9 +82,15 @@ export const CV_ANALYSIS_RESPONSE_SCHEMA = {
       items: {
         type: 'object',
         properties: {
-          skill: { type: 'string' },
-          user: { type: 'number' },
-          required: { type: 'number' },
+          skill: { type: 'string', description: 'Tên kỹ năng' },
+          user: {
+            type: 'number',
+            description: 'Điểm kỹ năng của ứng viên (Thang điểm TỪ 0 ĐẾN 100)',
+          },
+          required: {
+            type: 'number',
+            description: 'Điểm kỹ năng yêu cầu của Job (Thang điểm TỪ 0 ĐẾN 100)',
+          },
         },
         required: ['skill', 'user', 'required'],
       },

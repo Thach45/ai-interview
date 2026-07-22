@@ -23,7 +23,7 @@ export class AnalysisCVService {
   async analysisCVByJobTemplateId(userId: string, cvId: string, jobTemplateId: string) {
     // Tìm bản phân tích cũ nếu có
     const cachedAnalysis = await this.getAnalysisCV(userId, cvId, jobTemplateId);
-    
+
     await this._creditsService.checkCredits(userId, CREDIT_PRICE_PER_ANALYSIS);
     // 1. Lấy nội dung CV của người dùng
     const userCv = await this._prisma.userCv.findFirstOrThrow({
@@ -41,7 +41,9 @@ export class AnalysisCVService {
     });
 
     if (!userCv.cvData || Object.keys(userCv.cvData).length === 0) {
-      throw new Error('Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.');
+      throw new Error(
+        'Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.',
+      );
     }
 
     // 3. Gọi AI phân tích (Sử dụng các trường content đã trích xuất)
@@ -67,7 +69,9 @@ export class AnalysisCVService {
     });
 
     if (!userCv.cvData || Object.keys(userCv.cvData).length === 0) {
-      throw new Error('Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.');
+      throw new Error(
+        'Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.',
+      );
     }
 
     // Tìm bản phân tích cũ nếu có
@@ -78,7 +82,7 @@ export class AnalysisCVService {
         externalJobDescription,
       },
     });
-
+    console.log(userCv.cvData);
     // 3. Gọi AI phân tích (Sử dụng các trường content đã trích xuất)
     const analysisResult = await this.analysisCV(
       userId,
@@ -89,6 +93,7 @@ export class AnalysisCVService {
       externalJobDescription,
       cachedAnalysis?.id,
     );
+    console.log(analysisResult);
     return analysisResult;
   }
   async analysisCV(

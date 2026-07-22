@@ -73,7 +73,12 @@ export class BuilderCvService {
 
       return this._prisma.userCv.update({
         where: { id },
-        data: { title, cvData: typeof cvData === 'string' ? JSON.parse(cvData) : cvData, renderedHtml, templateId },
+        data: {
+          title,
+          cvData: typeof cvData === 'string' ? JSON.parse(cvData) : cvData,
+          renderedHtml,
+          templateId,
+        },
       });
     }
 
@@ -104,6 +109,7 @@ export class BuilderCvService {
       if (contentExtracted.trim().length > 0) {
         cvData = await this._aiService.extractCvData(contentExtracted);
       }
+      console.log(cvData);
     }
 
     // 2. Upload file lên cloud thông qua Shared Service
@@ -173,11 +179,20 @@ export class BuilderCvService {
       throw new NotFoundException('Không tìm thấy CV Builder hoặc bạn không có quyền xoá');
     }
 
-    // Ngắt liên kết các CV tối ưu được sinh ra từ CV này (để tránh lỗi khóa ngoại)
-    await this._prisma.userCv.updateMany({
-      where: { originalCvId: id },
-      data: { originalCvId: null },
+    // Tìm tất cả các bài phân tích (CvAnalysis) của CV này
+    const analyses = await this._prisma.cvAnalysis.findMany({
+      where: { cvId: id },
+      select: { id: true },
     });
+    const analysisIds = analyses.map((a) => a.id);
+
+    // Ngắt liên kết cvAnalysisId của các CV tối ưu trỏ đến các bài phân tích này
+    if (analysisIds.length > 0) {
+      await this._prisma.userCv.updateMany({
+        where: { cvAnalysisId: { in: analysisIds } },
+        data: { cvAnalysisId: null },
+      });
+    }
 
     await this._prisma.userCv.delete({ where: { id } });
     return { message: 'Xoá CV Builder thành công' };

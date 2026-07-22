@@ -284,7 +284,8 @@ const CvBuilderPage = () => {
 
   // ===== MAIN RENDER =====
   return (
-    <MainLayout hideSearch maxWidth="full" className="!p-0 lg:!p-0 bg-[#f4f5f7] flex h-[calc(100vh-64px)] overflow-hidden">
+    <MainLayout hideSearch maxWidth="full" className="px-6 lg:px-10 pt-3 pb-12 bg-[#f4f5f7] flex h-[calc(100vh-64px)] overflow-hidden">
+ 
       <FormPanel
         cvData={cvData}
         activeSection={activeSection}

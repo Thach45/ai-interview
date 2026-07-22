@@ -128,7 +128,6 @@ model UserCv {
   fileUrl          String?   
   
   // AI Optimization
-  originalCvId     String?         @db.ObjectId
   cvAnalysisId     String?         @db.ObjectId
   aiModifications  AiModification[]
   
@@ -137,9 +136,6 @@ model UserCv {
 
   user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   template         CvTemplate?     @relation(fields: [templateId], references: [id])
-  
-  originalCv       UserCv?         @relation("OptimizedVersions", fields: [originalCvId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  optimizedCvs     UserCv[]        @relation("OptimizedVersions")
   
   cvAnalysis       CvAnalysis?     @relation("OptimizedCvToCvAnalysis", fields: [cvAnalysisId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   sessions         InterviewSession[]

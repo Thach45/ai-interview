@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MainLayout } from '../../layouts/MainLayout';
+import { PageHeader } from '../../shared/components/PageHeader';
 import { JobSearch } from '../../features/jobs/components/JobSearch';
 import { JobFilters } from '../../features/jobs/components/JobFilters';
 import { JobCard } from '../../features/jobs/components/JobCard';
@@ -62,46 +63,11 @@ const JobsPage: React.FC = () => {
       <div className="flex flex-col h-full pb-14">
         
         {/* Header Section */}
-        <div className="mb-4 space-y-3">
-          <div>
-            <h1 className="text-[28px] font-bold text-text-primary tracking-tight">Việc làm</h1>
-            <p className="text-[14px] text-text-secondary mt-0.5">
-              {isLoading ? 'Đang tìm kiếm...' : `Khám phá ${meta?.total ?? 0} cơ hội việc làm dành cho bạn`}
-            </p>
-          </div>
-
-          <JobSearch onSearch={(val) => setSearch(val)} />
-          
-          <JobFilters 
-            selectedFilters={filters}
-            onFilterChange={handleFilterChange} 
-          />
-
-          {filters.categoryIds.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              {filters.categoryIds.map(id => {
-                const category = flatCategories.find(c => c.id === id);
-                return (
-                  <div key={id} className="px-2.5 py-1 bg-primary/5 text-primary text-[11px] font-semibold rounded-lg flex items-center gap-2 border border-primary/10">
-                    {category?.name || 'Đang tải...'}
-                    <span 
-                      onClick={() => handleClearCategory(id)}
-                      className="material-symbols-outlined text-[16px] cursor-pointer hover:opacity-70"
-                    >
-                      close
-                    </span>
-                  </div>
-                );
-              })}
-              <button 
-                onClick={() => setFilters(prev => ({ ...prev, categoryIds: [] }))}
-                className="text-[11px] text-text-secondary hover:text-primary font-bold ml-2 transition-colors"
-              >
-                Xóa tất cả
-              </button>
-            </div>
-          )}
-        </div>
+       <PageHeader 
+          title="Việc làm"
+          description={isLoading ? 'Đang tìm kiếm...' : `Khám phá ${meta?.total ?? 0} cơ hội việc làm dành cho bạn`}
+          className="!mb-4"
+        />
 
         {/* Content Section: Independent Scroll with Explicit Heights */}
         <div className="flex gap-8 h-[calc(100vh-180px)] mt-0">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit } from 'lucide-react';
+import { Plus, Search, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit, Edit3 } from 'lucide-react';
 import { MainLayout } from '../../layouts/MainLayout';
+import { PageHeader } from '../../shared/components/PageHeader';
 import UploadCvModal from '../../features/cvs/components/my-cv/UploadCvModal';
 import { CvHtmlPreview } from '../../features/cvs/components/my-cv/CvHtmlPreview';
 import { useCvs } from '../../features/cvs/hooks/useCvs';
@@ -48,39 +49,38 @@ const MyCvs: React.FC = () => {
  
 
   return (
-    <MainLayout maxWidth="1600px" className="px-4 lg:px-8 py-6 flex flex-col">
+    <MainLayout maxWidth="1600px" className="px-6 lg:px-10 pt-3 pb-12 flex flex-col">
       <div className="animate-in fade-in duration-500 flex flex-col h-full">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 shrink-0">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">Quản lý CV của tôi</h1>
-            <p className="text-gray-500 font-medium">Lưu trữ và quản lý các bản CV của bạn để phân tích AI nhanh chóng.</p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate('/cv-builder/templates')}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-2xl font-bold shadow-sm hover:border-primary/50 hover:text-primary hover:-translate-y-0.5 transition-all duration-200"
-            >
-              <BrainCircuit size={20} />
-              Tạo CV bằng AI
-            </button>
-            <button 
-              onClick={() => setIsUploadModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/25 hover:bg-primary-pressed hover:-translate-y-0.5 transition-all duration-200"
-            >
-              <Plus size={20} />
-              <span>Tải lên CV mới</span>
-            </button>
-          </div>
-        </div>
+        <PageHeader 
+          title="Quản lý CV của tôi"
+          description="Lưu trữ và quản lý các bản CV của bạn để phân tích AI nhanh chóng."
+          actions={
+            <>
+              <button 
+                onClick={() => navigate('/cv-builder/templates')}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-2xl font-bold shadow-sm hover:border-primary/50 hover:text-primary hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <BrainCircuit size={20} />
+                Tạo CV bằng AI
+              </button>
+              <button 
+                onClick={() => setIsUploadModalOpen(true)}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/25 hover:bg-primary-pressed hover:-translate-y-0.5 transition-all duration-200"
+              >
+                <Plus size={20} />
+                <span>Tải lên CV mới</span>
+              </button>
+            </>
+          }
+        />
 
-        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+        <div className="flex flex-col lg:flex-row gap-6">
           
           {/* Left Column: CV List and History */}
-          <div className="w-full lg:w-1/3 flex flex-col h-full gap-4">
+          <div className="w-full lg:w-1/3 flex flex-col gap-4">
             {/* CV List */}
-            <div className="flex flex-col bg-white border border-gray-100 rounded-3xl p-4 shadow-sm shrink-0 max-h-[50%]">
+            <div className="flex flex-col bg-white border border-gray-100 rounded-3xl p-4 shadow-sm">
             {/* Filters & Search */}
             <div className="flex flex-col gap-3 mb-4 shrink-0">
               <div className="relative w-full">
@@ -115,7 +115,7 @@ const MyCvs: React.FC = () => {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0 pr-2">
-                        <h4 className={`font-bold truncate ${selectedCvId === cv.id ? 'text-primary' : 'text-gray-800 group-hover:text-primary'}`}>
+                        <h4 className={`font-bold break-words whitespace-normal ${selectedCvId === cv.id ? 'text-primary' : 'text-gray-800 group-hover:text-primary'}`}>
                           {cv.title}
                         </h4>
                         <div className="flex items-center text-gray-400 gap-1.5 mt-1">
@@ -127,6 +127,31 @@ const MyCvs: React.FC = () => {
                       </div>
                       
                       <div className="flex items-center gap-1 shrink-0">
+                        {cv.templateId ? (
+                          <button 
+                            className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                            title="Sửa CV"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/cv-builder/${cv.templateId}?id=${cv.id}`);
+                            }}
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                        ) : (
+                          <div className="relative group flex items-center justify-center">
+                            <div className="p-1.5 text-gray-300 hover:text-gray-500 rounded-lg transition-all cursor-help">
+                              <div className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px] font-bold">
+                                !
+                              </div>
+                            </div>
+                            
+                            <div className="absolute top-full mb-2 right-0 hidden group-hover:block w-48 p-2 bg-gray-900 text-white text-[10px] leading-relaxed rounded-lg shadow-lg z-50 pointer-events-none text-center">
+                              Chỉ có thể chỉnh sửa CV được tạo từ hệ thống. CV tải lên (PDF) không hỗ trợ sửa nội dung.
+                              <div className="absolute -top-1 right-2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                            </div>
+                          </div>
+                        )}
                         <button 
                           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                           title="Xóa CV"
@@ -147,10 +172,7 @@ const MyCvs: React.FC = () => {
                     </div>
 
                     <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Đã trích xuất</span>
-                      </div>
+                     
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -179,7 +201,7 @@ const MyCvs: React.FC = () => {
           
           {/* History Section below CV List */}
           {selectedCv && (
-            <div className="flex-1 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm overflow-y-auto custom-scrollbar">
+            <div className="shrink-0 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm overflow-y-auto custom-scrollbar max-h-[300px]">
               <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <div className="text-primary" /> Lịch sử phân tích
               </h3>
@@ -239,11 +261,11 @@ const MyCvs: React.FC = () => {
               )}
             </div>
           )}
-        </div>
+          </div>
 
-        {/* Right Column: PDF Viewer */}
-        <div className="flex-1 min-h-0 lg:w-2/3 relative">
-            <div className="absolute inset-0 flex flex-col bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+          {/* Right Column: PDF Viewer - sticky to fill viewport */}
+          <div className="flex-1 lg:w-2/3 lg:sticky lg:top-[110px] lg:self-start" style={{ height: 'calc(100vh - 130px)' }}>
+            <div className="h-full flex flex-col bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
               {selectedCv?.fileUrl ? (
                 <div className="flex-1 overflow-hidden">
                   <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
