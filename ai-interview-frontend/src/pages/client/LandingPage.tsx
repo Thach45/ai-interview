@@ -4,12 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from "../../store/authStore";
 import { Briefcase, Target, Zap, BrainCircuit, CheckCircle2, Sparkles, ArrowUpRight } from "lucide-react";
 import { Helmet } from 'react-helmet-async';
-import { Header } from '../../components/layout/Header';
+import { LandingHeader } from '../../features/landing-page/components/LandingHeader';
 import { Footer } from '../../components/layout/Footer';
 import { CTASection } from '../../features/landing-page/components/CTASection';
 import { FeatureMockups } from '../../features/landing-page/components/FeatureMockups';
 import { StatsSection } from '../../features/landing-page/components/StatsSection';
 import { TestimonialSection } from '../../features/landing-page/components/TestimonialSection';
+import { PricingSection } from '../../features/landing-page/components/PricingSection';
+import { CVBuilderShowcase } from '../../features/landing-page/components/CVBuilderShowcase';
 import { CustomCursor } from '../../features/landing-page/components/CustomCursor';
 
 // Custom Easing Curve
@@ -54,7 +56,7 @@ export const LandingPage: React.FC = () => {
       {/* GLOBAL NOISE TEXTURE (Soft Structuralism) */}
       <div className="fixed inset-0 z-50 pointer-events-none opacity-[0.02]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }} />
 
-      <Header />
+      <LandingHeader />
 
       <main className="flex-1">
         {/* SECTION 1: MASSIVE HERO (Ethereal Glass) */}
@@ -113,6 +115,8 @@ export const LandingPage: React.FC = () => {
 
         <FeatureMockups isAuthenticated={isAuthenticated} />
 
+        {/* CV BUILDER SECTION with ReactBits style animations */}
+        <CVBuilderShowcase />
         {/* SECTION 4: HOW IT WORKS (Z-Axis / Cascading) */}
         <section id="how-it-works" className="py-32 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -179,7 +183,8 @@ export const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        {/* PRICING REMOVED - User has a separate /subscription page */}
+        {/* PRICING SECTION */}
+        <PricingSection />
 
         <TestimonialSection />
 

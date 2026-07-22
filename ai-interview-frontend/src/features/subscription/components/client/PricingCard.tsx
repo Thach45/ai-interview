@@ -2,11 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { SubscriptionPackage } from '../../api/subscription.api';
 
-const GRADIENTS = [
-  'from-[#6366f1] to-[#818cf8]',
-  'from-[#5645d4] to-[#7c3aed]',
-  'from-[#ec4899] to-[#d946ef]',
-  'from-[#f59e0b] to-[#fbbf24]',
+const COLORS = [
+  'bg-[#6366f1]',
+  'bg-[#5645d4]',
+  'bg-[#ec4899]',
+  'bg-[#f59e0b]',
 ];
 
 const formatPrice = (price: number) => price.toLocaleString('vi-VN');
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export const PricingCard: React.FC<Props> = ({ pkg, index, onBuy }) => {
-  const gradient = GRADIENTS[index % GRADIENTS.length];
+  const colorClass = COLORS[index % COLORS.length];
   const discount = pkg.oldPrice ? Math.round((1 - pkg.price / pkg.oldPrice) * 100) : 0;
   const durationLabel = `${pkg.durationDays} ngày`;
   const creditsLabel = pkg.credits === -1 ? 'Không giới hạn lượt dùng' : `${pkg.credits} Credit`;
@@ -43,13 +43,13 @@ export const PricingCard: React.FC<Props> = ({ pkg, index, onBuy }) => {
         </div>
       )}
 
-      {/* Gradient top bar */}
-      <div className={`h-1.5 w-full rounded-t-2xl bg-gradient-to-r ${gradient}`} />
+      {/* Solid color top bar */}
+      <div className={`h-1.5 w-full rounded-t-2xl ${colorClass}`} />
 
       <div className="p-6 flex flex-col flex-1">
         {/* Icon + Name */}
         <div className="flex items-center gap-3 mb-4">
-          <div className={`size-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}>
+          <div className={`size-10 rounded-xl ${colorClass} flex items-center justify-center shadow-sm`}>
             <span className="material-symbols-outlined text-white text-[20px]">{pkg.icon}</span>
           </div>
           <div>
