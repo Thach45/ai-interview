@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useBackgroundJobStore,type BackgroundJob } from '../../store/backgroundJobStore';
 import { Loader2, CheckCircle, XCircle, X, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const PROGRESS_MESSAGES = [
   'Đang khởi tạo AI...',
@@ -63,7 +63,7 @@ const JobItemView = ({ job, removeJob }: { job: BackgroundJob; removeJob: (id: s
       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         {job.status === 'success' && job.resultUrl && (
           <Link
-            to={job.resultUrl}
+            href={job.resultUrl}
             className="p-1.5 text-blue-600 bg-blue-50 dark:bg-blue-900/30 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50"
             title="Xem kết quả"
           >

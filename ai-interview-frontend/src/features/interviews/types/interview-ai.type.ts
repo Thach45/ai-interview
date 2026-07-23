@@ -4,10 +4,10 @@ import { ExperienceLevel, InterviewLanguage, InterviewMode, InterviewPersona } f
 
 export type SetupInterviewRequest = {
   cvId: string;
-  jobDescriptionId?: string | null;
+  jobTemplateId?: string | null;
   customJdText?: string | null;
-  position: string;
-  nameCompany?: string | null;
+  jobTitle: string;
+  companyName?: string | null;
   level: ExperienceLevel;
   language: InterviewLanguage;
   mode: InterviewMode;

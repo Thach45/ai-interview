@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useSubscription } from '../../subscription/hooks/useSubscription';
 import { PricingCard } from '../../subscription/components/client/PricingCard';
 import type { SubscriptionPackage } from '../../subscription/api/subscription.api';
@@ -8,15 +8,15 @@ import { useAuthStore } from '../../../store/authStore';
 export const PricingSection: React.FC = () => {
   const { packages, isLoading } = useSubscription();
   const { isAuthenticated } = useAuthStore();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleBuyClick = (pkg: SubscriptionPackage) => {
     if (isAuthenticated) {
       // If logged in, send them to the main subscription page to complete payment
-      navigate('/subscription');
+      router.push('/subscription');
     } else {
       // If not logged in, send them to login (then they can buy)
-      navigate('/login');
+      router.push('/login');
     }
   };
 

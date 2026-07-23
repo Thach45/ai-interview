@@ -53,7 +53,7 @@ export const useNotifications = () => {
   useEffect(() => {
     // Chỉ kết nối SSE nếu đã đăng nhập (có token)
     const token = localStorage.getItem("token");
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
     if (!token) return;
 
     // Sử dụng URL SSE

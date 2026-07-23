@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { interviewAiApi } from "../api/interview-ai.api";
 import type { SetupInterviewRequest } from "../types/interview-ai.type";
 import { useAuthStore } from "../../../store/authStore";
@@ -57,10 +57,16 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
   const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
 
+  // Lưu callback mới nhất vào ref để không bị trigger useEffect liên tục khi callback thay đổi
+  const onStreamUpdateRef = useRef(onStreamUpdate);
+  useEffect(() => {
+    onStreamUpdateRef.current = onStreamUpdate;
+  }, [onStreamUpdate]);
+
   useEffect(() => {
     if (!sessionId || !token) return;
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
     
     // Gắn token vào query string để đi qua auth middleware
     const eventSource = new EventSource(
@@ -74,7 +80,7 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
         const data = JSON.parse(event.data);
         if (data.type === "SYNC_SESSION") {
           // Bắn sự kiện kết thúc nhưng KHÔNG xóa text để UI tự quyết định (cho TTS Player đọc xong)
-          if (onStreamUpdate) onStreamUpdate(data.text || "", true);
+          if (onStreamUpdateRef.current) onStreamUpdateRef.current(data.text || "", true);
           // Invalidate cache -> React Query tự động trigger fetch data mới!
           queryClient.invalidateQueries({ queryKey: ["interviewMessages", sessionId] });
           queryClient.invalidateQueries({ queryKey: ["interviewSession", sessionId] }); 
@@ -85,7 +91,7 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
           
           // Cập nhật text đang stream
        
-          if (onStreamUpdate) onStreamUpdate(data.text);
+          if (onStreamUpdateRef.current) onStreamUpdateRef.current(data.text);
         }
       } catch (error) {
         console.error("Lỗi parse SSE message:", error);

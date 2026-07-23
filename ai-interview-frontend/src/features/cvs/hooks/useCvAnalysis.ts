@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { cvApi } from "../api/cv.api";
 import { toast } from "sonner";
 import { useBackgroundJobStore } from "../../../store/backgroundJobStore";
 
 export const useCvAnalysis = (cvId?: string, jobId?: string) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   // Chỉ GET dữ liệu, KHÔNG trừ tiền
@@ -45,7 +45,7 @@ export const useCvAnalysis = (cvId?: string, jobId?: string) => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
 
       if (analyzeQuery.data?.id) {
-        navigate(
+        router.push(
           `/jobs/cv-analysis/${jobId}/optimize?cvId=${cvId}&analysisId=${analyzeQuery.data.id}`,
         );
       }
@@ -122,7 +122,7 @@ export const useOptimizeCv = () => {
 };
 
 export const useAnalyzeCvExternal = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const analyzeExternalMutation = useMutation({

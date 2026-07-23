@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import authApi from "../api/auth.api";
 import { useAuthStore } from "../../../store/authStore";
 import type { LoginRequest, RegisterRequest, SendOtpRequest, VerifyOtpRequest, ForgotPasswordRequest, ResetPasswordRequest } from "../types";
 
 export const useAuth = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const setAuth = useAuthStore((state) => state.setAuth);
   const logoutStore = useAuthStore((state) => state.logout);
@@ -25,7 +25,7 @@ export const useAuth = () => {
       
       setAuth(user, accessToken);
       toast.success("Chào mừng bạn trở lại! 👋");
-      navigate("/dashboard");
+      router.push("/dashboard");
     },
     onError: (error: any) => {
       const message = error.message || "Đăng nhập thất bại";
@@ -41,7 +41,7 @@ export const useAuth = () => {
     onSuccess: (_, variables) => {
       queryClient.clear();
       toast.success("Đăng ký tài khoản thành công! 🎉");
-      navigate(`/verify-otp?email=${variables.email}`);
+      router.push(`/verify-otp?email=${variables.email}`);
     },
     onError: (error: any) => {
       const message = error.message || "Đăng ký thất bại";
@@ -71,7 +71,7 @@ export const useAuth = () => {
     onSuccess: () => {
       toast.success("Xác thực OTP thành công! ✅");
       queryClient.clear();
-      navigate("/login");
+      router.push("/login");
     },
     onError: (error: any) => {
       const message = error.message || "Mã OTP không chính xác";
@@ -99,7 +99,7 @@ export const useAuth = () => {
 
     logoutStore();
     toast.info("Hẹn gặp lại bạn sớm! 👋");
-    navigate("/login");
+    router.push("/login");
   };
 
   /**
@@ -109,7 +109,7 @@ export const useAuth = () => {
     mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
     onSuccess: (_, variables) => {
       toast.success("Mã OTP đã được gửi về email của bạn! 📧");
-      navigate(`/reset-password?email=${variables.email}`);
+      router.push(`/reset-password?email=${variables.email}`);
     },
     onError: (error: any) => {
       const message = error.message || "Không thể gửi mã OTP";
@@ -124,7 +124,7 @@ export const useAuth = () => {
     mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
     onSuccess: () => {
       toast.success("Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại. ✅");
-      navigate("/login");
+      router.push("/login");
     },
     onError: (error: any) => {
       const message = error.message || "Không thể đặt lại mật khẩu";

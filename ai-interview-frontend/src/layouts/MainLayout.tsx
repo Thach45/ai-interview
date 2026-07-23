@@ -1,5 +1,7 @@
+'use client';
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { cn } from '../shared/utils/cn';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
@@ -21,7 +23,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; className?: strin
   maxWidth = '1280px',
   hideSearch = false
 }) => {
-  const location = useLocation();
+  const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -38,14 +40,14 @@ export const MainLayout: React.FC<{ children: React.ReactNode; className?: strin
 
       {/* BOTTOM HEADER / BREADCRUMB */}
       <div className="backdrop-blur-md px-6 lg:px-10 py-2.5 flex items-center gap-2 text-sm text-gray-500 sticky top-[64px] z-40">
-        <Link to="/dashboard" className="hover:text-primary transition-colors flex items-center gap-1">
+        <Link href="/dashboard" className="hover:text-primary transition-colors flex items-center gap-1">
           <span className="material-symbols-outlined text-[18px]">home</span>
         </Link>
-        {location.pathname !== '/dashboard' && (
+        {pathname !== '/dashboard' && (
           <>
             <span className="material-symbols-outlined text-[16px]">chevron_right</span>
             <span className="text-gray-900 font-medium">
-              {NAV_ITEMS.find(item => item.id !== 'dashboard' && location.pathname.startsWith(item.href.split('/')[1] ? '/' + item.href.split('/')[1] : item.href))?.label || 'Chi tiết'}
+              {NAV_ITEMS.find(item => item.id !== 'dashboard' && pathname.startsWith(item.href.split('/')[1] ? '/' + item.href.split('/')[1] : item.href))?.label || 'Chi tiết'}
             </span>
           </>
         )}

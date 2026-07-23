@@ -1,0 +1,24 @@
+import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+
+export class AnalyzeCvWithTemplateDto {
+  @IsString()
+  @IsNotEmpty({ message: 'cvId không được để trống' })
+  cvId: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'jobTemplateId không được để trống' })
+  jobTemplateId: string;
+}
+
+export class AnalyzeCvWithExternalJobDto {
+  @IsString()
+  @IsNotEmpty({ message: 'cvId không được để trống' })
+  cvId: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Mô tả công việc không được để trống' })
+  @MaxLength(15000, {
+    message: 'Mô tả công việc không được vượt quá 15000 ký tự',
+  })
+  externalJobDescription: string;
+}

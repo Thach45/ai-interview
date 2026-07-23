@@ -1,4 +1,8 @@
-import { ExperienceLevel, InterviewLanguage, InterviewPersona } from '@prisma/client';
+import {
+  ExperienceLevel,
+  InterviewLanguage,
+  InterviewPersona,
+} from '@prisma/client';
 
 export interface GenerateQuestionsInput {
   cvText: string;
@@ -50,7 +54,9 @@ Nhiệm vụ của bạn là tạo ra một danh sách chủ đề/mục tiêu �
    - Bạn bắt buộc phải trả về kết quả khớp chính xác với JSON Schema được yêu cầu. Không kèm theo bất kỳ văn bản giải thích nào khác ngoài chuỗi JSON sạch.
 `;
 
-export const getCreateQuestionsUserPrompt = (input: GenerateQuestionsInput): string => {
+export const getCreateQuestionsUserPrompt = (
+  input: GenerateQuestionsInput,
+): string => {
   const {
     cvText,
     jdText,
@@ -115,12 +121,19 @@ export const CREATE_QUESTIONS_RESPONSE_SCHEMA = {
             items: {
               type: 'object',
               properties: {
-                id: { type: 'string', description: 'ID duy nhất của tiêu chí, ví dụ: c1, c2' },
+                id: {
+                  type: 'string',
+                  description: 'ID duy nhất của tiêu chí, ví dụ: c1, c2',
+                },
                 description: {
                   type: 'string',
-                  description: 'Nội dung chi tiết ứng viên cần đạt được, kèm từ khóa quan trọng',
+                  description:
+                    'Nội dung chi tiết ứng viên cần đạt được, kèm từ khóa quan trọng',
                 },
-                points: { type: 'integer', description: 'Điểm số của tiêu chí này' },
+                points: {
+                  type: 'integer',
+                  description: 'Điểm số của tiêu chí này',
+                },
               },
               required: ['id', 'description', 'points'],
             },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowUpRight, MapPin, Mail } from 'lucide-react';
 
 export const Footer: React.FC = () => {
@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
           {/* Brand & Contact (Spans 4 cols) */}
           <div className="lg:col-span-4 flex flex-col justify-between">
             <div className="flex flex-col gap-8">
-              <Link to="/" className="text-white">
+              <Link href="/" className="text-white">
                 <span className="font-bold text-2xl tracking-tighter leading-none">AI INTERVIEW.</span>
               </Link>
               
@@ -44,19 +44,19 @@ export const Footer: React.FC = () => {
             {/* Col 1 */}
             <div className="flex flex-col gap-4">
               <h4 className="text-white font-medium text-[13px] mb-4">Giải pháp</h4>
-              <Link to="/features" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/features" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Phân tích CV ATS
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/interview-room" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/interview-room" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Phỏng vấn giả lập
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/enterprise" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/enterprise" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Dành cho Doanh nghiệp
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/api" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/api" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 API Tuyển dụng
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
@@ -65,19 +65,19 @@ export const Footer: React.FC = () => {
             {/* Col 2 */}
             <div className="flex flex-col gap-4">
               <h4 className="text-white font-medium text-[13px] mb-4">Tài nguyên</h4>
-              <Link to="/blog" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/blog" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Blog
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/questions" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/questions" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Ngân hàng câu hỏi
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/templates" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/templates" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Mẫu CV chuẩn ATS
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/help" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/help" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Trung tâm trợ giúp
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
@@ -86,19 +86,19 @@ export const Footer: React.FC = () => {
             {/* Col 3 */}
             <div className="flex flex-col gap-4">
               <h4 className="text-white font-medium text-[13px] mb-4">Công ty</h4>
-              <Link to="/about" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/about" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Về chúng tôi
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/careers" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/careers" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Tuyển dụng
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/press" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/press" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Báo chí
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
-              <Link to="/contact" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
+              <Link href="/contact" className="group flex items-center text-[14px] hover:text-white transition-colors w-fit">
                 Liên hệ
                 <ArrowUpRight size={12} className="opacity-0 -translate-x-2 translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ml-1" />
               </Link>
@@ -144,9 +144,9 @@ export const Footer: React.FC = () => {
             <span className="text-[#555555]">Mã số doanh nghiệp: 0109999999</span>
           </div>
           <div className="flex flex-wrap items-center gap-6 md:gap-8">
-            <Link to="/privacy" className="hover:text-white transition-colors">Bảo mật</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Điều khoản</Link>
-            <Link to="/cookies" className="hover:text-white transition-colors">Cookies</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Bảo mật</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Điều khoản</Link>
+            <Link href="/cookies" className="hover:text-white transition-colors">Cookies</Link>
           </div>
         </div>
 

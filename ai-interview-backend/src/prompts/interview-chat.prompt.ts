@@ -1,4 +1,8 @@
-import { ExperienceLevel, InterviewLanguage, InterviewPersona } from '@prisma/client';
+import {
+  ExperienceLevel,
+  InterviewLanguage,
+  InterviewPersona,
+} from '@prisma/client';
 import { PERSONA_PROMPTS } from './personas.prompt';
 
 // ============================================================
@@ -26,15 +30,20 @@ export interface InterviewChatTurnInput {
 }
 
 /** Giữ lại để backward-compatible với các chỗ đang dùng */
-export type InterviewChatInput = InterviewChatSystemInput & InterviewChatTurnInput;
+export type InterviewChatInput = InterviewChatSystemInput &
+  InterviewChatTurnInput;
 
 // ============================================================
 // SYSTEM PROMPT — static context + persona + rules
 // ============================================================
 
-export const getInterviewChatSystemPrompt = (input: InterviewChatSystemInput): string => {
-  const { cvText, jdText, position, level, language, totalQuestions, persona } = input;
-  const personaPrompt = PERSONA_PROMPTS[persona] ?? PERSONA_PROMPTS[InterviewPersona.PROFESSIONAL];
+export const getInterviewChatSystemPrompt = (
+  input: InterviewChatSystemInput,
+): string => {
+  const { cvText, jdText, position, level, language, totalQuestions, persona } =
+    input;
+  const personaPrompt =
+    PERSONA_PROMPTS[persona] ?? PERSONA_PROMPTS[InterviewPersona.PROFESSIONAL];
 
   return `
 Bạn là một AI Phỏng vấn viên chuyên nghiệp, được tích hợp bộ não AI tiên tiến nhất để đánh giá năng lực của ứng viên.
@@ -96,12 +105,22 @@ ${personaPrompt}
 `;
 };
 
-export const getInterviewChatUserPrompt = (input: InterviewChatTurnInput): string => {
-  const { currentQuestion, nextQuestion, currentQuestionIndex, chatHistory, userResponse } = input;
+export const getInterviewChatUserPrompt = (
+  input: InterviewChatTurnInput,
+): string => {
+  const {
+    currentQuestion,
+    nextQuestion,
+    currentQuestionIndex,
+    chatHistory,
+    userResponse,
+  } = input;
 
   const historyStr =
     chatHistory.length > 0
-      ? chatHistory.map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`).join('\n\n')
+      ? chatHistory
+          .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
+          .join('\n\n')
       : '(Chưa có lịch sử hội thoại — đây là lượt đầu tiên)';
 
   return `

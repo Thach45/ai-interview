@@ -1,5 +1,6 @@
+'use client';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 interface AuthLayoutProps {
@@ -67,7 +68,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, image, title, 
             className="w-full max-w-[380px] flex flex-col h-full justify-center"
           >
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 mb-14 group shrink-0">
+            <Link href="/" className="flex items-center gap-2.5 mb-14 group shrink-0">
               <div className="size-9 bg-[#5645d4] rounded-[8px] flex items-center justify-center shadow-lg shadow-primary/20">
                 <span className="material-symbols-outlined text-white text-[22px]">cognition</span>
               </div>

@@ -8,20 +8,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ================= ENUMS (CÁC KIỂU DỮ LIỆU CỐ ĐỊNH) =================
+// ================= ENUMS =================
 
 enum Role {
-  CANDIDATE 
-  MODERATOR     
-  ADMIN     
+  CANDIDATE
+  MODERATOR
+  ADMIN
 }
 
 enum SessionStatus {
-  PENDING       
-  IN_PROGRESS   
-  EVALUATING    
-  COMPLETED     
-  FAILED        
+  PENDING
+  IN_PROGRESS
+  EVALUATING
+  COMPLETED
+  FAILED
 }
 
 enum MessageRole {
@@ -30,9 +30,9 @@ enum MessageRole {
 }
 
 enum PaymentStatus {
-  PENDING   // Đang chờ quét QR / chuyển khoản
-  SUCCESS   // Tiền đã vào tài khoản
-  FAILED    // Giao dịch lỗi / hủy
+  PENDING
+  SUCCESS
+  FAILED
 }
 
 enum ExperienceLevel {
@@ -51,10 +51,11 @@ enum Provider {
 }
 
 enum CategoryType {
-  GROUP      // Nhóm nghề (Cấp 1)
-  INDUSTRY   // Nghề (Cấp 2)
-  POSITION   // Vị trí chuyên môn (Cấp 3)
+  GROUP
+  INDUSTRY
+  POSITION
 }
+
 enum UserStatus {
   ACTIVE
   INACTIVE
@@ -78,181 +79,40 @@ enum InterviewPersona {
   CHEERFUL
 }
 
-
-// ================= THỰC THỂ CỐT LÕI (CORE ENTITIES) =================
-
 enum CvSourceType {
   UPLOADED
   BUILDER
 }
 
-// 1. BẢNG NGƯỜI DÙNG
-model User {
-  id               String           @id @default(auto()) @map("_id") @db.ObjectId
-  email            String           @unique
-  fullName         String
-  avatarUrl        String?          
-  role             Role             @default(CANDIDATE)
-  password         String?
-  provider         Provider         @default(LOCAL)
-  googleId         String?          
-  status           UserStatus       @default(ACTIVE)
-  emailVerifiedAt   DateTime?
-  creditsBalance   Int              @default(3) // Tặng 3 lượt test free ban đầu
-
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  // Quan hệ
-  cvs              UserCv[]
-  sessions         InterviewSession[]
-  cvAnalyses       CvAnalysis[]
-  recruiterRooms   RecruiterRoom[]  
-  transactions     Transaction[]
-      notifications    Notification[]
+enum TransactionType {
+  DEPOSIT
+  COMPENSATION
+  PROMOTION
 }
 
-// 2. BẢNG HỒ SƠ CV
-model UserCv {
-  id               String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String          @db.ObjectId
-  title            String   
-  sourceType       CvSourceType    @default(UPLOADED)
-  
-  // Core Data
-  cvData           CvDataStructure? 
-  
-  // Metadata
-  templateId       String?         @db.ObjectId
-  renderedHtml     String?
-  fileUrl          String?   
-  
-  // AI Optimization
-  cvAnalysisId     String?         @db.ObjectId
-  aiModifications  AiModification[]
-  
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-
-  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template         CvTemplate?     @relation(fields: [templateId], references: [id])
-  
-  cvAnalysis       CvAnalysis?     @relation("OptimizedCvToCvAnalysis", fields: [cvAnalysisId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  sessions         InterviewSession[]
-  analyses         CvAnalysis[]    @relation("CvAnalysisToUserCv")
-}
-// 3. BẢNG DANH MỤC PHÂN CẤP (Nhóm nghề -> Nghề -> Vị trí)
-model JobCategory {
-  id          String         @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  type        CategoryType
-  
-  parentId    String?        @db.ObjectId
-  parent      JobCategory?   @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children    JobCategory[]  @relation("CategoryHierarchy")
-
-  jobTemplates JobTemplate[]
-  
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+enum AnalysisPriority {
+  HIGH
+  MEDIUM
+  LOW
 }
 
-// 4. BẢNG JOB TEMPLATE (Đã tách 3 phần tối ưu)
-model JobTemplate {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  title              String
-  companyName        String
-  companyLogo        String?
-  
-  // Thông tin cơ bản
-  location           String?  
-  salaryRange        String?  
-  employmentType     String?  
-  experienceLevel    ExperienceLevel @default(JUNIOR)
-  isRemote           Boolean         @default(false)
-  
-  // Phân loại
-  categoryId         String?         @db.ObjectId
-  category           JobCategory?    @relation(fields: [categoryId], references: [id])
-  
-  // Thông tin chi tiết để render UI
-  responsibilities   String   
-  requirements       String   
-  benefits           String   
-  
-  // Thông tin cốt lõi cho AI đọc
-  aiExtractedContext String   
-  
-  isHotJob           Boolean  @default(false) 
-  
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  sessions           InterviewSession[]
-  cvAnalyses         CvAnalysis[]
+enum ScoreCategory {
+  TECHNICAL_SKILLS
+  EXPERIENCE
+  SOFT_SKILLS
+  EDUCATION
+  PROJECT_RELEVANCE
 }
 
-
-// ================= THỰC THỂ AI INTERVIEW & GIAO DỊCH =================
-
-// 4. BẢNG PHIÊN PHỎNG VẤN
-model InterviewSession {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String        @db.ObjectId
-  status           SessionStatus @default(PENDING)
-
-  // --- THÔNG SỐ THIẾT LẬP (MỚI) ---
-  mode             InterviewMode   @default(VIDEO)
-  level            ExperienceLevel @default(JUNIOR)
-  persona          InterviewPersona @default(PROFESSIONAL)
-  language         InterviewLanguage @default(VIETNAMESE)
-  difficulty       Int             @default(3) // 1-5
-  duration         Int             @default(30) // Phút
-  focusSkills      String[]        // Danh sách kỹ năng tập trung
-  companyName      String?         // Tên công ty ứng tuyển (Step 1)
-  jobTitle         String          // Tiêu đề vị trí (Lưu trực tiếp để độc lập với Template)
-
-  // --- TIẾN TRÌNH PHỎNG VẤN ---
-  coreQuestions        CoreQuestion[]
-
-  // --- LIÊN KẾT ---
-  jobTemplateId    String?       @db.ObjectId
-  customJdText     String?       
-  
-  cvId             String?       @db.ObjectId
-  recruiterRoomId  String?       @db.ObjectId
-
-  startedAt        DateTime?     
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cv               UserCv?        @relation(fields: [cvId], references: [id])
-  jobTemplate      JobTemplate?   @relation(fields: [jobTemplateId], references: [id])
-  recruiterRoom    RecruiterRoom? @relation(fields: [recruiterRoomId], references: [id])
-  
-  messages         InterviewMessage[]
-  result           InterviewResult?   
+enum NotificationType {
+  AI_PROCESS
+  BILLING
+  REMINDER
+  SYSTEM_UPDATE
+  EMAIL
 }
 
-// 5. BẢNG LỊCH SỬ CHAT
-model InterviewMessage {
-  id               String      @id @default(auto()) @map("_id") @db.ObjectId
-  sessionId        String      @db.ObjectId
-  role             MessageRole 
-  content          String      
-  audioUrl         String?     
-  
-  // --- PHÂN LOẠI CÂU HỎI (MỚI) ---
-  questionIndex    Int?        // Thuộc câu hỏi cốt lõi thứ mấy
-  isFollowUp       Boolean     @default(false) // Có phải câu hỏi xoáy phụ không
-  
-  createdAt        DateTime    @default(now())
-
-  session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
-  @@index([sessionId]) 
-}
+// ================= COMPOSITE TYPES =================
 
 type MetricScore {
   score  Int
@@ -267,165 +127,28 @@ type GeneralEvaluation {
   confidence     MetricScore
   relevance      MetricScore
 }
-// 6. BẢNG BÁO CÁO KẾT QUẢ
-model InterviewResult {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  sessionId        String   @unique @db.ObjectId
-  
-  overallScore     Int  
-  generalEvaluation GeneralEvaluation
-  
-  // Phân loại tổng quan phục vụ Query và hiển thị List/Dashboard nhanh chóng
-  recommendation   String   // Quyết định đề xuất (VD: "PASS", "FAIL", "CONSIDER") giúp dễ dàng filter lọc ứng viên
-  summary          String   // Một đoạn nhận xét ngắn gọn (1-2 câu) giúp nắm bắt kết quả tức thì mà không cần parser JSON
 
-  // Bóc tách chi tiết phân tích (Lưu dạng mảng String vì đang dùng MongoDB)
-  strengths        String[] // Danh sách các điểm mạnh nổi bật
-  weaknesses       String[] // Danh sách các điểm yếu hoặc cần cải thiện
-  learningPath     String[] // Các đề xuất, lời khuyên lộ trình phát triển tiếp theo
-  
-  createdAt        DateTime @default(now())
-
-  session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  questionEvaluations QuestionEvaluation[]
+type RubricCriterion {
+  id          String
+  description String
+  points      Int
 }
 
-// Bảng chứa nhận xét chi tiết cho từng câu hỏi (1-N với InterviewResult)
-model QuestionEvaluation {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  interviewResultId String   @db.ObjectId
-  
-  questionIndex     Int      // Thứ tự câu hỏi trong phiên
-  questionTitle     String   // Tiêu đề/Nội dung câu hỏi cốt lõi
-  feedback          String   // Nhận xét chi tiết của AI về cách trả lời của ứng viên cho câu này
-  score             Float    // Điểm đánh giá riêng cho câu này (Thang 0-100, có thể lẻ)
-  criteriaMatches   CriterionMatch[] // Lưu kết quả đối chiếu từng tiêu chí
-
-  interviewResult   InterviewResult @relation(fields: [interviewResultId], references: [id], onDelete: Cascade)
+type CriterionMatch {
+  criterionId   String
+  partialCredit Float
+  evidence      String
 }
 
-enum TransactionType {
-  DEPOSIT       // Nạp tiền từ cổng thanh toán
-  COMPENSATION  // Đền bù từ hệ thống
-  PROMOTION     // Khuyến mãi, quà tặng
-}
-
-// 7. BẢNG GÓI DỊCH VỤ
-model SubscriptionPackage {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String   
-  tagline       String?
-  price         Int
-  oldPrice      Int?
-  durationDays  Int
-  credits       Int      // -1 nếu vô hạn
-  isPopular     Boolean  @default(false)
-  features      String[]
-  icon          String?  
-  isActive      Boolean  @default(true)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  transactions  Transaction[]
-}
-
-// 8. BẢNG LỊCH SỬ NẠP TIỀN (Pay-as-you-go / Subscription)
-model Transaction {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String          @db.ObjectId
-  type          TransactionType @default(DEPOSIT)
-  
-  packageId     String?         @db.ObjectId
-  package       SubscriptionPackage? @relation(fields: [packageId], references: [id])
-
-  amount        Int           // Số tiền nạp
-  creditsAdded  Int           // Số credit tương ứng
-  status        PaymentStatus @default(PENDING) 
-  paymentRefId  String?       // Mã đối soát của VNPay/Momo/Sepay
-  
-  sepayTransactionId String?  // ID giao dịch từ Sepay
-  
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// ================= THỰC THỂ TÍNH NĂNG PHỤ TRỢ =================
-
-// Enum cho mức độ ưu tiên của gợi ý
-enum AnalysisPriority {
-  HIGH
-  MEDIUM
-  LOW
-}
-
-// Enum cho các hạng mục chấm điểm
-enum ScoreCategory {
-  TECHNICAL_SKILLS
-  EXPERIENCE
-  SOFT_SKILLS
-  EDUCATION
-  PROJECT_RELEVANCE
-}
-
-// Định nghĩa cấu trúc cho phân tích kỹ năng
-type SkillAnalysis {
-  skill    String
-  user     Int
-  required Int
-}
-
-// Định nghĩa cấu trúc cho gợi ý cải thiện
-type ImprovementSuggestion {
+type CoreQuestion {
   title    String
-  desc     String
-  solution String
-  priority AnalysisPriority
-}
-
-// Định nghĩa cấu trúc cho chi tiết điểm số kèm lý do
-type ScoreDetail {
-  category ScoreCategory
-  score    Int
   reason   String
+  criteria RubricCriterion[]
 }
 
-// 8. BẢNG PHÂN TÍCH CV (Trợ lý ứng tuyển)
-model CvAnalysis {
-  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
-  userId                 String                  @db.ObjectId
-  cvId                   String                  @db.ObjectId
-  jobTemplateId          String?                 @db.ObjectId
-  externalJobDescription String?
-  
-  matchScore             Int      
-  summary                String?
-  
-  // Chi tiết điểm số theo từng hạng mục
-  scoringDetails         ScoreDetail[]
-  
-  strengths              String[]
-  weaknesses             String[]
-  skillsAnalysis         SkillAnalysis[]
-  foundKeywords          String[]
-  missingKeywords        String[]
-  improvementSuggestions ImprovementSuggestion[]
-  
-  createdAt              DateTime @default(now())
-
-  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cv                     UserCv      @relation("CvAnalysisToUserCv", fields: [cvId], references: [id], onDelete: Cascade)
-  jobTemplate            JobTemplate? @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade)
-  
-  optimizedCvs           UserCv[]      @relation("OptimizedCvToCvAnalysis")
-}
-
-// 8.5 BẢNG CV ĐÃ TỐI ƯU (Sau phân tích)
 type AiModification {
   id     Int
-  type   String   // Ví dụ: ADD_KEYWORD, REWRITE, EXPAND
+  type   String
   title  String
   desc   String
 }
@@ -487,69 +210,260 @@ type CvDataStructure {
   jobTitle        String
   objective       String?
   contact         CvContact
-  
   experiences     CvExperience[]
   projects        CvProject[]
-  
   hardSkills      String[]
   computerSkills  CvSkill[]
   languages       CvSkill[]
-  
   education       CvEducation[]
   certifications  CvCertification[]
   activities      CvActivity[]
   references      CvReference[]
 }
 
+type SkillAnalysis {
+  skill    String
+  user     Int
+  required Int
+}
 
-// 9. BẢNG PHÒNG TUYỂN DỤNG (Recruiter Mode)
+type ImprovementSuggestion {
+  title    String
+  desc     String
+  solution String
+  priority AnalysisPriority
+}
+
+type ScoreDetail {
+  category ScoreCategory
+  score    Int
+  reason   String
+}
+
+// ================= MODELS =================
+
+model User {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  email            String           @unique
+  fullName         String
+  avatarUrl        String?
+  role             Role             @default(CANDIDATE)
+  password         String?
+  provider         Provider         @default(LOCAL)
+  googleId         String?
+  status           UserStatus       @default(ACTIVE)
+  emailVerifiedAt   DateTime?
+  creditsBalance   Int              @default(3)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  cvs              UserCv[]
+  sessions         InterviewSession[]
+  cvAnalyses       CvAnalysis[]
+  recruiterRooms   RecruiterRoom[]
+  transactions     Transaction[]
+  notifications    Notification[]
+}
+
+model UserCv {
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String          @db.ObjectId
+  title            String
+  sourceType       CvSourceType    @default(UPLOADED)
+  cvData           CvDataStructure?
+  templateId       String?         @db.ObjectId
+  renderedHtml     String?
+  fileUrl          String?
+  cvAnalysisId     String?         @db.ObjectId
+  aiModifications  AiModification[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template         CvTemplate?     @relation(fields: [templateId], references: [id])
+  cvAnalysis       CvAnalysis?     @relation("OptimizedCvToCvAnalysis", fields: [cvAnalysisId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sessions         InterviewSession[]
+  analyses         CvAnalysis[]    @relation("CvAnalysisToUserCv")
+}
+
+model JobCategory {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  type        CategoryType
+  parentId    String?        @db.ObjectId
+  parent      JobCategory?   @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    JobCategory[]  @relation("CategoryHierarchy")
+  jobTemplates JobTemplate[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model JobTemplate {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  companyName        String
+  companyLogo        String?
+  location           String?
+  salaryRange        String?
+  employmentType     String?
+  experienceLevel    ExperienceLevel @default(JUNIOR)
+  isRemote           Boolean         @default(false)
+  categoryId         String?         @db.ObjectId
+  category           JobCategory?    @relation(fields: [categoryId], references: [id])
+  responsibilities   String
+  requirements       String
+  benefits           String
+  aiExtractedContext String
+  isHotJob           Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  sessions           InterviewSession[]
+  cvAnalyses         CvAnalysis[]
+}
+
+model InterviewSession {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String        @db.ObjectId
+  status           SessionStatus @default(PENDING)
+  mode             InterviewMode   @default(VIDEO)
+  level            ExperienceLevel @default(JUNIOR)
+  persona          InterviewPersona @default(PROFESSIONAL)
+  language         InterviewLanguage @default(VIETNAMESE)
+  difficulty       Int             @default(3)
+  duration         Int             @default(30)
+  focusSkills      String[]
+  companyName      String?
+  jobTitle         String
+  coreQuestions    CoreQuestion[]
+  jobTemplateId    String?       @db.ObjectId
+  customJdText     String?
+  cvId             String?       @db.ObjectId
+  recruiterRoomId  String?       @db.ObjectId
+  startedAt        DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cv               UserCv?        @relation(fields: [cvId], references: [id])
+  jobTemplate      JobTemplate?   @relation(fields: [jobTemplateId], references: [id])
+  recruiterRoom    RecruiterRoom? @relation(fields: [recruiterRoomId], references: [id])
+  messages         InterviewMessage[]
+  result           InterviewResult?
+}
+
+model InterviewMessage {
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId        String      @db.ObjectId
+  role             MessageRole
+  content          String
+  audioUrl         String?
+  questionIndex    Int?
+  isFollowUp       Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+  session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  @@index([sessionId])
+}
+
+model InterviewResult {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionId        String   @unique @db.ObjectId
+  overallScore     Int
+  generalEvaluation GeneralEvaluation
+  recommendation   String
+  summary          String
+  strengths        String[]
+  weaknesses       String[]
+  learningPath     String[]
+  createdAt        DateTime @default(now())
+  session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionEvaluations QuestionEvaluation[]
+}
+
+model QuestionEvaluation {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  interviewResultId String   @db.ObjectId
+  questionIndex     Int
+  questionTitle     String
+  feedback          String
+  score             Float
+  criteriaMatches   CriterionMatch[]
+  interviewResult   InterviewResult @relation(fields: [interviewResultId], references: [id], onDelete: Cascade)
+}
+
+model SubscriptionPackage {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  tagline       String?
+  price         Int
+  oldPrice      Int?
+  durationDays  Int
+  credits       Int
+  isPopular     Boolean  @default(false)
+  features      String[]
+  icon          String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  transactions  Transaction[]
+}
+
+model Transaction {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String          @db.ObjectId
+  type          TransactionType @default(DEPOSIT)
+  packageId     String?         @db.ObjectId
+  package       SubscriptionPackage? @relation(fields: [packageId], references: [id])
+  amount        Int
+  creditsAdded  Int
+  status        PaymentStatus @default(PENDING)
+  paymentRefId  String?
+  sepayTransactionId String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CvAnalysis {
+  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
+  userId                 String                  @db.ObjectId
+  cvId                   String                  @db.ObjectId
+  jobTemplateId          String?                 @db.ObjectId
+  externalJobDescription String?
+  matchScore             Int
+  summary                String?
+  scoringDetails         ScoreDetail[]
+  strengths              String[]
+  weaknesses             String[]
+  skillsAnalysis         SkillAnalysis[]
+  foundKeywords          String[]
+  missingKeywords        String[]
+  improvementSuggestions ImprovementSuggestion[]
+  createdAt              DateTime @default(now())
+  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cv                     UserCv      @relation("CvAnalysisToUserCv", fields: [cvId], references: [id], onDelete: Cascade)
+  jobTemplate            JobTemplate? @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade)
+  optimizedCvs           UserCv[]      @relation("OptimizedCvToCvAnalysis")
+}
+
 model RecruiterRoom {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   hrId             String   @db.ObjectId
-  roomName         String   
-  jdContext        String   
-  
-  invitationToken  String   @unique @default(uuid()) 
+  roomName         String
+  jdContext        String
+  invitationToken  String   @unique @default(uuid())
   isActive         Boolean  @default(true)
-  expiresAt        DateTime? 
-  
+  expiresAt        DateTime?
   createdAt        DateTime @default(now())
-
   hr               User               @relation(fields: [hrId], references: [id], onDelete: Cascade)
-  sessions         InterviewSession[] 
+  sessions         InterviewSession[]
 }
-// 10. BẢNG MÃ XÁC THỰC (OTP)
+
 model VerificationCode {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
-
   @@index([email])
 }
 
-type RubricCriterion {
-  id          String
-  description String
-  points      Int
-}
-
-type CriterionMatch {
-  criterionId   String
-  partialCredit Float    // 0, 0.5, 1
-  evidence      String   // Bằng chứng trích xuất từ câu trả lời
-}
-
-// Định nghĩa cấu trúc cho câu hỏi cốt lõi
-type CoreQuestion {
-  title        String    // Chủ đề hoặc kỹ năng tương ứng (ví dụ: Security, Database...)
-  reason       String    // Lý do hỏi câu hỏi này
-  criteria     RubricCriterion[]
-}
-
-
-// 11. BẢNG MẪU CV (Template)
 model CvTemplate {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   name          String
@@ -557,35 +471,21 @@ model CvTemplate {
   htmlStructure String
   cssStyles     String?
   isActive      Boolean  @default(true)
-
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   userCvs       UserCv[]
-}
-
-// 12. Thông báo
-enum NotificationType {
-  AI_PROCESS      // Thông báo tiến trình AI (Báo cáo, Tối ưu CV)
-  BILLING         // Giao dịch, Cảnh báo hết lượt
-  REMINDER        // Nhắc nhở học tập
-  SYSTEM_UPDATE   // Thông báo toàn hệ thống từ Admin
-  EMAIL           // Gửi thông báo qua email
 }
 
 model Notification {
   id          String           @id @default(auto()) @map("_id") @db.ObjectId
   userId      String           @db.ObjectId
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   type        NotificationType
-  title       String           // Tiêu đề ngắn gọn (VD: "Báo cáo phỏng vấn đã sẵn sàng!")
-  message     String           // Nội dung chi tiết
-  link        String?          // Đường dẫn khi user click vào thông báo (URL path)
-  
+  title       String
+  message     String
+  link        String?
   isRead      Boolean          @default(false)
-  
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-
-  @@index([userId, createdAt(sort: Desc)]) // Tối ưu để truy vấn thông báo mới nhất
+  @@index([userId, createdAt(sort: Desc)])
 }

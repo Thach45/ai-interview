@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, FileText, Loader2, CheckCircle2 } from 'lucide-react';
 import { useCvs } from '../../hooks/useCvs';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 interface SelectCvModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface SelectCvModalProps {
 
 const SelectCvModal: React.FC<SelectCvModalProps> = ({ isOpen, onClose, onSelect }) => {
   const { cvs, isLoading } = useCvs({ enabled: isOpen });
-  const navigate = useNavigate();
+  const router = useRouter();
 
   if (!isOpen) return null;
 
@@ -67,7 +67,7 @@ const SelectCvModal: React.FC<SelectCvModalProps> = ({ isOpen, onClose, onSelect
               <button 
                 onClick={() => {
                   onClose();
-                  navigate('/my-cvs');
+                  router.push('/my-cvs');
                 }}
                 className="px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-pressed transition-colors shadow-lg shadow-primary/20"
               >

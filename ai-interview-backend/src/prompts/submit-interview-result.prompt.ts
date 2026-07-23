@@ -13,7 +13,9 @@ export interface SubmitInterviewResultInput {
   chatHistory: Array<{ role: 'user' | 'bot'; content: string }>;
 }
 
-export const getSubmitInterviewResultSystemPrompt = (input: SubmitInterviewResultInput): string => {
+export const getSubmitInterviewResultSystemPrompt = (
+  input: SubmitInterviewResultInput,
+): string => {
   return `Bạn là một chuyên gia tuyển dụng nhân sự (HR) cấp cao có nhiệm vụ đánh giá năng lực ứng viên. Nhiệm vụ của bạn là phân tích toàn bộ lịch sử cuộc phỏng vấn dựa trên CV, Job Description (JD), và danh sách câu hỏi cốt lõi để đưa ra báo cáo đánh giá cuối cùng chuyên sâu và chính xác.
   
   Hãy trả về một JSON Object bám sát Schema quy định. Phân tách rõ ràng giữa Kỹ năng mềm và Đánh giá kỹ thuật (dựa trên Tiêu chí - Rubric).
@@ -36,7 +38,9 @@ Ngoài ra bạn cần đưa ra:
 Trích xuất ra 'criteriaMatches', với mỗi tiêu chí hãy chọn 'partialCredit' (0: Không đạt, 0.5: Đạt một phần, 1: Đạt hoàn toàn) và 'evidence' (bằng chứng từ câu trả lời).`;
 };
 
-export const getSubmitInterviewResultUserPrompt = (input: SubmitInterviewResultInput): string => {
+export const getSubmitInterviewResultUserPrompt = (
+  input: SubmitInterviewResultInput,
+): string => {
   return `
 --- THÔNG TIN ỨNG VIÊN VÀ VỊ TRÍ ---
 - Vị trí ứng tuyển: ${input.position}
@@ -67,22 +71,34 @@ export const SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA: Schema = {
       properties: {
         problemSolving: {
           type: Type.OBJECT,
-          properties: { score: { type: Type.INTEGER }, reason: { type: Type.STRING } },
+          properties: {
+            score: { type: Type.INTEGER },
+            reason: { type: Type.STRING },
+          },
           required: ['score', 'reason'],
         },
         clarity: {
           type: Type.OBJECT,
-          properties: { score: { type: Type.INTEGER }, reason: { type: Type.STRING } },
+          properties: {
+            score: { type: Type.INTEGER },
+            reason: { type: Type.STRING },
+          },
           required: ['score', 'reason'],
         },
         confidence: {
           type: Type.OBJECT,
-          properties: { score: { type: Type.INTEGER }, reason: { type: Type.STRING } },
+          properties: {
+            score: { type: Type.INTEGER },
+            reason: { type: Type.STRING },
+          },
           required: ['score', 'reason'],
         },
         relevance: {
           type: Type.OBJECT,
-          properties: { score: { type: Type.INTEGER }, reason: { type: Type.STRING } },
+          properties: {
+            score: { type: Type.INTEGER },
+            reason: { type: Type.STRING },
+          },
           required: ['score', 'reason'],
         },
       },
@@ -126,14 +142,22 @@ export const SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA: Schema = {
               type: Type.OBJECT,
               properties: {
                 criterionId: { type: Type.STRING },
-                partialCredit: { type: Type.NUMBER, description: 'Chỉ được chọn: 0, 0.5, hoặc 1' },
+                partialCredit: {
+                  type: Type.NUMBER,
+                  description: 'Chỉ được chọn: 0, 0.5, hoặc 1',
+                },
                 evidence: { type: Type.STRING },
               },
               required: ['criterionId', 'partialCredit', 'evidence'],
             },
           },
         },
-        required: ['questionIndex', 'questionTitle', 'feedback', 'criteriaMatches'],
+        required: [
+          'questionIndex',
+          'questionTitle',
+          'feedback',
+          'criteriaMatches',
+        ],
       },
     },
   },

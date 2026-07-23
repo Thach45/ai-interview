@@ -1,6 +1,6 @@
 import { type ElementType } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Briefcase, FolderGit2, GraduationCap, Wrench, Globe, Award, User, Sparkles,
   Plus, XCircle, Trash2, CheckCircle2, Circle,
@@ -40,14 +40,14 @@ export function FormPanel({
   onAddArrayItem,
   onRemoveArrayItem,
 }: FormPanelProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="h-full flex flex-col bg-[#f8f9fa] border-r border-gray-200 overflow-hidden w-full lg:w-[480px] shrink-0">
       {/* Header */}
       <div className="px-6 pt-6 pb-4 shrink-0 flex flex-col gap-5 bg-white shadow-sm z-10 relative">
         <button
-          onClick={() => navigate('/cv-builder/templates')}
+          onClick={() => router.push('/cv-builder/templates')}
           className="flex items-center text-[#4b2c9a] hover:text-[#3d2380] transition-colors w-fit font-semibold text-sm"
         >
           <ArrowLeft className="size-5 mr-1" />

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link'
+import { usePathname } from 'next/navigation';
 
 import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../shared/utils/cn';
@@ -22,7 +23,7 @@ const SECONDARY_ITEMS = [
 ];
 
 export const AdminSidebar: React.FC = () => {
-  const location = useLocation();
+  const pathname = usePathname();
    const user = useAuthStore((state) => state.user);
 
   return (
@@ -41,11 +42,11 @@ export const AdminSidebar: React.FC = () => {
       <nav className="flex-1 space-y-1">
         <div className="px-4 mb-2 text-[11px] font-bold text-text-tertiary uppercase">Chính</div>
         {MENU_ITEMS.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = pathname === item.path;
           return (
             <Link
               key={item.id}
-              to={item.path}
+              href={item.path || '#'}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-md transition-all group ${
                 isActive 
                   ? 'bg-primary/10 text-primary font-semibold' 
@@ -67,7 +68,7 @@ export const AdminSidebar: React.FC = () => {
         {SECONDARY_ITEMS.map((item) => (
           <Link
             key={item.label}
-            to={item.path}
+            href={item.path || '#'}
             className="flex items-center gap-3 px-4 py-2.5 rounded-md text-text-secondary hover:bg-bg-surface hover:text-text-primary transition-all group"
           >
             <span className="material-symbols-outlined text-[22px] text-text-tertiary group-hover:text-text-primary">
@@ -82,10 +83,10 @@ export const AdminSidebar: React.FC = () => {
        {/* User Footer */}
             <div className="p-4 border-t border-gray-50">
               <Link 
-                to="/profile" 
+                href="/profile" 
                 className={cn(
                   "flex items-center gap-3 p-2 rounded-xl transition-all group overflow-hidden",
-                  location.pathname === '/profile' ? "bg-gray-100" : "hover:bg-gray-50"
+                  pathname === '/profile' ? "bg-gray-100" : "hover:bg-gray-50"
                 )}
               >
                 <div className="size-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs overflow-hidden shrink-0">

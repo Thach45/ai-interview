@@ -107,7 +107,7 @@ export const NotificationDropdown = () => {
                         {notification.message}
                       </p>
                       <p className="mt-1.5 text-[11px] text-gray-400">
-                        {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: vi })}
+                        {notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: vi }) : 'Vừa xong'}
                       </p>
                     </div>
                     {!notification.isRead && (

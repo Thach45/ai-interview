@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import {
   FileDown, Loader2, Check, LayoutTemplate, Sparkles,
 } from 'lucide-react';
@@ -31,7 +31,7 @@ export function PreviewPanel({
   isSaving,
   isExporting,
 }: PreviewPanelProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="flex-1 flex flex-col relative bg-[#f0f2f5] overflow-hidden">
@@ -41,7 +41,7 @@ export function PreviewPanel({
         <div className="flex items-center gap-3 pointer-events-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex items-center h-10 px-1">
             <button
-              onClick={() => navigate('/cv-builder/templates')}
+              onClick={() => router.push('/cv-builder/templates')}
               className="flex items-center gap-1.5 px-3 h-8 rounded-md text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <LayoutTemplate className="size-4 text-[#4b2c9a]" />
