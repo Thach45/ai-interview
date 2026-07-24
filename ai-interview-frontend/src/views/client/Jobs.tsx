@@ -69,6 +69,11 @@ const JobsPage: React.FC = () => {
           className="!mb-4"
         />
 
+        <div className="mb-4">
+          <JobSearch onSearch={(keyword) => setSearch(keyword)} />
+          <JobFilters selectedFilters={filters} onFilterChange={handleFilterChange} />
+        </div>
+
         {/* Content Section: Independent Scroll with Explicit Heights */}
         <div className="flex gap-8 h-[calc(100vh-180px)] mt-0">
           

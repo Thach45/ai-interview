@@ -16,6 +16,8 @@ interface PreviewPanelProps {
   onExportPdf: () => void;
   isSaving: boolean;
   isExporting: boolean;
+  showTemplates: boolean;
+  onShowTemplates: (v: boolean) => void;
 }
 
 // ===================== PREVIEW PANEL =====================
@@ -30,6 +32,8 @@ export function PreviewPanel({
   onExportPdf,
   isSaving,
   isExporting,
+  showTemplates,
+  onShowTemplates,
 }: PreviewPanelProps) {
   const router = useRouter();
 
@@ -41,7 +45,7 @@ export function PreviewPanel({
         <div className="flex items-center gap-3 pointer-events-auto">
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex items-center h-10 px-1">
             <button
-              onClick={() => router.push('/cv-builder/templates')}
+              onClick={() => onShowTemplates(!showTemplates)}
               className="flex items-center gap-1.5 px-3 h-8 rounded-md text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <LayoutTemplate className="size-4 text-[#4b2c9a]" />
@@ -89,14 +93,30 @@ export function PreviewPanel({
       </div>
 
       {/* A4 Document Area */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-10 flex justify-center items-start">
-        <div className="shrink-0 w-[210mm] min-h-[297mm] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] rounded-sm overflow-hidden mb-10">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-10 flex flex-col items-center justify-start">
+        <div className="shrink-0 w-[210mm] min-h-[297mm] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.06)] rounded-sm mb-10 relative">
+          
+          {/* Page Break Overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              backgroundImage: 'repeating-linear-gradient(to bottom, transparent, transparent calc(297mm - 2px), rgba(99, 102, 241, 0.4) calc(297mm - 2px), rgba(99, 102, 241, 0.4) 297mm)',
+              backgroundSize: '100% 297mm'
+            }}
+          />
+
           {renderedHtml ? (
             <iframe
               title="CV Preview"
               srcDoc={renderedHtml}
-              className="w-full h-[297mm] border-none"
+              className="w-full min-h-[297mm] border-none"
               sandbox="allow-same-origin allow-scripts"
+              onLoad={(e) => {
+                const iframe = e.target as HTMLIFrameElement;
+                if (iframe.contentWindow?.document.body) {
+                  iframe.style.height = iframe.contentWindow.document.documentElement.scrollHeight + 'px';
+                }
+              }}
             />
           ) : (
             <div className="w-full h-[297mm] flex flex-col items-center justify-center text-gray-400 space-y-4">

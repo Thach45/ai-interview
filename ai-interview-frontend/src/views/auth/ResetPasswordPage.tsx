@@ -7,7 +7,7 @@ import { useAuth } from '../../features/auth/hooks/useAuth';
 import type { ResetPasswordRequest } from '../../features/auth/types';
 
 export const ResetPasswordPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const email = searchParams?.get('email') || '';
 
   const { resetPassword, forgotPassword, isResettingPassword, isSendingForgotOtp } = useAuth();

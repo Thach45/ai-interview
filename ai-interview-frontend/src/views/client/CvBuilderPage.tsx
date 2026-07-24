@@ -12,6 +12,7 @@ import { LoadingIndicator } from '../../shared/components/LoadingIndicator';
 import { toast } from 'sonner';
 import { FormPanel } from '../../features/cvs/components/cv-builder/FormPanel';
 import { PreviewPanel } from '../../features/cvs/components/cv-builder/PreviewPanel';
+import { TemplatePanel } from '../../features/cvs/components/cv-builder/TemplatePanel';
 import { STORAGE_KEY, FORM_SECTIONS, isSectionComplete, safeMergeCvData, getEmptyItem } from '../../features/cvs/components/cv-builder/builder-types';
 
 // ===================== MAIN PAGE =====================
@@ -19,7 +20,7 @@ import { STORAGE_KEY, FORM_SECTIONS, isSectionComplete, safeMergeCvData, getEmpt
 const CvBuilderPage = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const router = useRouter();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const editId = searchParams?.get('id');
 
   const { data: template, isLoading: templateLoading } = useCvTemplateDetail(templateId);
@@ -32,6 +33,7 @@ const CvBuilderPage = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [showAiMods, setShowAiMods] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const deferredCvData = useDeferredValue(cvData);
   const aiModifications = existingCv?.aiModifications || [];
@@ -284,21 +286,25 @@ const CvBuilderPage = () => {
 
   // ===== MAIN RENDER =====
   return (
-    <MainLayout hideSearch maxWidth="full" className="px-6 lg:px-10 pt-3 pb-12 bg-[#f4f5f7] flex h-[calc(100vh-64px)] overflow-hidden">
+    <MainLayout hideSearch maxWidth="full" className="px-6 lg:px-10 pt-3 pb-12 bg-[#f4f5f7] flex h-[calc(100vh-64px)] overflow-hidden gap-6">
  
-      <FormPanel
-        cvData={cvData}
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-        sectionStatus={sectionStatus}
-        completedCount={completedCount}
-        onUpdateField={updateField}
-        onUpdateNested={updateNested}
-        onUpdateArrayItem={updateArrayItem}
-        onUpdateStringItem={updateStringItem}
-        onAddArrayItem={addArrayItem}
-        onRemoveArrayItem={removeArrayItem}
-      />
+      {showTemplates ? (
+        <TemplatePanel onClose={() => setShowTemplates(false)} />
+      ) : (
+        <FormPanel
+          cvData={cvData}
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+          sectionStatus={sectionStatus}
+          completedCount={completedCount}
+          onUpdateField={updateField}
+          onUpdateNested={updateNested}
+          onUpdateArrayItem={updateArrayItem}
+          onUpdateStringItem={updateStringItem}
+          onAddArrayItem={addArrayItem}
+          onRemoveArrayItem={removeArrayItem}
+        />
+      )}
 
       <PreviewPanel
         renderedHtml={renderedHtml}
@@ -310,6 +316,8 @@ const CvBuilderPage = () => {
         onExportPdf={handleExportPdf}
         isSaving={saveMutation.isPending}
         isExporting={exportPdfMutation.isPending}
+        showTemplates={showTemplates}
+        onShowTemplates={setShowTemplates}
       />
     </MainLayout>
   );

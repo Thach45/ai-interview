@@ -5,7 +5,7 @@ import { AuthLayout } from '../../layouts/AuthLayout';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 
 export const VerifyOTPPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const email = searchParams?.get('email') || '';
   const { resendOtp, isResendingOtp, verifyOtp, isVerifyingOtp } = useAuth();
   
