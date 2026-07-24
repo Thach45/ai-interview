@@ -6,6 +6,7 @@ import { cn } from '../shared/utils/cn';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import { BackgroundJobWidget } from '../shared/components/BackgroundJobWidget';
+import { PurchaseNotification } from '../features/landing-page/components/PurchaseNotification';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Trang chủ', href: '/dashboard', icon: 'dashboard' },
@@ -71,6 +72,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; className?: strin
 
       {/* Floating Background Job Widget */}
       <BackgroundJobWidget />
+      <PurchaseNotification />
     </div>
   );
 };

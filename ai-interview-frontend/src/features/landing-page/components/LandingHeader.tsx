@@ -60,7 +60,7 @@ export const LandingHeader: React.FC = () => {
           {isAuthenticated ? (
             <Link
               href="/dashboard"
-              className="group flex items-center gap-1.5 bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-full font-semibold text-[13px] transition-all duration-300"
+              className="group flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-full font-semibold text-[13px] transition-all duration-300"
             >
               Vào Dashboard
               <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import Link from 'next/link'
@@ -8,6 +9,7 @@ import { Helmet } from 'react-helmet-async';
 import { LandingHeader } from '../../features/landing-page/components/LandingHeader';
 import { Footer } from '../../components/layout/Footer';
 import { CTASection } from '../../features/landing-page/components/CTASection';
+import { PurchaseNotification } from '../../features/landing-page/components/PurchaseNotification';
 import { FeatureMockups } from '../../features/landing-page/components/FeatureMockups';
 import { StatsSection } from '../../features/landing-page/components/StatsSection';
 import { TestimonialSection } from '../../features/landing-page/components/TestimonialSection';
@@ -193,6 +195,7 @@ export const LandingPage: React.FC = () => {
 
       <CTASection />
       <Footer />
+      <PurchaseNotification />
     </div>
   );
 };
