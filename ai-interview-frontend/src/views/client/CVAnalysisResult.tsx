@@ -7,9 +7,11 @@ import { useCvTemplatesClient } from '../../features/cvs/hooks/useCvTemplatesCli
 import { XCircle, AlertTriangle, Target, BrainCircuit, Lightbulb, Sparkles, ChevronDown, Loader2, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingIndicator } from '../../shared/components/LoadingIndicator';
+import { FileText } from 'lucide-react';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import { CvHtmlPreview } from '../../features/cvs/components/my-cv/CvHtmlPreview';
+import { CoverLetterModal } from '../../features/cvs/components/cv-analysis/CoverLetterModal';
 
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
@@ -25,6 +27,8 @@ export default function CVAnalysisResultPage() {
   const router = useRouter();
   const [showDetail, setShowDetail] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'recommendations'>('overview');
+  
+  const [isCoverLetterModalOpen, setIsCoverLetterModalOpen] = useState(false);
   
   const { cvs } = useCvs();
 
@@ -59,7 +63,7 @@ export default function CVAnalysisResultPage() {
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <AlertTriangle size={48} className="text-amber-500 mb-4" />
            <p className="text-lg font-bold">Thiếu thông tin phân tích</p>
-           <button onClick={() => router.push(-1)} className="mt-4 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
+           <button onClick={() => router.back()} className="mt-4 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
         </div>
       </MainLayout>
     );
@@ -102,7 +106,7 @@ export default function CVAnalysisResultPage() {
            <XCircle size={60} className="text-red-500 mb-4" />
            <p className="text-xl font-bold text-gray-800">Lỗi khi tải kết quả phân tích</p>
            <p className="text-gray-500 mt-2 mb-6">Không thể kết nối hoặc dữ liệu không tồn tại.</p>
-           <button onClick={() => router.push(-1)} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
+           <button onClick={() => router.back()} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
         </div>
       </MainLayout>
     );
@@ -173,7 +177,7 @@ export default function CVAnalysisResultPage() {
               <p className="text-gray-600 text-[14px] leading-relaxed">
                 {result.summary}
               </p>
-              <div className="mt-4 flex gap-3">
+              <div className="mt-4 flex gap-3 flex-wrap">
                 <button 
                   onClick={() => setShowDetail(prev => !prev)}
                   className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[13px] font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm flex items-center gap-1.5"
@@ -188,6 +192,16 @@ export default function CVAnalysisResultPage() {
                 >
                   <BrainCircuit size={16} />
                   Tối ưu CV với AI
+                </button>
+
+                <div className="w-px h-8 bg-gray-200 mx-1 self-center hidden sm:block"></div>
+                
+                <button 
+                  onClick={() => setIsCoverLetterModalOpen(true)}
+                  className="px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-lg text-[13px] font-semibold hover:bg-indigo-100 hover:border-indigo-200 transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <FileText size={16} />
+                  Tạo Cover Letter
                 </button>
               </div>
             </div>
@@ -312,6 +326,10 @@ export default function CVAnalysisResultPage() {
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+      {/* Mock Modals */}
+      <AnimatePresence>
+        {isCoverLetterModalOpen && <CoverLetterModal isOpen={isCoverLetterModalOpen} onClose={() => setIsCoverLetterModalOpen(false)} />}
       </AnimatePresence>
     </MainLayout>
   );

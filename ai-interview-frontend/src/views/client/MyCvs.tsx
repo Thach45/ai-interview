@@ -18,6 +18,14 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { useCvAnalysisHistory } from '../../features/cvs/hooks/useCvAnalysis';
 import { useRouter } from 'next/navigation';
+import { LinkedInExportModal } from '../../features/cvs/components/cv-analysis/LinkedInExportModal';
+import { AnimatePresence } from 'framer-motion';
+
+const LinkedInIcon = ({ className }: { className?: string }) => (
+  <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em">
+    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+  </svg>
+);
 
 const MyCvs: React.FC = () => {
   const router = useRouter();
@@ -28,6 +36,7 @@ const MyCvs: React.FC = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCvId, setSelectedCvId] = useState<string | null>(null);
+  const [isLinkedInModalOpen, setIsLinkedInModalOpen] = useState(false);
 
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
@@ -58,13 +67,7 @@ const MyCvs: React.FC = () => {
           description="Lưu trữ và quản lý các bản CV của bạn để phân tích AI nhanh chóng."
           actions={
             <>
-              <button 
-                onClick={() => router.push('/cv-builder/templates')}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-2xl font-bold shadow-sm hover:border-primary/50 hover:text-primary hover:-translate-y-0.5 transition-all duration-200"
-              >
-                <BrainCircuit size={20} />
-                Tạo CV bằng AI
-              </button>
+             
               <button 
                 onClick={() => setIsUploadModalOpen(true)}
                 className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/25 hover:bg-primary-pressed hover:-translate-y-0.5 transition-all duration-200"
@@ -185,7 +188,16 @@ const MyCvs: React.FC = () => {
                     </div>
 
                     <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                     
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsLinkedInModalOpen(true);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f4faff] text-[#0a66c2] hover:bg-[#0a66c2] hover:text-white rounded-lg transition-colors text-[11px] font-bold border border-[#dce6f1]"
+                      >
+                        <LinkedInIcon className="size-3" />
+                        Xuất LinkedIn
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -329,6 +341,9 @@ const MyCvs: React.FC = () => {
           isOpen={isUploadModalOpen} 
           onClose={() => setIsUploadModalOpen(false)}
         />
+        <AnimatePresence>
+          {isLinkedInModalOpen && <LinkedInExportModal isOpen={isLinkedInModalOpen} onClose={() => setIsLinkedInModalOpen(false)} />}
+        </AnimatePresence>
       </div>
     </MainLayout>
   );

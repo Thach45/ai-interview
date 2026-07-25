@@ -8,7 +8,11 @@ import {
 import { cn } from '../../../../shared/utils/cn';
 import type { CvFormData } from '../../type/builder-cv.type';
 import { FORM_SECTIONS, type FormSection, isSectionComplete } from './builder-types';
-import { SectionHeader, FormField, ArrayBlock, DetailArrayBlock } from './builder-components';
+import { DetailArrayBlock } from '@/features/cvs/components/cv-builder/DetailArrayBlock';
+import { ArrayBlock } from '@/features/cvs/components/cv-builder/ArrayBlock';
+import { FormField } from '@/features/cvs/components/cv-builder/FormField';
+import { SectionHeader } from '@/features/cvs/components/cv-builder/SectionHeader';
+
 
 // ===================== PROPS =====================
 
