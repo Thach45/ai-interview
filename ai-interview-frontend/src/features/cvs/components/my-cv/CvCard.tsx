@@ -1,5 +1,6 @@
 import React from 'react';
-import { FileText, Calendar, ExternalLink, MoreVertical, Trash2 } from 'lucide-react';
+import { FileText, Calendar, ExternalLink, Trash2, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import type { UserCv } from '../../type/cy.type';
@@ -10,6 +11,12 @@ interface CvCardProps {
 }
 
 const CvCard: React.FC<CvCardProps> = ({ cv, onDelete }) => {
+  const handleShare = () => {
+    const url = `${window.location.origin}/public/cv/${cv.id}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Đã sao chép link chia sẻ CV!');
+  };
+
   return (
     <div className="group relative bg-white border border-gray-100 rounded-2xl p-5 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 overflow-hidden">
       {/* Background Decor */}
@@ -21,12 +28,19 @@ const CvCard: React.FC<CvCardProps> = ({ cv, onDelete }) => {
         </div>
         
         <div className="flex items-center gap-1">
+          <button 
+            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+            title="Chia sẻ CV"
+            onClick={handleShare}
+          >
+            <Share2 size={18} />
+          </button>
           <a 
             href={cv.fileUrl} 
             target="_blank" 
             rel="noopener noreferrer"
             className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-            title="Xem CV"
+            title="Xem PDF"
           >
             <ExternalLink size={18} />
           </a>

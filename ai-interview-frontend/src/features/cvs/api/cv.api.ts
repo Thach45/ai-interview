@@ -21,6 +21,14 @@ export const cvApi = {
   },
 
   /**
+   * Lấy thông tin CV công khai theo ID
+   */
+  getPublicCvById: async (cvId: string): Promise<any> => {
+    const response = await apiClient.get<any, { success: boolean; data: any }>(`/cv-builder/public/${cvId}`);
+    return response.data;
+  },
+
+  /**
    * Upload CV mới
    */
   uploadCv: async (file: File, title: string): Promise<UserCv> => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit, Edit3 } from 'lucide-react';
+import { Plus, Search, Loader2, Inbox, ExternalLink, Trash2, Calendar, BrainCircuit, Edit3, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { MainLayout } from '../../layouts/MainLayout';
 import { PageHeader } from '../../shared/components/PageHeader';
 import UploadCvModal from '../../features/cvs/components/my-cv/UploadCvModal';
@@ -127,6 +128,18 @@ const MyCvs: React.FC = () => {
                       </div>
                       
                       <div className="flex items-center gap-1 shrink-0">
+                        <button 
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                          title="Chia sẻ CV"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const url = `${window.location.origin}/public/cv/${cv.id}`;
+                            navigator.clipboard.writeText(url);
+                            toast.success('Đã sao chép link chia sẻ CV!');
+                          }}
+                        >
+                          <Share2 size={16} />
+                        </button>
                         {cv.templateId ? (
                           <button 
                             className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"

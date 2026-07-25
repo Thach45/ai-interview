@@ -147,6 +147,31 @@ export class CvBuilderService {
   }
 
   /**
+   * Lay chi tiet CV cong khai (khong can xac thuc)
+   */
+  async getPublicCvById(id: string) {
+    const cv = await this.userCvRepository.findFirst({
+      where: { id },
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            htmlStructure: true,
+            cssStyles: true,
+          },
+        },
+      },
+    });
+
+    if (!cv) {
+      throw new NotFoundException('Không tìm thấy CV');
+    }
+
+    return cv;
+  }
+
+  /**
    * Xoa CV Builder
    */
   async deleteCv(userId: string, id: string) {

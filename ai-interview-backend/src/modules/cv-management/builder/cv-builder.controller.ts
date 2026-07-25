@@ -14,6 +14,7 @@ import { TokenPayload } from '../../../common/types/jwt.type';
 import { CvBuilderService } from './cv-builder.service';
 import { SaveCvDto, ExportPdfDto } from './dto/cv-builder.dto';
 import { HasRole } from '../../../common/decorators/has-role.decorator';
+import { IsPublic } from '../../../common/decorators/public.decorator';
 import { Role } from '@prisma/client';
 
 @Controller('cv-builder')
@@ -55,6 +56,15 @@ export class CvBuilderController {
   @Get(':id')
   async getCvById(@CurrentUser() user: TokenPayload, @Param('id') id: string) {
     return this.cvBuilderService.getCvById(user.id, id);
+  }
+
+  /**
+   * GET /cv-builder/public/:id -> Chi tiet CV Builder (Public)
+   */
+  @Get('public/:id')
+  @IsPublic()
+  async getPublicCvById(@Param('id') id: string) {
+    return this.cvBuilderService.getPublicCvById(id);
   }
 
   /**

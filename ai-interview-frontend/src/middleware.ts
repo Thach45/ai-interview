@@ -17,6 +17,7 @@ const publicPaths = [
   "/verify-otp",
   "/test-loading",
   "/unauthorized",
+  "/public",
 ];
 
 const adminPaths = ["/admin"];
