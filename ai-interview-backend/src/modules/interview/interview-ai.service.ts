@@ -12,6 +12,7 @@ import { InterviewLanguage, InterviewPersona } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../../providers/ai/ai.service';
 import { GoogleTtsService } from '../../providers/ai/google-tts.service';
+import { GroqSttService } from '../../providers/ai/groq-stt.service';
 import { CreditsService } from '../credits/credits.service';
 import { SetupInterviewDto } from './dto/interview.dto';
 
@@ -36,6 +37,7 @@ export class InterviewAiService {
     private readonly interviewMessageRepository: InterviewMessageRepository,
     private readonly interviewResultRepository: InterviewResultRepository,
     private readonly aiService: AiService,
+    private readonly groqSttService: GroqSttService,
     private readonly googleTtsService: GoogleTtsService,
     private readonly creditsService: CreditsService,
     private readonly eventEmitter: EventEmitter2,
@@ -102,7 +104,6 @@ export class InterviewAiService {
       persona: dto.persona,
       duration: dto.duration,
     });
-
     // 5. Deduct credit + create session in a single Prisma transaction
     const session = await this.prisma.$transaction(async (tx) => {
       await this.creditsService.decrementCredits(
@@ -452,11 +453,46 @@ export class InterviewAiService {
     const language = session.language || InterviewLanguage.VIETNAMESE;
 
     // 1. Transcribe audio to text
-    const text = await this.aiService.transcribeAudio(
-      audioBuffer,
-      mimeType,
-      language,
+    let text = '';
+    const audioSize = audioBuffer.length;
+
+    this.logger.log(
+      `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=started language=${language} audioBytes=${audioSize}`,
     );
+
+    try {
+      text = await this.groqSttService.transcribeAudio(
+        audioBuffer,
+        mimeType,
+        language,
+        this.buildSttPrompt(session),
+      );
+      this.logger.log(
+        `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=failed error=${error}`,
+      );
+    }
+
+    if (!text) {
+      this.logger.log(
+        `[STT] session=${sessionId} provider=gemini status=started language=${language} audioBytes=${audioSize}`,
+      );
+      text = await this.aiService.transcribeAudio(
+        audioBuffer,
+        mimeType,
+        language,
+      );
+      this.logger.log(
+        `[STT] session=${sessionId} provider=gemini status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
+      );
+    }
+
+    if (!text) {
+      throw new BadRequestException('Không nhận diện được nội dung giọng nói');
+    }
 
     // 2. Generate AI response with streaming
     const responseAI = await this.generateMessage(userId, session, text, true);
@@ -466,6 +502,40 @@ export class InterviewAiService {
       ...responseAI,
       userText: text,
     };
+  }
+
+  private buildSttPrompt(session: {
+    jobTitle: string;
+    focusSkills: string[];
+    coreQuestions: unknown;
+  }): string {
+    const questionTitles = Array.isArray(session.coreQuestions)
+      ? session.coreQuestions
+          .map((question) =>
+            typeof question === 'object' &&
+            question !== null &&
+            'title' in question
+              ? String(question.title)
+              : '',
+          )
+          .filter(Boolean)
+      : [];
+
+    const context = [
+      `Interview role: ${session.jobTitle}.`,
+      session.focusSkills.length
+        ? `Focus skills: ${session.focusSkills.join(', ')}.`
+        : '',
+      questionTitles.length
+        ? `Question topics: ${questionTitles.join('; ')}.`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return context.slice(0, 600);
   }
 
   /**

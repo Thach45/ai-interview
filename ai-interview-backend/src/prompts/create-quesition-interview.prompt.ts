@@ -52,6 +52,7 @@ Nhiệm vụ của bạn là tạo ra một danh sách chủ đề/mục tiêu �
 
 8. **Định dạng dữ liệu trả về**:
    - Bạn bắt buộc phải trả về kết quả khớp chính xác với JSON Schema được yêu cầu. Không kèm theo bất kỳ văn bản giải thích nào khác ngoài chuỗi JSON sạch.
+
 `;
 
 export const getCreateQuestionsUserPrompt = (

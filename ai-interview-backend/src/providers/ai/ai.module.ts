@@ -4,12 +4,14 @@ import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
 import { AiService } from './ai.service';
 import { GoogleTtsService } from './google-tts.service';
+import { GroqSttService } from './groq-stt.service';
 
 @Global()
 @Module({
   providers: [
     AiService,
     GoogleTtsService,
+    GroqSttService,
     {
       provide: 'DEEPSEEK_CLIENT',
       useFactory: (configService: ConfigService) => {
@@ -30,6 +32,12 @@ import { GoogleTtsService } from './google-tts.service';
       inject: [ConfigService],
     },
   ],
-  exports: [AiService, GoogleTtsService, 'DEEPSEEK_CLIENT', 'GEMINI_CLIENT'],
+  exports: [
+    AiService,
+    GoogleTtsService,
+    GroqSttService,
+    'DEEPSEEK_CLIENT',
+    'GEMINI_CLIENT',
+  ],
 })
 export class AiModule {}
