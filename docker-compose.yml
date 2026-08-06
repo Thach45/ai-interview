@@ -27,17 +27,6 @@ services:
     env_file:
       - ./ai-interview-backend/.env
 
-  # --- 3. FRONTEND ---
-  frontend:
-    build:
-      context: ./ai-interview-frontend
-      dockerfile: Dockerfile
-    container_name: ai_interview_frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
 
 volumes:
   redis_data:
