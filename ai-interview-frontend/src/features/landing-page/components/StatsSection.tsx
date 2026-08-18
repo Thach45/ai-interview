@@ -39,7 +39,7 @@ const AnimatedCounter: React.FC<{ value: number }> = ({ value }) => {
 };
 
 export const StatsSection: React.FC = () => (
-  <section className="border-b border-gray-200 bg-white py-16 sm:py-20">
+  <section id="stats" aria-label="Kết quả của Arion" className="scroll-mt-24 border-b border-gray-200 bg-white py-16 sm:py-20">
     <div className="mx-auto max-w-6xl px-6">
       <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-gray-200">
         {STATS.map((stat, idx) => (

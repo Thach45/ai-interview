@@ -232,7 +232,7 @@ export function FeatureMockups() {
 
   return (
     <>
-      <section id="features" aria-labelledby="features-title" className="border-b border-gray-200 bg-white px-6 py-20 sm:py-24">
+      <section id="features" aria-labelledby="features-title" className="scroll-mt-24 border-b border-gray-200 bg-white px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl text-center"><p className="text-xs font-medium uppercase tracking-[0.16em] text-gray-500">Một nền tảng, ba bước chuẩn bị</p><h2 id="features-title" className="mt-5 text-4xl font-semibold tracking-tight text-gray-950 sm:text-5xl">Mọi thứ bạn cần cho cơ hội tiếp theo.</h2><p className="mt-5 text-base leading-7 text-gray-600">Dùng từng công cụ riêng lẻ, hoặc đi từ CV đến báo cáo trong cùng một hành trình.</p></div>
       </section>
 

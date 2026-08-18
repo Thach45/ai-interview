@@ -21,7 +21,7 @@ export const PricingSection: React.FC = () => {
   };
 
   return (
-    <section id="pricing" className="border-t border-gray-200 bg-white py-20 sm:py-24">
+    <section id="pricing" className="scroll-mt-24 border-t border-gray-200 bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         
         {/* Section Header */}

@@ -12,7 +12,7 @@ const fadeInUp = {
 
 export const TestimonialSection: React.FC = () => {
   return (
-    <section className="overflow-hidden border-t border-gray-200 bg-gray-50 py-20 sm:py-24">
+    <section id="testimonials" aria-labelledby="testimonials-heading" className="scroll-mt-24 overflow-hidden border-t border-gray-200 bg-gray-50 py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <motion.div 
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
@@ -22,7 +22,7 @@ export const TestimonialSection: React.FC = () => {
             <span className="material-symbols-outlined text-[14px]">groups</span>
             Cộng đồng
           </span>
-          <h2 className="text-4xl font-semibold tracking-tight text-gray-950 md:text-5xl">
+          <h2 id="testimonials-heading" className="text-4xl font-semibold tracking-tight text-gray-950 md:text-5xl">
             Được tin tưởng bởi hàng nghìn ứng viên
           </h2>
           <p className="mt-4 text-base leading-7 text-gray-600">

@@ -55,9 +55,9 @@ export function LandingPage() {
         </section>
 
         <HowItWorksSection />
+        <StatsSection />
         <FeatureMockups />
         <UseCasesSection />
-        <StatsSection />
         <TestimonialSection />
         <FAQSection />
         <PricingSection />

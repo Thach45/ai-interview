@@ -5,9 +5,11 @@ import { useAuthStore } from '../../../store/authStore';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: 'features', label: 'Tính năng', href: '#features' },
   { id: 'how-it-works', label: 'Cách hoạt động', href: '#how-it-works' },
-  { id: 'faq', label: 'Câu hỏi', href: '#faq' },
+  { id: 'stats', label: 'Kết quả', href: '#stats' },
+  { id: 'features', label: 'Tính năng', href: '#features' },
+  { id: 'use-cases', label: 'Dành cho bạn', href: '#use-cases' },
+  { id: 'testimonials', label: 'Đánh giá', href: '#testimonials' },
   { id: 'pricing', label: 'Bảng giá', href: '#pricing' },
 ];
 
@@ -39,7 +41,7 @@ export const LandingHeader: React.FC = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-5 lg:flex">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.id}
@@ -52,7 +54,7 @@ export const LandingHeader: React.FC = () => {
         </nav>
 
         {/* Actions */}
-        <div className="hidden shrink-0 items-center gap-2 md:flex">
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
           {isAuthenticated ? (
             <Link
               href="/dashboard"
@@ -83,7 +85,7 @@ export const LandingHeader: React.FC = () => {
         <button
           aria-label={isMobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
           aria-expanded={isMobileMenuOpen}
-          className="p-2 text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
+          className="p-2 text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -92,7 +94,7 @@ export const LandingHeader: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="absolute left-0 right-0 top-full border-b border-gray-200 bg-white px-4 py-4 shadow-sm pointer-events-auto md:hidden">
+        <div className="absolute left-0 right-0 top-full border-b border-gray-200 bg-white px-4 py-4 shadow-sm pointer-events-auto lg:hidden">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.id}
