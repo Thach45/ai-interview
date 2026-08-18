@@ -7,6 +7,7 @@ import { ArrowUpRight, Menu, X } from 'lucide-react';
 const NAV_ITEMS = [
   { id: 'features', label: 'Tính năng', href: '#features' },
   { id: 'how-it-works', label: 'Cách hoạt động', href: '#how-it-works' },
+  { id: 'faq', label: 'Câu hỏi', href: '#faq' },
   { id: 'pricing', label: 'Bảng giá', href: '#pricing' },
 ];
 
@@ -24,31 +25,26 @@ export const LandingHeader: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+    <div className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white/95 px-4 backdrop-blur pointer-events-none">
       <header
-        className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between px-2 py-2 rounded-full border border-gray-200/40 shadow-[0_8px_32px_rgba(0,0,0,0.06)] ${
+        className={`pointer-events-auto mx-auto flex max-w-6xl items-center justify-between py-3 transition-all duration-200 ${
           scrolled
-            ? 'bg-white/80 backdrop-blur-2xl w-full max-w-3xl'
-            : 'bg-white/50 backdrop-blur-md w-full max-w-4xl'
+            ? 'max-w-5xl'
+            : 'w-full'
         }`}
       >
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 group shrink-0 pl-3 pr-2">
-          <div className="size-8 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
-            <img src="/logo/logo_ai_interview.png" alt="AI Interview Logo" className="w-full h-full object-contain drop-shadow-sm" />
-          </div>
-          <span className="text-[16px] font-bold text-gray-900 tracking-tight whitespace-nowrap hidden sm:block">
-            AI Interview
-          </span>
+        <Link href="/" className="group flex shrink-0 items-center">
+          <img src="/logo/logo.png" alt="Arion" className="h-[58px] w-auto transition-transform duration-500 group-hover:scale-[1.03]" />
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6 px-4">
+        <nav className="hidden items-center gap-6 md:flex">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.id}
               href={item.href}
-              className="text-[13px] font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+              className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {item.label}
             </a>
@@ -56,11 +52,11 @@ export const LandingHeader: React.FC = () => {
         </nav>
 
         {/* Actions */}
-        <div className="hidden md:flex items-center gap-2 shrink-0">
+        <div className="hidden shrink-0 items-center gap-2 md:flex">
           {isAuthenticated ? (
             <Link
               href="/dashboard"
-              className="group flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-full font-semibold text-[13px] transition-all duration-300"
+              className="group inline-flex min-h-10 items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               Vào Dashboard
               <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -69,13 +65,13 @@ export const LandingHeader: React.FC = () => {
             <>
               <Link
                 href="/login"
-                className="px-4 py-2.5 text-[13px] font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                className="inline-flex min-h-10 items-center px-3 text-sm font-medium text-gray-600 transition-colors hover:text-gray-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Đăng nhập
               </Link>
               <Link
                 href="/register"
-                className="group flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-full font-bold text-[13px] transition-all duration-300 shadow-md shadow-primary/20"
+                className="group inline-flex min-h-10 items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 Đăng ký
               </Link>
@@ -85,7 +81,9 @@ export const LandingHeader: React.FC = () => {
 
         {/* Mobile Menu Toggle */}
         <button
-          className="md:hidden text-gray-900 p-2 pr-4"
+          aria-label={isMobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+          aria-expanded={isMobileMenuOpen}
+          className="p-2 text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -94,7 +92,7 @@ export const LandingHeader: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-[110%] left-4 right-4 bg-white border border-gray-100 shadow-xl rounded-2xl py-4 px-4 flex flex-col gap-4 pointer-events-auto">
+        <div className="absolute left-0 right-0 top-full border-b border-gray-200 bg-white px-4 py-4 shadow-sm pointer-events-auto md:hidden">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.id}
@@ -110,7 +108,7 @@ export const LandingHeader: React.FC = () => {
                <Link
                  href="/dashboard"
                  onClick={() => setIsMobileMenuOpen(false)}
-                 className="w-full flex justify-center items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-full font-medium"
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-white"
                >
                  Vào Dashboard
                </Link>
@@ -119,14 +117,14 @@ export const LandingHeader: React.FC = () => {
                 <Link
                   href="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full text-center px-4 py-3 text-[15px] font-semibold text-gray-700 bg-gray-50 rounded-full"
+                  className="min-h-11 w-full rounded-md border border-gray-300 px-4 py-3 text-center text-sm font-medium text-gray-700"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full text-center bg-primary text-white px-6 py-3 rounded-full font-medium text-[15px]"
+                  className="min-h-11 w-full rounded-md bg-primary px-6 py-3 text-center text-sm font-medium text-white"
                 >
                   Đăng ký miễn phí
                 </Link>

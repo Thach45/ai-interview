@@ -1,7 +1,7 @@
 {
-  "name": "ai-interview-backend-nestjs",
+  "name": "arion-backend-nestjs",
   "version": "1.0.0",
-  "description": "AI Interview Platform - NestJS Backend",
+  "description": "Arion Platform - NestJS Backend",
   "author": "",
   "private": true,
   "license": "UNLICENSED",

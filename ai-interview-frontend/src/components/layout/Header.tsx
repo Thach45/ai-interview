@@ -49,17 +49,12 @@ export const Header: React.FC<HeaderProps> = ({ hideSearch = false }) => {
   const navItems = isAuthenticated ? PRIVATE_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 lg:px-10 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shrink-0 gap-6">
+    <header className="h-[76px] flex items-center justify-between px-6 lg:px-10 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 shrink-0 gap-6">
       
       {/* Left: Brand & Navigation */}
       <div className="flex items-center shrink-0">
-        <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-3 group mr-6">
-          <div className="size-8 flex items-center justify-center transition-transform group-hover:scale-105">
-            <img src="/logo/logo_ai_interview.png" alt="Logo" className="w-full h-full object-contain" />
-          </div>
-          <span className="text-[17px] font-bold text-gray-900 hidden md:block tracking-tight whitespace-nowrap">
-            AI Interview
-          </span>
+        <Link href={isAuthenticated ? "/dashboard" : "/"} className="group mr-6 flex shrink-0 items-center">
+          <img src="/logo/logo.png" alt="Arion" className="h-[58px] w-auto transition-transform group-hover:scale-[1.03]" />
         </Link>
         
         {/* Navigation Container */}

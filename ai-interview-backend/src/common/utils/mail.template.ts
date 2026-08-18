@@ -1,4 +1,4 @@
-const BRAND_NAME = 'AI Interview';
+const BRAND_NAME = 'Arion';
 const PRIMARY_COLOR = '#5645d4';
 
 const baseLayout = (content: string) => `

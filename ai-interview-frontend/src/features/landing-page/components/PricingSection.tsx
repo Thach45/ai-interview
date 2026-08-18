@@ -21,19 +21,19 @@ export const PricingSection: React.FC = () => {
   };
 
   return (
-    <section id="pricing" className="py-24 bg-gray-50 border-t border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="pricing" className="border-t border-gray-200 bg-white py-20 sm:py-24">
+      <div className="mx-auto max-w-6xl px-6">
         
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-widest mb-4">
-            Bảng Giá Dịch Vụ
+        <div className="mx-auto mb-14 max-w-2xl text-center">
+          <span className="inline-block rounded-md border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary">
+            Bảng giá
           </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
+          <h2 className="mt-5 text-3xl font-semibold tracking-tight text-gray-950 md:text-5xl">
             Đầu tư cho sự nghiệp của bạn
           </h2>
-          <p className="text-lg text-gray-500 font-medium">
-            Mọi tính năng mạnh mẽ nhất của AI Interview được gói gọn trong các lựa chọn phù hợp với nhu cầu của bạn.
+          <p className="mt-4 text-base leading-7 text-gray-600">
+            Mọi tính năng mạnh mẽ nhất của Arion được gói gọn trong các lựa chọn phù hợp với nhu cầu của bạn.
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export const PricingSection: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           {isLoading ? (
             [1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-[450px] bg-white border border-gray-100 rounded-2xl animate-pulse shadow-sm" />
+              <div key={i} className="h-[450px] animate-pulse rounded-xl border border-gray-200 bg-gray-50" />
             ))
           ) : packages && packages.length > 0 ? (
             packages.map((pkg, idx) => (
@@ -53,7 +53,7 @@ export const PricingSection: React.FC = () => {
               />
             ))
           ) : (
-            <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-dashed border-gray-200">
+            <div className="col-span-full rounded-xl border border-dashed border-gray-300 bg-gray-50 py-16 text-center">
               <span className="material-symbols-outlined text-[48px] text-gray-300 mb-2">inventory_2</span>
               <p className="text-gray-500 font-medium">Đang cập nhật các gói dịch vụ...</p>
             </div>

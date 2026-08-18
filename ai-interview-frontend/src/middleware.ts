@@ -18,6 +18,9 @@ const publicPaths = [
   "/test-loading",
   "/unauthorized",
   "/public",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/opengraph-image",
 ];
 
 const adminPaths = ["/admin"];

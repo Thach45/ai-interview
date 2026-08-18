@@ -1,5 +1,8 @@
-import React, { useState, useRef } from 'react';
-import Link from 'next/link'
+'use client';
+
+import React, { useRef, useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, ArrowRight, MailCheck } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { AuthLayout } from '../../layouts/AuthLayout';
 import { useAuth } from '../../features/auth/hooks/useAuth';
@@ -8,107 +11,31 @@ export const VerifyOTPPage: React.FC = () => {
   const searchParams = useSearchParams();
   const email = searchParams?.get('email') || '';
   const { resendOtp, isResendingOtp, verifyOtp, isVerifyingOtp } = useAuth();
-  
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const otpComplete = otp.join('').length === 6;
 
   const handleChange = (element: HTMLInputElement, index: number) => {
-    if (isNaN(Number(element.value))) return false;
-
-    const newOtp = [...otp];
-    newOtp[index] = element.value;
-    setOtp(newOtp);
-
-    // Tự động nhảy sang ô tiếp theo
-    if (element.value !== '' && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    if (!/^\d?$/.test(element.value)) return;
+    const next = [...otp];
+    next[index] = element.value;
+    setOtp(next);
+    if (element.value && index < 5) inputRefs.current[index + 1]?.focus();
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && otp[index] === '' && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleResend = () => {
-    if (email) {
-      resendOtp(email);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const otpString = otp.join('');
-    if (otpString.length === 6) {
-      verifyOtp({ email, otp: otpString });
-    }
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (event.key === 'Backspace' && !otp[index] && index > 0) inputRefs.current[index - 1]?.focus();
   };
 
   return (
-    <AuthLayout 
-      image="/auth-hero.png"
-      title="Xác thực tài khoản"
-      subtitle="Vui lòng kiểm tra email để nhận mã bảo mật."
-    >
-      <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-        <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-text-primary tracking-tight mb-1">Nhập mã OTP</h1>
-          <p className="text-text-secondary text-[14px]">
-            Chúng tôi đã gửi mã xác thực đến email: <br />
-            <strong className="text-text-primary">{email}</strong>
-          </p>
-        </div>
-
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="flex justify-between gap-2">
-            {otp.map((data, index) => (
-              <input 
-                key={index}
-                type="text" 
-                maxLength={1}
-                value={data}
-                ref={(el) => { inputRefs.current[index] = el; }}
-                onChange={(e) => handleChange(e.target, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                className="size-12 bg-bg-surface border border-border-hairline rounded-xl text-center text-lg font-bold outline-none focus:border-primary focus:bg-white transition-all"
-              />
-            ))}
-          </div>
-
-          <button 
-            type="submit"
-            disabled={isVerifyingOtp || otp.join('').length < 6}
-            className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-[15px] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-          >
-            {isVerifyingOtp ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Đang xác thực...
-              </>
-            ) : (
-              'Xác nhận'
-            )}
-          </button>
+    <AuthLayout image="" title="" subtitle="">
+      <div>
+        <Link href="/login" className="mb-10 inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"><ArrowLeft size={17} aria-hidden="true" />Quay lại đăng nhập</Link>
+        <div className="mb-10"><span className="flex size-12 items-center justify-center rounded-xl bg-gray-100 text-black"><MailCheck size={23} aria-hidden="true" /></span><h1 className="mt-6 text-4xl font-semibold tracking-tight text-black sm:text-5xl">Xác thực email</h1><p className="mt-4 text-base leading-7 text-gray-500">Chúng tôi đã gửi mã gồm 6 chữ số đến <strong className="font-medium text-gray-950">{email || 'email của bạn'}</strong>.</p></div>
+        <form className="space-y-7" onSubmit={(event) => { event.preventDefault(); if (otpComplete) verifyOtp({ email, otp: otp.join('') }); }}>
+          <div className="flex justify-between gap-2 sm:gap-3" aria-label="Mã OTP gồm 6 chữ số">{otp.map((value, index) => <input key={index} ref={(element) => { inputRefs.current[index] = element; }} type="text" inputMode="numeric" autoComplete={index === 0 ? 'one-time-code' : 'off'} maxLength={1} value={value} onChange={(event) => handleChange(event.target, index)} onKeyDown={(event) => handleKeyDown(event, index)} aria-label={`Chữ số ${index + 1}`} className="size-12 rounded-xl border border-gray-200 bg-white text-center text-xl font-semibold text-gray-950 outline-none transition-colors focus:border-black sm:size-14" />)}</div>
+          <button type="submit" disabled={isVerifyingOtp || !otpComplete} className="inline-flex min-h-16 w-full items-center justify-center gap-3 rounded-xl bg-black px-5 text-base font-medium text-white transition-transform hover:bg-gray-800 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">{isVerifyingOtp ? <><span className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />Đang xác thực</> : <>Xác nhận <ArrowRight size={20} aria-hidden="true" /></>}</button>
         </form>
-
-        <div className="mt-8 text-center space-y-4">
-          <p className="text-[13px] text-text-secondary">
-            Chưa nhận được mã?{' '}
-            <button 
-              type="button"
-              onClick={handleResend}
-              disabled={isResendingOtp || !email}
-              className="font-bold text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isResendingOtp ? 'Đang gửi...' : 'Gửi lại mã'}
-            </button>
-          </p>
-          <p className="text-[13px] text-text-secondary">
-            Quay lại trang{' '}
-            <Link href="/login" className="font-bold text-primary hover:underline">Đăng nhập</Link>
-          </p>
-        </div>
+        <p className="mt-8 text-center text-sm text-gray-500">Chưa nhận được mã? <button type="button" onClick={() => { if (email) resendOtp(email); }} disabled={isResendingOtp || !email} className="font-medium text-black underline underline-offset-4 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50">{isResendingOtp ? 'Đang gửi...' : 'Gửi lại mã'}</button></p>
       </div>
     </AuthLayout>
   );

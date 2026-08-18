@@ -12,20 +12,20 @@ const fadeInUp = {
 
 export const TestimonialSection: React.FC = () => {
   return (
-    <section className="py-24 bg-white border-t border-gray-100 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="overflow-hidden border-t border-gray-200 bg-gray-50 py-20 sm:py-24">
+      <div className="mx-auto max-w-6xl px-6">
         <motion.div 
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp}
-          className="text-center mb-16"
+          className="mb-14 text-center"
         >
-          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gray-100 text-gray-900 text-[11px] font-bold rounded-full mb-6 uppercase tracking-[0.1em] border border-gray-200">
+          <span className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700">
             <span className="material-symbols-outlined text-[14px]">groups</span>
             Cộng đồng
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tighter mb-4">
+          <h2 className="text-4xl font-semibold tracking-tight text-gray-950 md:text-5xl">
             Được tin tưởng bởi hàng nghìn ứng viên
           </h2>
-          <p className="text-[17px] text-gray-500 font-medium">
+          <p className="mt-4 text-base leading-7 text-gray-600">
             Lắng nghe câu chuyện thành công từ những người đã chinh phục được công việc mơ ước.
           </p>
         </motion.div>

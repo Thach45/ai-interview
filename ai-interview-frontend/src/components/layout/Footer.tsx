@@ -13,8 +13,8 @@ export const Footer: React.FC = () => {
           {/* Brand & Contact (Spans 4 cols) */}
           <div className="lg:col-span-4 flex flex-col justify-between">
             <div className="flex flex-col gap-8">
-              <Link href="/" className="text-white">
-                <span className="font-bold text-2xl tracking-tighter leading-none">AI INTERVIEW.</span>
+              <Link href="/" className="inline-flex">
+                <img src="/logo/logo.png" alt="Arion" className="h-14 w-auto invert" />
               </Link>
               
               <div className="space-y-6">
@@ -29,7 +29,7 @@ export const Footer: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail size={16} className="opacity-50 shrink-0" />
-                    <span>hello@aiinterview.vn</span>
+                    <span>hello@arionxai.com</span>
                   </div>
                 </div>
               </div>
@@ -130,7 +130,7 @@ export const Footer: React.FC = () => {
         {/* Massive Brand Typography */}
         <div className="w-full flex items-center justify-center pointer-events-none select-none overflow-hidden mb-12">
           <h2 className="text-[14vw] font-bold tracking-tighter leading-[0.8] text-white/5 whitespace-nowrap">
-            AI INTERVIEW
+            ARION
           </h2>
         </div>
 
@@ -138,7 +138,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[13px] border-t border-white/5 pt-8">
           <div className="flex flex-col md:flex-row gap-2 md:gap-8 items-start md:items-center">
             <p className="text-[#666666]">
-              &copy; {new Date().getFullYear()} AI Interview. All rights reserved.
+              &copy; {new Date().getFullYear()} Arion. All rights reserved.
             </p>
             <span className="hidden md:inline text-white/10">|</span>
             <span className="text-[#555555]">Mã số doanh nghiệp: 0109999999</span>

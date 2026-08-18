@@ -705,7 +705,7 @@ const InterviewRoomVideoPage: React.FC = () => {
                   Sẵn sàng phỏng vấn?
                 </h2>
                 <p className="text-sm text-gray-200 mb-10 leading-relaxed font-medium">
-                  Đảm bảo không gian yên tĩnh và trang phục chỉnh tề. AI Interviewer sẽ đánh giá biểu cảm và kỹ năng giao tiếp của bạn một cách tự động.
+                  Đảm bảo không gian yên tĩnh và trang phục chỉnh tề. Arion Interviewer sẽ đánh giá biểu cảm và kỹ năng giao tiếp của bạn một cách tự động.
                 </p>
                 <button 
                   onClick={handleStartClick}

@@ -1,117 +1,32 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { ArrowRight, LockKeyhole, Mail, UserRound } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthLayout } from '../../layouts/AuthLayout';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import { registerSchema, type RegisterFormValues } from '../../features/auth/validations/auth.validation';
 
+const fieldClass = 'min-h-14 w-full rounded-xl border bg-white px-4 text-base text-gray-950 outline-none transition-colors placeholder:text-gray-400 focus:border-gray-950';
+
 export const RegisterPage: React.FC = () => {
   const { register: registerAction, isRegistering } = useAuth();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-  });
-
-  const onSubmit = (data: RegisterFormValues) => {
-    registerAction(data);
-  };
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
 
   return (
-    <AuthLayout 
-      image="/auth-hero.png"
-      title="Khởi đầu sự nghiệp"
-      subtitle="Chỉ mất 30s để bắt đầu buổi phỏng vấn."
-    >
-      <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-        <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-text-primary tracking-tight mb-1">Bắt đầu hành trình mới! ✨</h1>
-          <p className="text-text-secondary text-[14px]">Tham gia cùng 50,000+ ứng viên đang luyện tập mỗi ngày.</p>
-        </div>
-
-        <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-1">
-            <label className="text-[12px] font-bold text-text-secondary uppercase tracking-wider ml-1">Họ và tên</label>
-            <input 
-              {...register('fullName')}
-              type="text" 
-              placeholder="Nguyễn Văn A"
-              className={`w-full px-4 py-2.5 bg-bg-surface border ${errors.fullName ? 'border-red-500' : 'border-border-hairline'} rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]`}
-            />
-            {errors.fullName && <p className="text-red-500 text-[11px] ml-1">{errors.fullName.message}</p>}
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[12px] font-bold text-text-secondary uppercase tracking-wider ml-1">Email</label>
-            <input 
-              {...register('email')}
-              type="email" 
-              placeholder="name@company.com"
-              className={`w-full px-4 py-2.5 bg-bg-surface border ${errors.email ? 'border-red-500' : 'border-border-hairline'} rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]`}
-            />
-            {errors.email && <p className="text-red-500 text-[11px] ml-1">{errors.email.message}</p>}
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[12px] font-bold text-text-secondary uppercase tracking-wider ml-1">Mật khẩu</label>
-            <input 
-              {...register('password')}
-              type="password" 
-              placeholder="Tối thiểu 8 ký tự"
-              className={`w-full px-4 py-2.5 bg-bg-surface border ${errors.password ? 'border-red-500' : 'border-border-hairline'} rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]`}
-            />
-            {errors.password && <p className="text-red-500 text-[11px] ml-1">{errors.password.message}</p>}
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[12px] font-bold text-text-secondary uppercase tracking-wider ml-1">Xác nhận mật khẩu</label>
-            <input 
-              {...register('passwordConfirmation')}
-              type="password" 
-              placeholder="••••••••"
-              className={`w-full px-4 py-2.5 bg-bg-surface border ${errors.passwordConfirmation ? 'border-red-500' : 'border-border-hairline'} rounded-xl outline-none focus:bg-white focus:border-primary transition-all text-[14px]`}
-            />
-            {errors.passwordConfirmation && <p className="text-red-500 text-[11px] ml-1">{errors.passwordConfirmation.message}</p>}
-          </div>
-
-          <button 
-            type="submit"
-            disabled={isRegistering}
-            className="w-full bg-primary text-white py-3 rounded-xl font-bold text-[15px] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 mt-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-          >
-            {isRegistering ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Đang tạo tài khoản...
-              </>
-            ) : (
-              'Tạo tài khoản'
-            )}
-          </button>
+    <AuthLayout image="" title="" subtitle="">
+      <div>
+        <div className="mb-9"><h1 className="text-4xl font-semibold tracking-tight text-black sm:text-5xl">Tạo tài khoản</h1><p className="mt-4 text-base text-gray-500">Bắt đầu chuẩn bị tốt hơn cùng Arion.</p></div>
+        <form className="space-y-5" onSubmit={handleSubmit(registerAction)} noValidate>
+          <div><label htmlFor="fullName" className="mb-2 block text-sm font-medium text-gray-950">Họ và tên</label><div className={`flex items-center gap-3 rounded-xl border px-4 ${errors.fullName ? 'border-red-500' : 'border-gray-200 focus-within:border-gray-950'}`}><UserRound size={19} aria-hidden="true" className="text-gray-500" /><input {...register('fullName')} id="fullName" autoComplete="name" placeholder="Nguyễn Văn A" aria-invalid={Boolean(errors.fullName)} className="min-h-14 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-gray-400" /></div>{errors.fullName ? <p className="mt-2 text-sm text-red-600">{errors.fullName.message}</p> : null}</div>
+          <div><label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-950">Email</label><div className={`flex items-center gap-3 rounded-xl border px-4 ${errors.email ? 'border-red-500' : 'border-gray-200 focus-within:border-gray-950'}`}><Mail size={19} aria-hidden="true" className="text-gray-500" /><input {...register('email')} id="email" type="email" autoComplete="email" placeholder="you@example.com" aria-invalid={Boolean(errors.email)} className="min-h-14 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-gray-400" /></div>{errors.email ? <p className="mt-2 text-sm text-red-600">{errors.email.message}</p> : null}</div>
+          <div><label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-950">Mật khẩu</label><div className={`flex items-center gap-3 rounded-xl border px-4 ${errors.password ? 'border-red-500' : 'border-gray-200 focus-within:border-gray-950'}`}><LockKeyhole size={19} aria-hidden="true" className="text-gray-500" /><input {...register('password')} id="password" type="password" autoComplete="new-password" placeholder="Tối thiểu 8 ký tự" aria-invalid={Boolean(errors.password)} className="min-h-14 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-gray-400" /></div>{errors.password ? <p className="mt-2 text-sm text-red-600">{errors.password.message}</p> : null}</div>
+          <div><label htmlFor="passwordConfirmation" className="mb-2 block text-sm font-medium text-gray-950">Xác nhận mật khẩu</label><input {...register('passwordConfirmation')} id="passwordConfirmation" type="password" autoComplete="new-password" placeholder="Nhập lại mật khẩu" aria-invalid={Boolean(errors.passwordConfirmation)} className={`${fieldClass} ${errors.passwordConfirmation ? 'border-red-500' : 'border-gray-200'}`} />{errors.passwordConfirmation ? <p className="mt-2 text-sm text-red-600">{errors.passwordConfirmation.message}</p> : null}</div>
+          <button type="submit" disabled={isRegistering} className="inline-flex min-h-16 w-full items-center justify-center gap-3 rounded-xl bg-black px-5 text-base font-medium text-white transition-transform hover:bg-gray-800 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">{isRegistering ? <><span className="size-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />Đang tạo tài khoản</> : <>Tạo tài khoản <ArrowRight size={20} aria-hidden="true" /></>}</button>
         </form>
-
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border-hairline"></div>
-          </div>
-          <div className="relative flex justify-center text-[11px] uppercase">
-            <span className="bg-white px-3 text-text-tertiary font-bold tracking-widest">Hoặc</span>
-          </div>
-        </div>
-
-        <button className="w-full bg-white border border-border-hairline text-text-primary py-2.5 rounded-xl font-bold text-[13px] hover:bg-bg-surface transition-all flex items-center justify-center gap-2">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="size-4" alt="Google" />
-          Đăng ký với Google
-        </button>
-
-        <p className="mt-4 text-center text-[13px] text-text-secondary">
-          Đã có tài khoản?{' '}
-          <Link href="/login" className="font-bold text-primary hover:underline">Đăng nhập</Link>
-        </p>
+        <p className="mt-9 text-center text-sm text-gray-500">Đã có tài khoản? <Link href="/login" className="font-medium text-black underline underline-offset-4 hover:text-gray-600">Đăng nhập <ArrowRight size={15} className="ml-1 inline" aria-hidden="true" /></Link></p>
       </div>
     </AuthLayout>
   );

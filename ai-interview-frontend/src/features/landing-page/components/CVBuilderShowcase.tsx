@@ -47,14 +47,11 @@ export const CVBuilderShowcase: React.FC = () => {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   return (
-    <section id="cv-builder" className="relative py-24 md:py-32 overflow-hidden bg-[#fafafa]">
+    <section id="cv-builder" className="border-y border-gray-200 bg-gray-50 py-20 sm:py-24">
       
       <VideoModal isOpen={!!activeVideo} onClose={() => setActiveVideo(null)} title={activeVideo || ''} />
       
-      {/* Decorative Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="mx-auto max-w-6xl px-6">
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           
@@ -64,7 +61,7 @@ export const CVBuilderShowcase: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-800 text-[11px] font-bold rounded-full mb-6 uppercase tracking-wider"
+              className="mb-5 inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700"
             >
               <Sparkles size={14} />
               <span>Tính năng mới</span>
@@ -75,7 +72,7 @@ export const CVBuilderShowcase: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="text-3xl font-bold text-gray-900 mb-4 tracking-tight"
+              className="text-3xl font-semibold tracking-tight text-gray-950"
             >
               Xây dựng CV chuẩn ATS chỉ trong 5 phút
             </motion.h3>
@@ -85,7 +82,7 @@ export const CVBuilderShowcase: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="text-gray-500 text-[16px] leading-relaxed mb-8"
+              className="mb-7 mt-4 text-base leading-7 text-gray-600"
             >
               Không còn đau đầu với việc thiết kế và căn lề. Công cụ Builder của chúng tôi sẽ tự động sinh ra những mẫu CV chuyên nghiệp, vượt qua mọi hệ thống lọc hồ sơ (ATS) khắt khe nhất.
             </motion.p>
@@ -99,9 +96,9 @@ export const CVBuilderShowcase: React.FC = () => {
             >
               <button 
                 onClick={() => setActiveVideo('Xây dựng CV')} 
-                className="group flex items-center gap-2 font-bold text-gray-900 hover:text-primary transition-colors"
+                className="group inline-flex min-h-11 items-center gap-2 rounded-md border border-gray-300 px-3 text-sm font-medium text-gray-800 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
-                <div className="size-10 rounded-full bg-gray-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+                <div className="flex size-7 items-center justify-center rounded-sm bg-gray-100 text-primary">
                   <Play size={16} className="ml-1" />
                 </div>
                 Xem Cách Hoạt Động
@@ -117,14 +114,14 @@ export const CVBuilderShowcase: React.FC = () => {
               className="mt-10 grid grid-cols-2 gap-6"
             >
               <div className="flex flex-col gap-2">
-                <div className="size-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center text-primary">
+                <div className="flex size-10 items-center justify-center rounded-md border border-gray-200 bg-white text-primary">
                   <Wand2 size={20} />
                 </div>
                 <h4 className="font-bold text-gray-900 text-[15px]">Thiết kế tự động</h4>
                 <p className="text-gray-500 text-[13px] font-medium leading-relaxed">Chọn template, nhập thông tin, có ngay CV đẹp mắt.</p>
               </div>
               <div className="flex flex-col gap-2">
-                <div className="size-10 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center text-green-600">
+                <div className="flex size-10 items-center justify-center rounded-md border border-gray-200 bg-white text-green-600">
                   <FileCheck2 size={20} />
                 </div>
                 <h4 className="font-bold text-gray-900 text-[15px]">Tối ưu hóa ATS</h4>
@@ -134,14 +131,10 @@ export const CVBuilderShowcase: React.FC = () => {
           </div>
           
           {/* Right Visual (Tilt 3D) */}
-          <div className="relative lg:h-[600px] flex items-center justify-center" style={{ perspective: "1000px" }}>
+          <div className="relative flex items-center justify-center lg:h-[520px]">
             
             {/* Floating Badges */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-              className="absolute -top-6 -right-6 z-20 bg-white px-4 py-3 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3"
-            >
+            <div className="absolute -right-3 -top-3 z-20 flex items-center gap-3 rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
               <div className="size-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
                 <span className="material-symbols-outlined text-[18px]">verified</span>
               </div>
@@ -149,24 +142,20 @@ export const CVBuilderShowcase: React.FC = () => {
                 <p className="text-[12px] text-gray-500 font-medium">Điểm ATS</p>
                 <p className="text-[16px] font-bold text-gray-900">100/100</p>
               </div>
-            </motion.div>
+            </div>
             
-            <motion.div
-              animate={{ y: [0, 15, 0] }}
-              transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1 }}
-              className="absolute -bottom-6 -left-6 z-20 bg-white px-4 py-3 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3"
-            >
+            <div className="absolute -bottom-3 -left-3 z-20 flex items-center gap-3 rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
               <div className="size-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
                 <Wand2 size={16} />
               </div>
               <div>
                 <p className="text-[14px] font-bold text-gray-900">AI Optimize</p>
               </div>
-            </motion.div>
+            </div>
 
             {/* The 3D Mockup */}
-            <TiltCard depth={15} className="w-full max-w-[500px] shadow-2xl rounded-[2rem] border-[8px] border-white/50 bg-white/30 backdrop-blur-3xl overflow-hidden">
-              <div className="bg-white w-full h-[500px] rounded-2xl flex flex-col overflow-hidden shadow-inner border border-gray-200/50">
+            <TiltCard depth={0} className="w-full max-w-[500px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+              <div className="flex h-[500px] w-full flex-col overflow-hidden bg-white">
                 
                 {/* Mockup Topbar */}
                 <div className="h-12 border-b border-gray-100 bg-gray-50/80 flex items-center px-4 gap-2">

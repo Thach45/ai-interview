@@ -625,7 +625,7 @@ const InterviewRoomTextPage: React.FC = () => {
                   Sẵn sàng phỏng vấn?
                 </h2>
                 <p className="text-sm text-gray-200 mb-10 leading-relaxed font-medium">
-                  Hãy đảm bảo bạn đã chuẩn bị sẵn sàng. AI Interviewer sẽ đánh giá kiến thức chuyên môn và kỹ năng xử lý vấn đề của bạn một cách tự động.
+                  Hãy đảm bảo bạn đã chuẩn bị sẵn sàng. Arion Interviewer sẽ đánh giá kiến thức chuyên môn và kỹ năng xử lý vấn đề của bạn một cách tự động.
                 </p>
                 <button 
                   onClick={handleStartClick}
@@ -691,4 +691,3 @@ const InterviewRoomTextPage: React.FC = () => {
 };
 
 export default InterviewRoomTextPage;
-

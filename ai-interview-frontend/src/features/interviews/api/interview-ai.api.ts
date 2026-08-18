@@ -3,7 +3,7 @@ import type { SetupInterviewRequest } from "../types/interview-ai.type";
 
 export const interviewAiApi = {
   /**
-   * Thiết lập phiên phỏng vấn thông minh (AI Interview Session)
+   * Thiết lập phiên phỏng vấn thông minh (Arion Interview Session)
    */
   setupInterview: async (body: SetupInterviewRequest): Promise<any> => {
     const response = await apiClient.post<any, { success: boolean; data: any }>('/interview-ai/setup', body);

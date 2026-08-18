@@ -3,7 +3,7 @@
  */
 export const generateOtpTemplate = (
   otp: string,
-  brandName: string = 'AI Interview',
+  brandName: string = 'Arion',
 ) => {
   const primaryColor = '#5645d4'; // Màu thương hiệu chính
 
