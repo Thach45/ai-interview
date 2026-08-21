@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Toaster } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
+import { SentryUserContext } from '@/components/monitoring/SentryUserContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -21,6 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
+        <SentryUserContext />
         <Toaster richColors position="top-right" />
         {children}
       </QueryClientProvider>

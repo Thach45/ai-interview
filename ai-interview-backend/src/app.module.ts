@@ -28,13 +28,14 @@ import { AnalysisCvModule } from './modules/cv-management/analysis/analysis-cv.m
 import { QueueModule } from './providers/queue/queue.module';
 import { HealthModule } from './health/health.module';
 import { OperateSystemModule } from './modules/operate-system/operate-system.module';
-
+import { SentryModule } from '@sentry/nestjs/setup';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
+    SentryModule.forRoot(),
     ThrottlerModule.forRoot([
       { name: 'global', ttl: 15 * 60 * 1000, limit: 1500 },
       { name: 'auth', ttl: 15 * 60 * 1000, limit: 15 },

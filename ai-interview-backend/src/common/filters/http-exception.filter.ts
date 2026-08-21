@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpException,
 } from '@nestjs/common';
+import * as Sentry from '@sentry/nestjs';
 import { Response } from 'express';
 
 @Catch()
@@ -41,7 +42,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (process.env.NODE_ENV === 'development') {
       console.error('ERROR:', exception);
     }
+    Sentry.withScope((scope) => {
+      scope.setTag('http.status_code', String(status));
+      scope.setTag('error.source', 'global_exception_filter');
 
+      Sentry.captureException(exception);
+    });
     response.status(status).json({
       success: false,
       message,

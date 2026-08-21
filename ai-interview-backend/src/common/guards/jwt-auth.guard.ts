@@ -6,6 +6,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import * as Sentry from '@sentry/nestjs';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -38,8 +39,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
           'Token đã hết hạn, vui lòng đăng nhập lại',
         );
       }
+
       throw err || new UnauthorizedException('Vui lòng đăng nhập để truy cập');
     }
+
+    Sentry.setUser({
+      id: String(user.id),
+      email: user.email,
+    });
+
     return user;
   }
 }
