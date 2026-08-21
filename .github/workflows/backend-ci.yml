@@ -7,9 +7,6 @@ on:
       - ".github/workflows/backend-ci.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "ai-interview-backend/**"
-      - ".github/workflows/backend-ci.yml"
 
 permissions:
   contents: read
