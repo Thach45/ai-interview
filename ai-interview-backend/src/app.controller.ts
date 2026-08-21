@@ -1,11 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
-import { IsPublic } from './common/decorators/public.decorator';
+import { Controller } from '@nestjs/common';
 
 @Controller()
-@IsPublic()
-export class AppController {
-  @Get('health')
-  healthCheck() {
-    return { status: 'ok', timestamp: new Date().toISOString() };
-  }
-}
+export class AppController {}

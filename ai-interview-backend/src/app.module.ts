@@ -26,6 +26,8 @@ import { TtsModule } from './modules/tts/tts.module';
 import { InterviewModule } from './modules/interview/interview.module';
 import { AnalysisCvModule } from './modules/cv-management/analysis/analysis-cv.module';
 import { QueueModule } from './providers/queue/queue.module';
+import { HealthModule } from './health/health.module';
+import { OperateSystemModule } from './modules/operate-system/operate-system.module';
 
 @Module({
   imports: [
@@ -62,6 +64,8 @@ import { QueueModule } from './providers/queue/queue.module';
     InterviewModule,
     AnalysisCvModule,
     QueueModule,
+    HealthModule,
+    OperateSystemModule,
   ],
   controllers: [AppController],
   providers: [

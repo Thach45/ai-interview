@@ -16,9 +16,7 @@ async function bootstrap() {
   });
 
   // Global prefix
-  app.setGlobalPrefix('api/v1', {
-    exclude: ['health'],
-  });
+  app.setGlobalPrefix('api/v1', {});
 
   // Cookie parser — needed for refresh token
   app.use(cookieParser());

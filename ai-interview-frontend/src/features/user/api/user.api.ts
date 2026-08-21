@@ -3,8 +3,17 @@ import type { User, UsersResponse, UserFilters } from '../types/user';
 
 export const userApi = {
   getUsers: async (filters: UserFilters): Promise<UsersResponse> => {
-    const response = await apiClient.get('/admin/users', { params: filters });
-    return response.data;
+    const response: any = await apiClient.get('/admin/users', { params: filters });
+    const payload = response.data;
+    return {
+      users: payload.data || [],
+      pagination: {
+        total: payload.total || 0,
+        page: payload.page || 1,
+        limit: payload.limit || 10,
+        totalPages: payload.totalPages || 0,
+      },
+    };
   },
 
   getUserById: async (id: string): Promise<User> => {

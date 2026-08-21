@@ -1,116 +1,120 @@
-import React from 'react';
-import Link from 'next/link'
+'use client';
+
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useAuthStore } from '../../store/authStore';
 import { cn } from '../../shared/utils/cn';
 
-const MENU_ITEMS = [
-  { id: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/admin/dashboard' },
-  { id: 'users', label: 'Người dùng', icon: 'group', path: '/admin/users' },
-  { id: 'jobs', label: 'Mẫu JD', icon: 'description', path: '/admin/jobs' },
-  { id: 'categories', label: 'Ngành nghề', icon: 'category', path: '/admin/categories' },
-  { id: 'cv-templates', label: 'Mẫu CV', icon: 'web', path: '/admin/cv-templates' },
-  { id: 'transactions', label: 'Giao dịch & Credit', icon: 'toll', path: '/admin/transactions' },
-  { id: 'packages', label: 'Gói dịch vụ', icon: 'inventory_2', path: '/admin/packages' },
-  { id: 'notifications', label: 'Phát thông báo', icon: 'campaign', path: '/admin/notifications' },
-  // { id: 'interviews', label: 'Phiên phỏng vấn', icon: 'history', path: '/admin/interviews' },
+type NavigationItem = {
+  id: string;
+  label: string;
+  icon: string;
+  path: string;
+};
+
+type NavigationGroup = {
+  label: string;
+  items: NavigationItem[];
+};
+
+const NAVIGATION_GROUPS: NavigationGroup[] = [
+  { label: 'Tổng quan', items: [{ id: 'dashboard', label: 'Dashboard điều hành', icon: 'dashboard', path: '/admin/dashboard' }] },
+  { label: 'Sản phẩm & nội dung', items: [
+    { id: 'users', label: 'Người dùng', icon: 'group', path: '/admin/users' },
+    { id: 'categories', label: 'Ngành nghề', icon: 'category', path: '/admin/categories' },
+    { id: 'jobs', label: 'Mẫu JD', icon: 'description', path: '/admin/jobs' },
+    { id: 'cv-templates', label: 'Mẫu CV', icon: 'web', path: '/admin/cv-templates' },
+  ] },
+  { label: 'Thương mại', items: [
+    { id: 'packages', label: 'Gói dịch vụ', icon: 'inventory_2', path: '/admin/packages' },
+    { id: 'transactions', label: 'Giao dịch & Credit', icon: 'toll', path: '/admin/transactions' },
+  ] },
+  { label: 'Phân tích sản phẩm', items: [
+    { id: 'behavior', label: 'Hành vi người dùng', icon: 'insights', path: '/admin/analytics/behavior' },
+    { id: 'funnel', label: 'Phễu sử dụng', icon: 'filter_alt', path: '/admin/analytics/funnel' },
+    { id: 'ai-quality', label: 'Chất lượng AI', icon: 'psychology', path: '/admin/analytics/ai-quality' },
+  ] },
+  { label: 'Vận hành hệ thống', items: [
+    { id: 'system-status', label: 'Tình trạng hệ thống', icon: 'monitor_heart', path: '/admin/system/status' },
+    { id: 'queues', label: 'Tác vụ nền / Queue', icon: 'pending_actions', path: '/admin/system/queues' },
+    { id: 'api-errors', label: 'API & lỗi', icon: 'error_outline', path: '/admin/system/api-errors' },
+    { id: 'ai-cost', label: 'Chi phí AI', icon: 'token', path: '/admin/system/ai-cost' },
+  ] },
+  { label: 'Tương tác', items: [{ id: 'notifications', label: 'Thông báo', icon: 'campaign', path: '/admin/notifications' }] },
+  { label: 'Cài đặt', items: [
+    { id: 'administrators', label: 'Quản trị viên & phân quyền', icon: 'admin_panel_settings', path: '/admin/settings/administrators' },
+    { id: 'configuration', label: 'Cấu hình hệ thống', icon: 'settings', path: '/admin/settings/configuration' },
+  ] },
 ];
 
+const isCurrentPath = (pathname: string, path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
-const SECONDARY_ITEMS = [
-  { label: 'Trang người dùng', icon: 'open_in_new', path: '/' },
-];
-
-export const AdminSidebar: React.FC = () => {
+export const AdminSidebar = () => {
   const pathname = usePathname();
-   const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user);
 
   return (
-    <aside className="w-[280px] h-full flex flex-col bg-bg-canvas p-4 select-none">
-      {/* Logo Area */}
-      <div className="px-4 py-6 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="size-8 bg-black rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined text-white text-[20px]">terminal</span>
+    <aside className="w-72 h-full shrink-0 flex flex-col bg-bg-canvas border-r border-border-hairline select-none">
+      <div className="px-8 py-7 border-b border-border-hairline">
+        <Link href="/admin/dashboard" className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <div className="size-9 bg-text-primary rounded-md flex items-center justify-center" aria-hidden="true">
+            <span className="material-symbols-outlined text-on-primary text-xl">terminal</span>
           </div>
-          <span className="text-[18px] font-bold tracking-tight text-text-primary">Admin Panel</span>
-        </div>
+          <div>
+            <p className="text-xs font-semibold text-text-tertiary uppercase tracking-wide">Arion</p>
+            <p className="text-base font-bold tracking-tight text-text-primary">Admin Panel</p>
+          </div>
+        </Link>
       </div>
 
-      {/* Main Menu */}
-      <nav className="flex-1 space-y-1">
-        <div className="px-4 mb-2 text-[11px] font-bold text-text-tertiary uppercase">Chính</div>
-        {MENU_ITEMS.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <Link
-              key={item.id}
-              href={item.path || '#'}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-md transition-all group ${
-                isActive 
-                  ? 'bg-primary/10 text-primary font-semibold' 
-                  : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
-              }`}
-            >
-              <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-text-tertiary group-hover:text-text-primary'}`}>
-                {item.icon}
-              </span>
-              <span className="text-[14px]">{item.label}</span>
-              {isActive && <div className="ml-auto size-1.5 bg-primary rounded-full" />}
-            </Link>
-          );
-        })}
+      <nav aria-label="Điều hướng quản trị" className="flex-1 overflow-y-auto px-3 py-5 custom-scrollbar">
+        {NAVIGATION_GROUPS.map((group) => (
+          <section key={group.label} aria-label={group.label} className="mb-6 last:mb-0">
+            <h2 className="px-3 mb-2 text-xs font-bold tracking-wide text-text-tertiary uppercase">{group.label}</h2>
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const isActive = isCurrentPath(pathname, item.path);
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.path}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                      'flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                      isActive ? 'bg-primary/10 font-semibold text-primary' : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary',
+                    )}
+                  >
+                    <span aria-hidden="true" className={cn('material-symbols-outlined text-xl', isActive ? 'text-primary' : 'text-text-tertiary')}>{item.icon}</span>
+                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                    {isActive ? <span aria-hidden="true" className="size-1.5 rounded-full bg-primary" /> : null}
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </nav>
 
-      {/* Secondary Menu */}
-      <div className="mt-auto pt-4 border-t border-border-hairline space-y-1">
-        {SECONDARY_ITEMS.map((item) => (
-          <Link
-            key={item.label}
-            href={item.path || '#'}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-md text-text-secondary hover:bg-bg-surface hover:text-text-primary transition-all group"
-          >
-            <span className="material-symbols-outlined text-[22px] text-text-tertiary group-hover:text-text-primary">
-              {item.icon}
-            </span>
-            <span className="text-[14px]">{item.label}</span>
-          </Link>
-        ))}
+      <div className="border-t border-border-hairline p-3">
+        <Link href="/" className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm text-text-secondary transition-colors hover:bg-bg-surface hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <span aria-hidden="true" className="material-symbols-outlined text-xl text-text-tertiary">open_in_new</span>
+          Trang người dùng
+        </Link>
       </div>
 
-      {/* Profile Area */}
-       {/* User Footer */}
-            <div className="p-4 border-t border-gray-50">
-              <Link 
-                href="/profile" 
-                className={cn(
-                  "flex items-center gap-3 p-2 rounded-xl transition-all group overflow-hidden",
-                  pathname === '/profile' ? "bg-gray-100" : "hover:bg-gray-50"
-                )}
-              >
-                <div className="size-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs overflow-hidden shrink-0">
-                  {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="Avatar" className="size-full object-cover" />
-                  ) : (
-                    user?.fullName?.charAt(0).toUpperCase() || 'U'
-                  )}
-                </div>
-                
-                  
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-text-primary truncate">{user?.fullName || 'Người dùng'}</p>
-                      <p className="text-[10px] text-text-secondary truncate">{user?.email}</p>
-                    </div>
-                    <span 
-                      className="material-symbols-outlined text-gray-400 text-[18px] group-hover:text-primary transition-colors"
-                      title="Cài đặt tài khoản"
-                    >
-                      settings
-                    </span>
-                
-              </Link>
-            </div>
+      <div className="border-t border-border-hairline p-4">
+        <Link href="/admin/settings/administrators" className="flex min-h-11 items-center gap-3 rounded-md p-2 transition-colors hover:bg-bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <div className="size-9 shrink-0 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm overflow-hidden">
+            {user?.fullName?.charAt(0).toUpperCase() || 'A'}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-text-primary">{user?.fullName || 'Quản trị viên'}</p>
+            <p className="truncate text-xs text-text-secondary">{user?.email || 'Quản trị hệ thống'}</p>
+          </div>
+          <span aria-hidden="true" className="material-symbols-outlined text-lg text-text-tertiary">settings</span>
+        </Link>
+      </div>
     </aside>
   );
 };
