@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsArray,
   IsEnum,
+  IsUUID,
   Min,
   Max,
   MinLength,
@@ -17,12 +18,12 @@ import {
 } from '@prisma/client';
 
 export class SetupInterviewDto {
-  @IsString()
+  @IsUUID()
   cvId: string;
 
   @IsOptional()
-  @IsString()
-  jobTemplateId?: string;
+  @IsUUID()
+  jobTemplateId?: string | null;
 
   @IsOptional()
   @IsString()

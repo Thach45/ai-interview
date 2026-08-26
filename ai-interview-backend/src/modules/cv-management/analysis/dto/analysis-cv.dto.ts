@@ -1,17 +1,17 @@
-import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsUUID, MaxLength } from 'class-validator';
 
 export class AnalyzeCvWithTemplateDto {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty({ message: 'cvId không được để trống' })
   cvId: string;
 
-  @IsString()
+  @IsUUID()
   @IsNotEmpty({ message: 'jobTemplateId không được để trống' })
   jobTemplateId: string;
 }
 
 export class AnalyzeCvWithExternalJobDto {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty({ message: 'cvId không được để trống' })
   cvId: string;
 

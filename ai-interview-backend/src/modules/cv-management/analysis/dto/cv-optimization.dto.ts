@@ -1,17 +1,17 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class OptimizeCvDto {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty({ message: 'analysisId không được để trống' })
   analysisId: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   templateId?: string;
 }
 
 export class ExportPdfDto {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty({ message: 'analysisId không được để trống' })
   analysisId: string;
 

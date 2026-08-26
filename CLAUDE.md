@@ -15,7 +15,7 @@ Arion là nền tảng hỗ trợ ứng viên và tuyển dụng với các kh�
 
 ```
 ai-interview/
-├── ai-interview-backend/   # NestJS API + Prisma/MongoDB + Redis/BullMQ
+├── ai-interview-backend/   # NestJS API + Prisma/PostgreSQL + Redis/BullMQ
 ├── ai-interview-frontend/  # Next.js App Router
 ├── docker-compose.yml      # Redis + backend (production-oriented)
 └── docker-compose.dev.yml  # Cấu hình development cũ, cần đồng bộ trước khi dùng
@@ -25,7 +25,7 @@ ai-interview/
 
 - Node.js, TypeScript và NestJS 11.
 - REST API có global prefix `/api/v1`; endpoint `/health` được loại trừ khỏi prefix.
-- Prisma 5 kết nối MongoDB (`DATABASE_URL`). Schema là nguồn chuẩn cho model/enums.
+- Prisma 5 kết nối PostgreSQL (`DATABASE_URL`). Schema là nguồn chuẩn cho model/enums; các payload CV/AI lồng nhau được lưu bằng JSONB qua Prisma `Json`.
 - Redis + BullMQ xử lý các tác vụ bất đồng bộ như CV analysis/optimization, email, notification và interview analysis/timer.
 - AI dùng `@google/genai`, OpenAI SDK/DeepSeek; speech-to-text qua Groq và TTS qua Google Cloud Text-to-Speech.
 - Xác thực JWT: access token gửi qua `Authorization: Bearer …`, refresh token qua cookie. API được bảo vệ mặc định bằng global `JwtAuthGuard` và `RolesGuard`; endpoint công khai phải gắn `@IsPublic()`.
@@ -35,7 +35,7 @@ ai-interview/
 
 - `src/main.ts`: bootstrap Nest, CORS, global prefix, cookie parser, validation, exception filter và response interceptor.
 - `src/app.module.ts`: đăng ký module, rate-limit, guards toàn cục.
-- `prisma/schema.prisma`: MongoDB models, enums và composite types.
+- `prisma/schema.prisma`: PostgreSQL models, enums, relations và JSONB fields.
 
 Các feature backend nằm ở `src/modules/`:
 
@@ -80,6 +80,7 @@ Backend:
 cd ai-interview-backend
 npm install
 npx prisma generate
+npx prisma migrate deploy
 npm run start:dev
 ```
 
@@ -91,16 +92,16 @@ npm install
 npm run dev
 ```
 
-Mặc định backend chạy `http://localhost:3000`, frontend dev chạy `http://localhost:3001`, và frontend gọi `http://localhost:3000/api/v1` nếu `NEXT_PUBLIC_API_URL` chưa được đặt.
+Mặc định PostgreSQL chạy `localhost:5432`, backend chạy `http://localhost:3000`, frontend dev chạy `http://localhost:3001`, và frontend gọi `http://localhost:3000/api/v1` nếu `NEXT_PUBLIC_API_URL` chưa được đặt.
 
-Docker Compose production hiện chỉ khởi tạo Redis và backend. `docker-compose.dev.yml` vẫn chứa lệnh/cổng Vite cũ (`npm run dev`, port `5173`) nên không phù hợp với frontend Next.js hiện tại nếu chưa được cập nhật.
+`docker-compose.yml` khởi tạo PostgreSQL, Redis và backend. `docker-compose.dev.yml` bổ sung frontend Next.js cùng backend hot reload; backend tự chạy `prisma migrate deploy` trước khi khởi động.
 
 ## Quy ước khi thay đổi code
 
 - Ưu tiên mở rộng feature/module hiện có thay vì đặt code nghiệp vụ vào shared/root.
 - Giữ API response theo response interceptor hiện tại; đừng tự tạo response format khác.
 - Thêm endpoint protected mặc định; chỉ dùng `@IsPublic()` khi endpoint thực sự công khai.
-- Với thay đổi schema Prisma: cập nhật `prisma/schema.prisma`, chạy `npx prisma generate` và kiểm tra ảnh hưởng tới DTO/service/repository.
+- Với thay đổi schema Prisma: cập nhật `prisma/schema.prisma`, tạo migration bằng `npx prisma migrate dev`, chạy `npx prisma generate` và kiểm tra ảnh hưởng tới DTO/service/repository. Production chỉ chạy `npx prisma migrate deploy`.
 - Các tác vụ AI hoặc tác vụ nặng nên đi qua BullMQ thay vì chặn request HTTP lâu.
 - Trên frontend, gọi backend qua `apiClient`, đóng gói request trong feature API và dùng React Query hooks cho server state.
 - Tái sử dụng `cn()` cho class conditional và các component/layout/shared utilities hiện có.

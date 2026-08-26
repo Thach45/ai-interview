@@ -1,10 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -14,6 +14,8 @@ enum Role {
   CANDIDATE
   MODERATOR
   ADMIN
+
+  @@map("user_role")
 }
 
 enum SessionStatus {
@@ -22,17 +24,23 @@ enum SessionStatus {
   EVALUATING
   COMPLETED
   FAILED
+
+  @@map("interview_session_status")
 }
 
 enum MessageRole {
   AI
   USER
+
+  @@map("interview_message_role")
 }
 
 enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
+
+  @@map("payment_status")
 }
 
 enum ExperienceLevel {
@@ -43,33 +51,45 @@ enum ExperienceLevel {
   SENIOR
   MANAGER
   DIRECTOR
+
+  @@map("experience_level")
 }
 
 enum Provider {
   GOOGLE
   LOCAL
+
+  @@map("auth_provider")
 }
 
 enum CategoryType {
   GROUP
   INDUSTRY
   POSITION
+
+  @@map("job_category_type")
 }
 
 enum UserStatus {
   ACTIVE
   INACTIVE
+
+  @@map("user_status")
 }
 
 enum InterviewMode {
   VIDEO
   TEXT
+
+  @@map("interview_mode")
 }
 
 enum InterviewLanguage {
   VIETNAMESE
   ENGLISH
   BILINGUAL
+
+  @@map("interview_language")
 }
 
 enum InterviewPersona {
@@ -77,31 +97,23 @@ enum InterviewPersona {
   FRIENDLY
   STRICT
   CHEERFUL
+
+  @@map("interview_persona")
 }
 
 enum CvSourceType {
   UPLOADED
   BUILDER
+
+  @@map("cv_source_type")
 }
 
 enum TransactionType {
   DEPOSIT
   COMPENSATION
   PROMOTION
-}
 
-enum AnalysisPriority {
-  HIGH
-  MEDIUM
-  LOW
-}
-
-enum ScoreCategory {
-  TECHNICAL_SKILLS
-  EXPERIENCE
-  SOFT_SKILLS
-  EDUCATION
-  PROJECT_RELEVANCE
+  @@map("transaction_type")
 }
 
 enum NotificationType {
@@ -110,382 +122,309 @@ enum NotificationType {
   REMINDER
   SYSTEM_UPDATE
   EMAIL
-}
 
-// ================= COMPOSITE TYPES =================
-
-type MetricScore {
-  score  Int
-  reason String
-}
-
-type GeneralEvaluation {
-  overall        MetricScore
-  domain         MetricScore
-  problemSolving MetricScore
-  clarity        MetricScore
-  confidence     MetricScore
-  relevance      MetricScore
-}
-
-type RubricCriterion {
-  id          String
-  description String
-  points      Int
-}
-
-type CriterionMatch {
-  criterionId   String
-  partialCredit Float
-  evidence      String
-}
-
-type CoreQuestion {
-  title    String
-  reason   String
-  criteria RubricCriterion[]
-}
-
-type AiModification {
-  id     Int
-  type   String
-  title  String
-  desc   String
-}
-
-type CvContact {
-  phone    String?
-  email    String?
-  birthday String?
-  address  String?
-}
-
-type CvExperience {
-  company String?
-  period  String?
-  role    String?
-  details String[]
-}
-
-type CvProject {
-  name    String?
-  period  String?
-  role    String?
-  details String[]
-}
-
-type CvSkill {
-  name  String?
-  level String?
-}
-
-type CvEducation {
-  period   String?
-  school   String?
-  degree   String?
-  details  String[]
-}
-
-type CvCertification {
-  name    String?
-  issuer  String?
-  year    String?
-}
-
-type CvActivity {
-  name    String?
-  period  String?
-  role    String?
-  details String[]
-}
-
-type CvReference {
-  name    String?
-  role    String?
-  phone   String?
-}
-
-type CvDataStructure {
-  fullName        String
-  jobTitle        String
-  objective       String?
-  contact         CvContact
-  experiences     CvExperience[]
-  projects        CvProject[]
-  hardSkills      String[]
-  computerSkills  CvSkill[]
-  languages       CvSkill[]
-  education       CvEducation[]
-  certifications  CvCertification[]
-  activities      CvActivity[]
-  references      CvReference[]
-}
-
-type SkillAnalysis {
-  skill    String
-  user     Int
-  required Int
-}
-
-type ImprovementSuggestion {
-  title    String
-  desc     String
-  solution String
-  priority AnalysisPriority
-}
-
-type ScoreDetail {
-  category ScoreCategory
-  score    Int
-  reason   String
+  @@map("notification_type")
 }
 
 // ================= MODELS =================
 
 model User {
-  id               String           @id @default(auto()) @map("_id") @db.ObjectId
-  email            String           @unique
-  fullName         String
-  avatarUrl        String?
-  role             Role             @default(CANDIDATE)
-  password         String?
-  provider         Provider         @default(LOCAL)
-  googleId         String?
-  status           UserStatus       @default(ACTIVE)
-  emailVerifiedAt   DateTime?
-  creditsBalance   Int              @default(3)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  cvs              UserCv[]
-  sessions         InterviewSession[]
-  cvAnalyses       CvAnalysis[]
-  recruiterRooms   RecruiterRoom[]
-  transactions     Transaction[]
-  notifications    Notification[]
+  id              String             @id(map: "pk_users") @default(uuid()) @db.Uuid
+  email           String             @unique(map: "uq_users_email")
+  fullName        String             @map("full_name")
+  avatarUrl       String?            @map("avatar_url")
+  role            Role               @default(CANDIDATE)
+  password        String?
+  provider        Provider           @default(LOCAL)
+  googleId        String?            @map("google_id")
+  status          UserStatus         @default(ACTIVE)
+  emailVerifiedAt DateTime?          @map("email_verified_at")
+  creditsBalance  Int                @default(3) @map("credits_balance")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  cvs             UserCv[]
+  sessions        InterviewSession[]
+  cvAnalyses      CvAnalysis[]
+  recruiterRooms  RecruiterRoom[]
+  transactions    Transaction[]
+  notifications   Notification[]
+
+  @@index([createdAt], map: "idx_users_created_at")
+  @@index([role, status], map: "idx_users_role_status")
+  @@map("users")
 }
 
 model UserCv {
-  id               String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String          @db.ObjectId
-  title            String
-  sourceType       CvSourceType    @default(UPLOADED)
-  cvData           CvDataStructure?
-  templateId       String?         @db.ObjectId
-  renderedHtml     String?
-  fileUrl          String?
-  cvAnalysisId     String?         @db.ObjectId
-  aiModifications  AiModification[]
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template         CvTemplate?     @relation(fields: [templateId], references: [id])
-  cvAnalysis       CvAnalysis?     @relation("OptimizedCvToCvAnalysis", fields: [cvAnalysisId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  sessions         InterviewSession[]
-  analyses         CvAnalysis[]    @relation("CvAnalysisToUserCv")
+  id              String             @id(map: "pk_user_cvs") @default(uuid()) @db.Uuid
+  userId          String             @map("user_id") @db.Uuid
+  title           String
+  sourceType      CvSourceType       @default(UPLOADED) @map("source_type")
+  cvData          Json?              @map("cv_data")
+  templateId      String?            @map("template_id") @db.Uuid
+  renderedHtml    String?            @map("rendered_html")
+  fileUrl         String?            @map("file_url")
+  cvAnalysisId    String?            @map("cv_analysis_id") @db.Uuid
+  aiModifications Json               @default("[]") @map("ai_modifications")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_user_cvs_user_id")
+  template        CvTemplate?        @relation(fields: [templateId], references: [id], map: "fk_user_cvs_template_id")
+  cvAnalysis      CvAnalysis?        @relation("OptimizedCvToCvAnalysis", fields: [cvAnalysisId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "fk_user_cvs_cv_analysis_id")
+  sessions        InterviewSession[]
+  analyses        CvAnalysis[]       @relation("CvAnalysisToUserCv")
+
+  @@index([userId, createdAt], map: "idx_user_cvs_user_created_at")
+  @@index([templateId], map: "idx_user_cvs_template_id")
+  @@index([cvAnalysisId], map: "idx_user_cvs_cv_analysis_id")
+  @@map("user_cvs")
 }
 
 model JobCategory {
-  id          String         @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  type        CategoryType
-  parentId    String?        @db.ObjectId
-  parent      JobCategory?   @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children    JobCategory[]  @relation("CategoryHierarchy")
+  id           String        @id(map: "pk_job_categories") @default(uuid()) @db.Uuid
+  name         String
+  type         CategoryType
+  parentId     String?       @map("parent_id") @db.Uuid
+  parent       JobCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_job_categories_parent_id")
+  children     JobCategory[] @relation("CategoryHierarchy")
   jobTemplates JobTemplate[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@index([type], map: "idx_job_categories_type")
+  @@index([parentId], map: "idx_job_categories_parent_id")
+  @@map("job_categories")
 }
 
 model JobTemplate {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String             @id(map: "pk_job_templates") @default(uuid()) @db.Uuid
   title              String
-  companyName        String
-  companyLogo        String?
+  companyName        String             @map("company_name")
+  companyLogo        String?            @map("company_logo")
   location           String?
-  salaryRange        String?
-  employmentType     String?
-  experienceLevel    ExperienceLevel @default(JUNIOR)
-  isRemote           Boolean         @default(false)
-  categoryId         String?         @db.ObjectId
-  category           JobCategory?    @relation(fields: [categoryId], references: [id])
+  salaryRange        String?            @map("salary_range")
+  employmentType     String?            @map("employment_type")
+  experienceLevel    ExperienceLevel    @default(JUNIOR) @map("experience_level")
+  isRemote           Boolean            @default(false) @map("is_remote")
+  categoryId         String?            @map("category_id") @db.Uuid
+  category           JobCategory?       @relation(fields: [categoryId], references: [id], map: "fk_job_templates_category_id")
   responsibilities   String
   requirements       String
   benefits           String
-  aiExtractedContext String
-  isHotJob           Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  aiExtractedContext String             @map("ai_extracted_context")
+  isHotJob           Boolean            @default(false) @map("is_hot_job")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
   sessions           InterviewSession[]
   cvAnalyses         CvAnalysis[]
+
+  @@index([categoryId], map: "idx_job_templates_category_id")
+  @@index([createdAt], map: "idx_job_templates_created_at")
+  @@index([isHotJob, createdAt], map: "idx_job_templates_hot_created_at")
+  @@map("job_templates")
 }
 
 model InterviewSession {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String        @db.ObjectId
-  status           SessionStatus @default(PENDING)
-  mode             InterviewMode   @default(VIDEO)
-  level            ExperienceLevel @default(JUNIOR)
-  persona          InterviewPersona @default(PROFESSIONAL)
-  language         InterviewLanguage @default(VIETNAMESE)
-  difficulty       Int             @default(3)
-  duration         Int             @default(30)
-  focusSkills      String[]
-  companyName      String?
-  jobTitle         String
-  coreQuestions    CoreQuestion[]
-  jobTemplateId    String?       @db.ObjectId
-  customJdText     String?
-  cvId             String?       @db.ObjectId
-  recruiterRoomId  String?       @db.ObjectId
-  startedAt        DateTime?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cv               UserCv?        @relation(fields: [cvId], references: [id])
-  jobTemplate      JobTemplate?   @relation(fields: [jobTemplateId], references: [id])
-  recruiterRoom    RecruiterRoom? @relation(fields: [recruiterRoomId], references: [id])
-  messages         InterviewMessage[]
-  result           InterviewResult?
+  id              String             @id(map: "pk_interview_sessions") @default(uuid()) @db.Uuid
+  userId          String             @map("user_id") @db.Uuid
+  status          SessionStatus      @default(PENDING)
+  mode            InterviewMode      @default(VIDEO)
+  level           ExperienceLevel    @default(JUNIOR)
+  persona         InterviewPersona   @default(PROFESSIONAL)
+  language        InterviewLanguage  @default(VIETNAMESE)
+  difficulty      Int                @default(3)
+  duration        Int                @default(30)
+  focusSkills     String[]           @map("focus_skills")
+  companyName     String?            @map("company_name")
+  jobTitle        String             @map("job_title")
+  coreQuestions   Json               @default("[]") @map("core_questions")
+  jobTemplateId   String?            @map("job_template_id") @db.Uuid
+  customJdText    String?            @map("custom_jd_text")
+  cvId            String?            @map("cv_id") @db.Uuid
+  recruiterRoomId String?            @map("recruiter_room_id") @db.Uuid
+  startedAt       DateTime?          @map("started_at")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_interview_sessions_user_id")
+  cv              UserCv?            @relation(fields: [cvId], references: [id], map: "fk_interview_sessions_cv_id")
+  jobTemplate     JobTemplate?       @relation(fields: [jobTemplateId], references: [id], map: "fk_interview_sessions_job_template_id")
+  recruiterRoom   RecruiterRoom?     @relation(fields: [recruiterRoomId], references: [id], map: "fk_interview_sessions_recruiter_room_id")
+  messages        InterviewMessage[]
+  result          InterviewResult?
+
+  @@index([userId, status, createdAt], map: "idx_interview_sessions_user_status_created_at")
+  @@index([cvId], map: "idx_interview_sessions_cv_id")
+  @@index([jobTemplateId], map: "idx_interview_sessions_job_template_id")
+  @@index([recruiterRoomId], map: "idx_interview_sessions_recruiter_room_id")
+  @@map("interview_sessions")
 }
 
 model InterviewMessage {
-  id               String      @id @default(auto()) @map("_id") @db.ObjectId
-  sessionId        String      @db.ObjectId
-  role             MessageRole
-  content          String
-  audioUrl         String?
-  questionIndex    Int?
-  isFollowUp       Boolean     @default(false)
-  createdAt        DateTime    @default(now())
-  session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  @@index([sessionId])
+  id            String           @id(map: "pk_interview_messages") @default(uuid()) @db.Uuid
+  sessionId     String           @map("session_id") @db.Uuid
+  role          MessageRole
+  content       String
+  audioUrl      String?          @map("audio_url")
+  questionIndex Int?             @map("question_index")
+  isFollowUp    Boolean          @default(false) @map("is_follow_up")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  session       InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade, map: "fk_interview_messages_session_id")
+
+  @@index([sessionId, createdAt], map: "idx_interview_messages_session_created_at")
+  @@map("interview_messages")
 }
 
 model InterviewResult {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  sessionId        String   @unique @db.ObjectId
-  overallScore     Int
-  generalEvaluation GeneralEvaluation
-  recommendation   String
-  summary          String
-  strengths        String[]
-  weaknesses       String[]
-  learningPath     String[]
-  createdAt        DateTime @default(now())
-  session          InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id                  String               @id(map: "pk_interview_results") @default(uuid()) @db.Uuid
+  sessionId           String               @unique(map: "uq_interview_results_session_id") @map("session_id") @db.Uuid
+  overallScore        Int                  @map("overall_score")
+  generalEvaluation   Json                 @map("general_evaluation")
+  recommendation      String
+  summary             String
+  strengths           String[]
+  weaknesses          String[]
+  learningPath        String[]             @map("learning_path")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  session             InterviewSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade, map: "fk_interview_results_session_id")
   questionEvaluations QuestionEvaluation[]
+
+  @@map("interview_results")
 }
 
 model QuestionEvaluation {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  interviewResultId String   @db.ObjectId
-  questionIndex     Int
-  questionTitle     String
+  id                String          @id(map: "pk_question_evaluations") @default(uuid()) @db.Uuid
+  interviewResultId String          @map("interview_result_id") @db.Uuid
+  questionIndex     Int             @map("question_index")
+  questionTitle     String          @map("question_title")
   feedback          String
   score             Float
-  criteriaMatches   CriterionMatch[]
-  interviewResult   InterviewResult @relation(fields: [interviewResultId], references: [id], onDelete: Cascade)
+  criteriaMatches   Json            @default("[]") @map("criteria_matches")
+  interviewResult   InterviewResult @relation(fields: [interviewResultId], references: [id], onDelete: Cascade, map: "fk_question_evaluations_result_id")
+
+  @@index([interviewResultId, questionIndex], map: "idx_question_evaluations_result_question")
+  @@map("question_evaluations")
 }
 
 model SubscriptionPackage {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  tagline       String?
-  price         Int
-  oldPrice      Int?
-  durationDays  Int
-  credits       Int
-  isPopular     Boolean  @default(false)
-  features      String[]
-  icon          String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  transactions  Transaction[]
+  id           String        @id(map: "pk_subscription_packages") @default(uuid()) @db.Uuid
+  name         String
+  tagline      String?
+  price        Int
+  oldPrice     Int?          @map("old_price")
+  credits      Int
+  isPopular    Boolean       @default(false) @map("is_popular")
+  features     String[]
+  icon         String?
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  transactions Transaction[]
+
+  @@map("subscription_packages")
 }
 
 model Transaction {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String          @db.ObjectId
-  type          TransactionType @default(DEPOSIT)
-  packageId     String?         @db.ObjectId
-  package       SubscriptionPackage? @relation(fields: [packageId], references: [id])
-  amount        Int
-  creditsAdded  Int
-  status        PaymentStatus @default(PENDING)
-  paymentRefId  String?
-  sepayTransactionId String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String               @id(map: "pk_transactions") @default(uuid()) @db.Uuid
+  userId             String               @map("user_id") @db.Uuid
+  type               TransactionType      @default(DEPOSIT)
+  packageId          String?              @map("package_id") @db.Uuid
+  package            SubscriptionPackage? @relation(fields: [packageId], references: [id], map: "fk_transactions_package_id")
+  amount             Int
+  creditsAdded       Int                  @map("credits_added")
+  status             PaymentStatus        @default(PENDING)
+  paymentRefId       String?              @map("payment_ref_id")
+  sepayTransactionId String?              @unique(map: "uq_transactions_sepay_transaction_id") @map("sepay_transaction_id")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_transactions_user_id")
+
+  @@index([userId, status, createdAt], map: "idx_transactions_user_status_created_at")
+  @@index([status, createdAt], map: "idx_transactions_status_created_at")
+  @@index([packageId], map: "idx_transactions_package_id")
+  @@index([paymentRefId], map: "idx_transactions_payment_ref_id")
+  @@map("transactions")
 }
 
 model CvAnalysis {
-  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
-  userId                 String                  @db.ObjectId
-  cvId                   String                  @db.ObjectId
-  jobTemplateId          String?                 @db.ObjectId
-  externalJobDescription String?
-  matchScore             Int
+  id                     String       @id(map: "pk_cv_analyses") @default(uuid()) @db.Uuid
+  userId                 String       @map("user_id") @db.Uuid
+  cvId                   String       @map("cv_id") @db.Uuid
+  jobTemplateId          String?      @map("job_template_id") @db.Uuid
+  externalJobDescription String?      @map("external_job_description")
+  matchScore             Int          @map("match_score")
   summary                String?
-  scoringDetails         ScoreDetail[]
+  scoringDetails         Json         @default("[]") @map("scoring_details")
   strengths              String[]
   weaknesses             String[]
-  skillsAnalysis         SkillAnalysis[]
-  foundKeywords          String[]
-  missingKeywords        String[]
-  improvementSuggestions ImprovementSuggestion[]
-  createdAt              DateTime @default(now())
-  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cv                     UserCv      @relation("CvAnalysisToUserCv", fields: [cvId], references: [id], onDelete: Cascade)
-  jobTemplate            JobTemplate? @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade)
-  optimizedCvs           UserCv[]      @relation("OptimizedCvToCvAnalysis")
+  skillsAnalysis         Json         @default("[]") @map("skills_analysis")
+  foundKeywords          String[]     @map("found_keywords")
+  missingKeywords        String[]     @map("missing_keywords")
+  improvementSuggestions Json         @default("[]") @map("improvement_suggestions")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  user                   User         @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_cv_analyses_user_id")
+  cv                     UserCv       @relation("CvAnalysisToUserCv", fields: [cvId], references: [id], onDelete: Cascade, map: "fk_cv_analyses_cv_id")
+  jobTemplate            JobTemplate? @relation(fields: [jobTemplateId], references: [id], onDelete: Cascade, map: "fk_cv_analyses_job_template_id")
+  optimizedCvs           UserCv[]     @relation("OptimizedCvToCvAnalysis")
+
+  @@index([userId, createdAt], map: "idx_cv_analyses_user_created_at")
+  @@index([cvId], map: "idx_cv_analyses_cv_id")
+  @@index([jobTemplateId], map: "idx_cv_analyses_job_template_id")
+  @@map("cv_analyses")
 }
 
 model RecruiterRoom {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  hrId             String   @db.ObjectId
-  roomName         String
-  jdContext        String
-  invitationToken  String   @unique @default(uuid())
-  isActive         Boolean  @default(true)
-  expiresAt        DateTime?
-  createdAt        DateTime @default(now())
-  hr               User               @relation(fields: [hrId], references: [id], onDelete: Cascade)
-  sessions         InterviewSession[]
+  id              String             @id(map: "pk_recruiter_rooms") @default(uuid()) @db.Uuid
+  hrId            String             @map("hr_id") @db.Uuid
+  roomName        String             @map("room_name")
+  jdContext       String             @map("jd_context")
+  invitationToken String             @unique(map: "uq_recruiter_rooms_invitation_token") @default(uuid()) @map("invitation_token")
+  isActive        Boolean            @default(true) @map("is_active")
+  expiresAt       DateTime?          @map("expires_at")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  hr              User               @relation(fields: [hrId], references: [id], onDelete: Cascade, map: "fk_recruiter_rooms_hr_id")
+  sessions        InterviewSession[]
+
+  @@index([hrId, isActive], map: "idx_recruiter_rooms_hr_active")
+  @@map("recruiter_rooms")
 }
 
 model VerificationCode {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id(map: "pk_verification_codes") @default(uuid()) @db.Uuid
   email     String
   code      String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  @@index([email])
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email, createdAt], map: "idx_verification_codes_email_created_at")
+  @@index([expiresAt], map: "idx_verification_codes_expires_at")
+  @@map("verification_codes")
 }
 
 model CvTemplate {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  id            String   @id(map: "pk_cv_templates") @default(uuid()) @db.Uuid
   name          String
-  thumbnailUrl  String
-  htmlStructure String
-  cssStyles     String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  thumbnailUrl  String   @map("thumbnail_url")
+  htmlStructure String   @map("html_structure")
+  cssStyles     String?  @map("css_styles")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
   userCvs       UserCv[]
+
+  @@map("cv_templates")
 }
 
 model Notification {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String           @db.ObjectId
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type        NotificationType
-  title       String
-  message     String
-  link        String?
-  isRead      Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  @@index([userId, createdAt(sort: Desc)])
+  id        String           @id(map: "pk_notifications") @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_notifications_user_id")
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, createdAt(sort: Desc)], map: "idx_notifications_user_created_at")
+  @@map("notifications")
 }

@@ -3,8 +3,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsBoolean,
+  IsEnum,
+  IsUUID,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { ExperienceLevel } from '@prisma/client';
 
 export class CreateJobTemplateDto {
   @IsString()
@@ -32,16 +36,19 @@ export class CreateJobTemplateDto {
   employmentType?: string;
 
   @IsOptional()
-  @IsString()
-  experienceLevel?: string;
+  @IsEnum(ExperienceLevel)
+  experienceLevel?: ExperienceLevel;
 
   @IsOptional()
   @IsBoolean()
   isRemote?: boolean;
 
   @IsOptional()
-  @IsString()
-  categoryId?: string;
+  @Transform(({ value }) =>
+    typeof value === 'string' && value.trim() === '' ? null : value,
+  )
+  @IsUUID()
+  categoryId?: string | null;
 
   @IsOptional()
   @IsString()
@@ -56,7 +63,8 @@ export class CreateJobTemplateDto {
   benefits?: string;
 
   @IsOptional()
-  aiExtractedContext?: any;
+  @IsString()
+  aiExtractedContext?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -90,16 +98,19 @@ export class UpdateJobTemplateDto {
   employmentType?: string;
 
   @IsOptional()
-  @IsString()
-  experienceLevel?: string;
+  @IsEnum(ExperienceLevel)
+  experienceLevel?: ExperienceLevel;
 
   @IsOptional()
   @IsBoolean()
   isRemote?: boolean;
 
   @IsOptional()
-  @IsString()
-  categoryId?: string;
+  @Transform(({ value }) =>
+    typeof value === 'string' && value.trim() === '' ? null : value,
+  )
+  @IsUUID()
+  categoryId?: string | null;
 
   @IsOptional()
   @IsString()
@@ -114,7 +125,8 @@ export class UpdateJobTemplateDto {
   benefits?: string;
 
   @IsOptional()
-  aiExtractedContext?: any;
+  @IsString()
+  aiExtractedContext?: string;
 
   @IsOptional()
   @IsBoolean()

@@ -39,10 +39,11 @@ export class AdminJobCategoryService {
    */
   async create(dto: CreateJobCategoryDto) {
     const { name, type, parentId } = dto;
+    const normalizedParentId = parentId?.trim() || null;
 
-    if (parentId) {
+    if (normalizedParentId) {
       const parent = await this.jobCategoryRepository.findUnique({
-        where: { id: parentId },
+        where: { id: normalizedParentId },
       });
 
       if (!parent) {
@@ -72,7 +73,7 @@ export class AdminJobCategoryService {
       data: {
         name,
         type,
-        parentId: parentId ?? null,
+        parentId: normalizedParentId,
       },
     });
 

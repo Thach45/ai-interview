@@ -6,7 +6,6 @@ export interface SubscriptionPackage {
   tagline?: string;
   price: number;
   oldPrice?: number;
-  durationDays: number;
   credits: number;
   isPopular: boolean;
   features: string[];
@@ -26,21 +25,25 @@ export const subscriptionApi = {
   /** Lấy danh sách các gói dịch vụ */
   getPackages: () =>
     apiClient.get<any, { success: boolean; data: SubscriptionPackage[] }>(
-      "/subscriptions/packages"
+      "/subscriptions/packages",
     ),
 
   /** Tạo yêu cầu mua gói */
   purchase: (packageId: string) =>
     apiClient.post<any, { success: boolean; data: PaymentInfo }>(
       "/subscriptions/purchase",
-      { packageId }
+      { packageId },
     ),
 
   /** Lấy trạng thái giao dịch chuyển khoản */
   getTransactionStatus: (id: string) =>
-    apiClient.get<any, { success: boolean; data: { id: string; status: string; creditsAdded: number } }>(
-      `/subscriptions/transactions/${id}/status`
-    ),
+    apiClient.get<
+      any,
+      {
+        success: boolean;
+        data: { id: string; status: string; creditsAdded: number };
+      }
+    >(`/subscriptions/transactions/${id}/status`),
 
   // ==========================
   // ADMIN PACKAGES CRUD APIs
@@ -49,27 +52,27 @@ export const subscriptionApi = {
   /** Admin: Lấy tất cả các gói kể cả inactive */
   adminGetPackages: () =>
     apiClient.get<any, { success: boolean; data: SubscriptionPackage[] }>(
-      "/admin/packages"
+      "/admin/packages",
     ),
 
   /** Admin: Tạo gói mới */
-  adminCreatePackage: (data: Omit<SubscriptionPackage, 'id'>) =>
+  adminCreatePackage: (data: Omit<SubscriptionPackage, "id">) =>
     apiClient.post<any, { success: boolean; data: SubscriptionPackage }>(
       "/admin/packages",
-      data
+      data,
     ),
 
   /** Admin: Cập nhật gói */
   adminUpdatePackage: (id: string, data: Partial<SubscriptionPackage>) =>
     apiClient.patch<any, { success: boolean; data: SubscriptionPackage }>(
       `/admin/packages/${id}`,
-      data
+      data,
     ),
 
   /** Admin: Xóa gói */
   adminDeletePackage: (id: string) =>
     apiClient.delete<any, { success: boolean; message: string }>(
-      `/admin/packages/${id}`
+      `/admin/packages/${id}`,
     ),
 
   // ==========================
@@ -77,36 +80,56 @@ export const subscriptionApi = {
   // ==========================
 
   /** Admin: Lấy danh sách giao dịch phân trang & lọc */
-  adminGetTransactions: (params: { type?: string; status?: string; search?: string; page?: number; limit?: number }) =>
-    apiClient.get<any, { success: boolean; data: { transactions: any[]; pagination: any } }>(
-      "/admin/transactions",
-      { params }
-    ),
+  adminGetTransactions: (params: {
+    type?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) =>
+    apiClient.get<
+      any,
+      { success: boolean; data: { transactions: any[]; pagination: any } }
+    >("/admin/transactions", { params }),
 
   /** Admin: Lấy thống kê tổng quan giao dịch */
   adminGetTransactionStats: () =>
-    apiClient.get<any, { success: boolean; data: { totalRevenue: number; creditsDeposited: number; creditsCompensated: number; pendingTransactions: number } }>(
-      "/admin/transactions/stats"
-    ),
+    apiClient.get<
+      any,
+      {
+        success: boolean;
+        data: {
+          totalRevenue: number;
+          creditsDeposited: number;
+          creditsCompensated: number;
+          pendingTransactions: number;
+        };
+      }
+    >("/admin/transactions/stats"),
 
   /** Admin: Tạo giao dịch nạp credit bằng tay */
-  adminCreateManualTransaction: (data: { userEmail: string; creditsAdded: number; type: 'COMPENSATION' | 'PROMOTION'; reason?: string }) =>
+  adminCreateManualTransaction: (data: {
+    userEmail: string;
+    creditsAdded: number;
+    type: "COMPENSATION" | "PROMOTION";
+    reason?: string;
+  }) =>
     apiClient.post<any, { success: boolean; data: any }>(
       "/admin/transactions/manual",
-      data
+      data,
     ),
 
   /** Admin: Duyệt hoặc hủy giao dịch thủ công */
-  adminUpdateTransactionStatus: (id: string, status: 'SUCCESS' | 'FAILED') =>
+  adminUpdateTransactionStatus: (id: string, status: "SUCCESS" | "FAILED") =>
     apiClient.patch<any, { success: boolean; data: any }>(
       `/admin/transactions/${id}/status`,
-      { status }
+      { status },
     ),
 
   /** Admin: Xóa vĩnh viễn giao dịch khỏi hệ thống */
   adminDeleteTransaction: (id: string) =>
     apiClient.delete<any, { success: boolean; message: string }>(
-      `/admin/transactions/${id}`
+      `/admin/transactions/${id}`,
     ),
 };
 

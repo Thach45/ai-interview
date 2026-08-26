@@ -3,8 +3,10 @@ import {
   IsNotEmpty,
   IsEnum,
   IsOptional,
+  IsUUID,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { CategoryType } from '@prisma/client';
 
 export class CreateJobCategoryDto {
@@ -19,8 +21,11 @@ export class CreateJobCategoryDto {
   type: CategoryType;
 
   @IsOptional()
-  @IsString()
-  parentId?: string;
+  @Transform(({ value }) =>
+    typeof value === 'string' && value.trim() === '' ? null : value,
+  )
+  @IsUUID()
+  parentId?: string | null;
 }
 
 export class UpdateJobCategoryDto {

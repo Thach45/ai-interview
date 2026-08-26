@@ -22,7 +22,7 @@ export const LoginPage: React.FC = () => {
           <p className="mt-4 text-base text-gray-500">Tiếp tục hành trình sự nghiệp cùng Arion.</p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit(login)} noValidate>
+        <form className="space-y-6" onSubmit={handleSubmit((data) => login(data))} noValidate>
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-950">Email</label>
             <div className={`flex min-h-16 items-center gap-3 rounded-xl border bg-white px-4 transition-colors ${errors.email ? 'border-red-500' : 'border-gray-200 focus-within:border-gray-950'}`}>

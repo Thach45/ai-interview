@@ -88,7 +88,9 @@ export default function TextType({
       repeat: -1,
       yoyo: true,
     });
-    return () => animation.kill();
+    return () => {
+      animation.kill();
+    };
   }, [cursorBlinkDuration, prefersReducedMotion, showCursor]);
 
   useEffect(() => {

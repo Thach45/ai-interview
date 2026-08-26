@@ -1,5 +1,21 @@
 services:
-  # --- 1. REDIS ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai_interview_postgres_dev
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-arion}
+      POSTGRES_USER: ${POSTGRES_USER:-arion}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-arion_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   redis:
     image: redis:7-alpine
     container_name: ai_interview_redis
@@ -8,7 +24,6 @@ services:
     volumes:
       - redis_data:/data
 
-  # --- 2. BACKEND (Hot Reload) ---
   backend:
     image: node:24
     container_name: ai_interview_backend_dev
@@ -21,16 +36,18 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - PORT=3000
-      - REDIS_URL=redis://redis:6379
-    # Chạy lệnh cài thư viện trước, sau đó chạy dev
-    command: sh -c "npm install && npx prisma generate && npm run dev"
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://${POSTGRES_USER:-arion}:${POSTGRES_PASSWORD:-arion_password}@postgres:5432/${POSTGRES_DB:-arion}?schema=public
+    command: sh -c "npm install && npx prisma generate && npx prisma migrate deploy && npm run start:dev"
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     env_file:
       - ./ai-interview-backend/.env
 
-  # --- 3. FRONTEND (Hot Reload) ---
   frontend:
     image: node:24-alpine
     container_name: ai_interview_frontend_dev
@@ -40,11 +57,11 @@ services:
       - ./ai-interview-frontend:/app
       - /app/node_modules
     ports:
-      - "5173:5173"
-    # Cài thư viện xong thì chạy vite với --host để nhận request từ bên ngoài Docker
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+      - "3001:3001"
+    command: sh -c "npm install && npm run dev -- --hostname 0.0.0.0"
     depends_on:
       - backend
 
 volumes:
+  postgres_dev_data:
   redis_data:

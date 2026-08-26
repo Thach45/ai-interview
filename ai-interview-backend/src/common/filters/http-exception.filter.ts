@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import * as Sentry from '@sentry/nestjs';
 import { Response } from 'express';
+import { Prisma } from '@prisma/client';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -33,6 +34,19 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         } else {
           message = resp.message || exception.message;
         }
+      }
+    } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      if (exception.code === 'P2023') {
+        status = 400;
+        message = 'ID không đúng định dạng UUID';
+      } else if (exception.code === 'P2003') {
+        status = 409;
+        message = 'Dữ liệu đang được tham chiếu hoặc khóa ngoại không tồn tại';
+      } else if (exception.code === 'P2002') {
+        status = 409;
+        message = 'Dữ liệu đã tồn tại';
+      } else {
+        message = exception.message;
       }
     } else if (exception instanceof Error) {
       message = exception.message;

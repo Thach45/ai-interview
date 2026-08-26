@@ -1,11 +1,37 @@
-import { IsString, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
+import { plainToInstance, Transform } from 'class-transformer';
+import {
+  IsString,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsUUID,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import { CvDataJsonDto } from '../../../../common/validation/jsonb.dto';
+
+const parseJsonObject = ({ value }: { value: unknown }) => {
+  let parsed = value;
+
+  if (typeof value === 'string') {
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+
+  return typeof parsed === 'object' && parsed !== null
+    ? plainToInstance(CvDataJsonDto, parsed)
+    : parsed;
+};
 
 export class SaveCvDto {
   @IsOptional()
-  @IsString()
+  @IsUUID()
   id?: string;
 
-  @IsString()
+  @IsUUID()
   @IsNotEmpty({ message: 'templateId không được để trống' })
   templateId: string;
 
@@ -14,8 +40,10 @@ export class SaveCvDto {
   @MinLength(1)
   title: string;
 
-  @IsNotEmpty({ message: 'cvData không được để trống' })
-  cvData: any;
+  @Transform(parseJsonObject)
+  @IsObject({ message: 'cvData phải là một JSON object' })
+  @ValidateNested()
+  cvData: CvDataJsonDto;
 
   @IsString()
   @IsNotEmpty({ message: 'renderedHtml không được để trống' })

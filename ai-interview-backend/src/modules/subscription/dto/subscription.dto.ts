@@ -1,13 +1,16 @@
 import {
   IsString,
   IsNotEmpty,
-  IsNumber,
+  IsInt,
   IsBoolean,
   IsOptional,
+  IsUUID,
+  IsArray,
+  Min,
 } from 'class-validator';
 
 export class PurchasePackageDto {
-  @IsString()
+  @IsUUID()
   @IsNotEmpty({ message: 'packageId không được để trống' })
   packageId: string;
 }
@@ -17,18 +20,34 @@ export class CreatePackageDto {
   @IsNotEmpty()
   name: string;
 
-  @IsNumber()
+  @IsInt()
+  @Min(0)
   price: number;
 
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   credits: number;
-
-  @IsNumber()
-  durationDays: number;
 
   @IsString()
   @IsOptional()
-  description?: string;
+  tagline?: string;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  oldPrice?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isPopular?: boolean;
+
+  @IsArray()
+  @IsString({ each: true })
+  features: string[];
+
+  @IsString()
+  @IsOptional()
+  icon?: string;
 
   @IsBoolean()
   @IsOptional()
@@ -40,21 +59,37 @@ export class UpdatePackageDto {
   @IsOptional()
   name?: string;
 
-  @IsNumber()
+  @IsInt()
+  @Min(0)
   @IsOptional()
   price?: number;
 
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   @IsOptional()
   credits?: number;
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  durationDays?: number;
+  tagline?: string;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  oldPrice?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isPopular?: boolean;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  features?: string[];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  icon?: string;
 
   @IsBoolean()
   @IsOptional()

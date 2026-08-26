@@ -9,6 +9,14 @@ import {
   BadRequestException,
   NotFoundException,
 } from '../../../common/exceptions/AppException';
+import {
+  toPrismaJson,
+  validateJsonb,
+} from '../../../common/validation/jsonb-validation.util';
+import {
+  CvDataJsonDto,
+  ImprovementSuggestionsJsonDto,
+} from '../../../common/validation/jsonb.dto';
 
 import { UserCvRepository } from '../builder/cv-builder.repository';
 import { CvAnalysisRepository } from './cv-analysis.repository';
@@ -69,20 +77,28 @@ export class CvOptimizerService {
       );
     }
 
-    if (
-      !(analysis as any).cv.cvData ||
-      Object.keys((analysis as any).cv.cvData).length === 0
-    ) {
+    if (!(analysis as any).cv.cvData) {
       throw new BadRequestException(
         'Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi tối ưu.',
       );
     }
 
+    const cvData = await validateJsonb(
+      CvDataJsonDto,
+      (analysis as any).cv.cvData,
+      'Dữ liệu CV trong database',
+    );
+    const improvementSuggestions = await validateJsonb(
+      ImprovementSuggestionsJsonDto,
+      { suggestions: analysis.improvementSuggestions },
+      'Đề xuất cải thiện CV trong database',
+    );
+
     // Gọi AI tối ưu
     const aiResult = await this.aiService.optimizeCV(
-      JSON.stringify((analysis as any).cv.cvData),
+      JSON.stringify(cvData),
       analysis.missingKeywords,
-      analysis.improvementSuggestions,
+      improvementSuggestions.suggestions,
     );
 
     // Transaction: Trừ credit + lưu CV đã tối ưu
@@ -150,8 +166,8 @@ export class CvOptimizerService {
           data: {
             userId,
             cvAnalysisId: analysisId,
-            cvData: aiResult.optimizedData,
-            aiModifications: aiResult.modifications,
+            cvData: toPrismaJson(aiResult.optimizedData),
+            aiModifications: toPrismaJson(aiResult.modifications),
             title: (analysis as any).cv.title + ' (Optimized)',
             templateId: targetTemplateId,
             renderedHtml,

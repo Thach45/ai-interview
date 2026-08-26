@@ -48,14 +48,14 @@ export class AdminJobTemplateService {
         location: dto.location,
         salaryRange: dto.salaryRange,
         employmentType: dto.employmentType,
-        experienceLevel: dto.experienceLevel as ExperienceLevel,
-        isRemote: dto.isRemote || false,
-        categoryId: dto.categoryId,
+        experienceLevel: dto.experienceLevel ?? ExperienceLevel.JUNIOR,
+        isRemote: dto.isRemote ?? false,
+        categoryId: dto.categoryId || null,
         responsibilities: dto.responsibilities ?? '',
         requirements: dto.requirements ?? '',
         benefits: dto.benefits ?? '',
         aiExtractedContext: dto.aiExtractedContext ?? '',
-        isHotJob: dto.isHotJob || false,
+        isHotJob: dto.isHotJob ?? false,
       },
     });
   }
@@ -84,10 +84,12 @@ export class AdminJobTemplateService {
           employmentType: dto.employmentType,
         }),
         ...(dto.experienceLevel !== undefined && {
-          experienceLevel: dto.experienceLevel as ExperienceLevel,
+          experienceLevel: dto.experienceLevel,
         }),
         ...(dto.isRemote !== undefined && { isRemote: dto.isRemote }),
-        ...(dto.categoryId !== undefined && { categoryId: dto.categoryId }),
+        ...(dto.categoryId !== undefined && {
+          categoryId: dto.categoryId || null,
+        }),
         ...(dto.responsibilities !== undefined && {
           responsibilities: dto.responsibilities,
         }),

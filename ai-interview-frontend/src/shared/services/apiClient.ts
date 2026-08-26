@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useAuthStore } from "../../store/authStore";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -10,6 +11,37 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+let accessTokenRefreshPromise: Promise<string> | null = null;
+
+export const refreshAccessToken = (): Promise<string> => {
+  if (accessTokenRefreshPromise) return accessTokenRefreshPromise;
+
+  accessTokenRefreshPromise = axios
+    .post(
+      `${API_URL}/auth/refresh-token`,
+      {},
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+      },
+    )
+    .then((response) => {
+      const newAccessToken = response.data?.data?.accessToken;
+      if (!newAccessToken) {
+        throw new Error("No new access token received");
+      }
+
+      localStorage.setItem("token", newAccessToken);
+      useAuthStore.setState({ token: newAccessToken });
+      return newAccessToken;
+    })
+    .finally(() => {
+      accessTokenRefreshPromise = null;
+    });
+
+  return accessTokenRefreshPromise;
+};
 
 // Request Interceptor: Thêm Token vào Header tự động
 apiClient.interceptors.request.use(
@@ -50,13 +82,14 @@ apiClient.interceptors.response.use(
       error.response?.data?.message || error.response?.data?.error;
 
     // Trích xuất chi tiết nếu là lỗi Zod Validation từ Backend
-    const validationErrors = error.response?.data?.errors || error.response?.data?.data;
+    const validationErrors =
+      error.response?.data?.errors || error.response?.data?.data;
     if (validationErrors && Array.isArray(validationErrors)) {
       const detailedMessages = validationErrors
         .map((err: any) => err.message)
         .filter(Boolean);
       if (detailedMessages.length > 0) {
-        backendMessage = detailedMessages.join(', ');
+        backendMessage = detailedMessages.join(", ");
       }
     }
 
@@ -89,24 +122,7 @@ apiClient.interceptors.response.use(
         isRefreshing = true;
 
         try {
-          // Sử dụng axios thuần để tránh Circular Dependency và Interceptor Loop
-          const rs = await axios.post(
-            `${API_URL}/auth/refresh-token`,
-            {},
-            {
-              withCredentials: true,
-              headers: {
-                "Content-Type": "application/json",
-              },
-            },
-          );
-
-          const newAccessToken = rs.data?.data?.accessToken;
-
-          if (!newAccessToken) throw new Error("No new access token received");
-
-          localStorage.setItem("token", newAccessToken);
-          useAuthStore.setState({ token: newAccessToken });
+          const newAccessToken = await refreshAccessToken();
 
           processQueue(null, newAccessToken);
 
@@ -141,7 +157,7 @@ apiClient.interceptors.response.use(
     if (backendMessage) {
       error.message = backendMessage;
     }
-    
+
     // Bắt buộc phải reject để các nơi gọi API nhận biết đây là lỗi
     return Promise.reject(error);
   },

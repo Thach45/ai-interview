@@ -3,7 +3,7 @@ export interface BuilderCv {
   userId: string;
   templateId: string;
   title: string;
-  cvData: string; // JSON string
+  cvData: CvFormData;
   renderedHtml: string;
   fileUrl: string | null;
   createdAt: string;

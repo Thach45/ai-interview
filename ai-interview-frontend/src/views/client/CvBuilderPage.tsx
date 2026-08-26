@@ -1,19 +1,35 @@
-import { useState, useMemo, useCallback, useEffect, useDeferredValue } from 'react';
-import { useSearchParams, useParams, useRouter } from 'next/navigation';
-import Handlebars from 'handlebars';
-import DOMPurify from 'dompurify';
-import { AlertCircle } from 'lucide-react';
-import { MainLayout } from '../../layouts/MainLayout';
-import { useCvTemplateDetail } from '../../features/cvs/hooks/useCvTemplateDetail';
-import { useSaveBuilderCv, useBuilderCvDetail, useExportBuilderPdf } from '../../features/cvs/hooks/useBuilderCv';
-import type { CvFormData } from '../../features/cvs/type/builder-cv.type';
-import { DEFAULT_CV_FORM } from '../../features/cvs/type/builder-cv.type';
-import { LoadingIndicator } from '../../shared/components/LoadingIndicator';
-import { toast } from 'sonner';
-import { FormPanel } from '../../features/cvs/components/cv-builder/FormPanel';
-import { PreviewPanel } from '../../features/cvs/components/cv-builder/PreviewPanel';
-import { TemplatePanel } from '../../features/cvs/components/cv-builder/TemplatePanel';
-import { STORAGE_KEY, FORM_SECTIONS, isSectionComplete, safeMergeCvData, getEmptyItem } from '../../features/cvs/components/cv-builder/builder-types';
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useDeferredValue,
+} from "react";
+import { useSearchParams, useParams, useRouter } from "next/navigation";
+import Handlebars from "handlebars";
+import DOMPurify from "dompurify";
+import { AlertCircle } from "lucide-react";
+import { MainLayout } from "../../layouts/MainLayout";
+import { useCvTemplateDetail } from "../../features/cvs/hooks/useCvTemplateDetail";
+import {
+  useSaveBuilderCv,
+  useBuilderCvDetail,
+  useExportBuilderPdf,
+} from "../../features/cvs/hooks/useBuilderCv";
+import type { CvFormData } from "../../features/cvs/type/builder-cv.type";
+import { DEFAULT_CV_FORM } from "../../features/cvs/type/builder-cv.type";
+import { LoadingIndicator } from "../../shared/components/LoadingIndicator";
+import { toast } from "sonner";
+import { FormPanel } from "../../features/cvs/components/cv-builder/FormPanel";
+import { PreviewPanel } from "../../features/cvs/components/cv-builder/PreviewPanel";
+import { TemplatePanel } from "../../features/cvs/components/cv-builder/TemplatePanel";
+import {
+  STORAGE_KEY,
+  FORM_SECTIONS,
+  isSectionComplete,
+  safeMergeCvData,
+  getEmptyItem,
+} from "../../features/cvs/components/cv-builder/builder-types";
 
 // ===================== MAIN PAGE =====================
 
@@ -21,15 +37,18 @@ const CvBuilderPage = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const editId = searchParams?.get('id');
+  const editId = searchParams?.get("id");
 
-  const { data: template, isLoading: templateLoading } = useCvTemplateDetail(templateId);
-  const { data: existingCv, isLoading: existingLoading } = useBuilderCvDetail(editId || undefined);
+  const { data: template, isLoading: templateLoading } =
+    useCvTemplateDetail(templateId);
+  const { data: existingCv, isLoading: existingLoading } = useBuilderCvDetail(
+    editId || undefined,
+  );
   const saveMutation = useSaveBuilderCv();
   const exportPdfMutation = useExportBuilderPdf();
 
   const [cvData, setCvData] = useState<CvFormData>(DEFAULT_CV_FORM);
-  const [activeSection, setActiveSection] = useState('personal');
+  const [activeSection, setActiveSection] = useState("personal");
   const [isDirty, setIsDirty] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [showAiMods, setShowAiMods] = useState(false);
@@ -41,7 +60,9 @@ const CvBuilderPage = () => {
   // Section completion status
   const sectionStatus = useMemo(() => {
     const status: Record<string, boolean> = {};
-    FORM_SECTIONS.forEach((s) => { status[s.id] = isSectionComplete(s.id, cvData); });
+    FORM_SECTIONS.forEach((s) => {
+      status[s.id] = isSectionComplete(s.id, cvData);
+    });
     return status;
   }, [cvData]);
 
@@ -59,19 +80,25 @@ const CvBuilderPage = () => {
         const draft = localStorage.getItem(STORAGE_KEY);
         if (draft) {
           const parsed = JSON.parse(draft);
-          if (parsed.templateId === templateId && parsed.savedId === existingCv.id) {
+          if (
+            parsed.templateId === templateId &&
+            parsed.savedId === existingCv.id
+          ) {
             return;
           }
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       try {
-        const parsed = typeof existingCv.cvData === 'string'
-          ? JSON.parse(existingCv.cvData)
-          : existingCv.cvData;
+        const parsed =
+          typeof existingCv.cvData === "string"
+            ? JSON.parse(existingCv.cvData)
+            : existingCv.cvData;
         setCvData(safeMergeCvData(parsed as Partial<CvFormData>));
       } catch (err) {
-        console.error('Parse CV data error', err);
+        console.error("Parse CV data error", err);
       }
     }
   }, [existingCv]);
@@ -80,7 +107,10 @@ const CvBuilderPage = () => {
   useEffect(() => {
     if (!isDirty) return;
     const timer = setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ templateId, savedId: savedId || null, cvData }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ templateId, savedId: savedId || null, cvData }),
+      );
     }, 3000);
     return () => clearTimeout(timer);
   }, [cvData, templateId, savedId, isDirty]);
@@ -91,80 +121,105 @@ const CvBuilderPage = () => {
       const draft = localStorage.getItem(STORAGE_KEY);
       if (draft) {
         const parsed = JSON.parse(draft);
-        if (parsed.templateId === templateId && parsed.savedId === (editId || null)) {
+        if (
+          parsed.templateId === templateId &&
+          parsed.savedId === (editId || null)
+        ) {
           setCvData(safeMergeCvData(parsed.cvData || {}));
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [templateId, editId]);
 
   // ===== FIELD UPDATERS =====
   const markDirty = () => setIsDirty(true);
 
-  const updateField = useCallback(<K extends keyof CvFormData>(key: K, value: CvFormData[K]) => {
-    setCvData((prev) => ({ ...prev, [key]: value }));
-    markDirty();
-  }, []);
+  const updateField = useCallback(
+    <K extends keyof CvFormData>(key: K, value: CvFormData[K]) => {
+      setCvData((prev) => ({ ...prev, [key]: value }));
+      markDirty();
+    },
+    [],
+  );
 
-  const updateNested = useCallback(<K extends keyof CvFormData>(parent: K, field: string, value: any) => {
-    setCvData((prev) => {
-      const obj = { ...(prev[parent] as any) };
-      obj[field] = value;
-      return { ...prev, [parent]: obj };
-    });
-    markDirty();
-  }, []);
+  const updateNested = useCallback(
+    <K extends keyof CvFormData>(parent: K, field: string, value: any) => {
+      setCvData((prev) => {
+        const obj = { ...(prev[parent] as any) };
+        obj[field] = value;
+        return { ...prev, [parent]: obj };
+      });
+      markDirty();
+    },
+    [],
+  );
 
-  const updateArrayItem = useCallback((key: keyof CvFormData, index: number, field: string, value: any) => {
-    setCvData((prev) => {
-      const arr = [...(prev[key] as any[])];
-      if (!arr[index]) arr[index] = {};
-      arr[index] = { ...arr[index], [field]: value };
-      return { ...prev, [key]: arr };
-    });
-    markDirty();
-  }, []);
+  const updateArrayItem = useCallback(
+    (key: keyof CvFormData, index: number, field: string, value: any) => {
+      setCvData((prev) => {
+        const arr = [...(prev[key] as any[])];
+        if (!arr[index]) arr[index] = {};
+        arr[index] = { ...arr[index], [field]: value };
+        return { ...prev, [key]: arr };
+      });
+      markDirty();
+    },
+    [],
+  );
 
-  const updateStringItem = useCallback((key: keyof CvFormData, index: number, value: string) => {
-    setCvData((prev) => {
-      const arr = [...(prev[key] as string[])];
-      arr[index] = value;
-      return { ...prev, [key]: arr };
-    });
-    markDirty();
-  }, []);
+  const updateStringItem = useCallback(
+    (key: keyof CvFormData, index: number, value: string) => {
+      setCvData((prev) => {
+        const arr = [...(prev[key] as string[])];
+        arr[index] = value;
+        return { ...prev, [key]: arr };
+      });
+      markDirty();
+    },
+    [],
+  );
 
   const addArrayItem = useCallback((key: keyof CvFormData, emptyItem: any) => {
-    setCvData((prev) => ({ ...prev, [key]: [...(prev[key] as any[]), emptyItem] }));
+    setCvData((prev) => ({
+      ...prev,
+      [key]: [...(prev[key] as any[]), emptyItem],
+    }));
     markDirty();
   }, []);
 
-  const removeArrayItem = useCallback((key: keyof CvFormData, index: number) => {
-    setCvData((prev) => {
-      const arr = [...(prev[key] as any[])];
-      arr.splice(index, 1);
-      return { ...prev, [key]: arr.length ? arr : [getEmptyItem(key)] };
-    });
-    markDirty();
-  }, []);
+  const removeArrayItem = useCallback(
+    (key: keyof CvFormData, index: number) => {
+      setCvData((prev) => {
+        const arr = [...(prev[key] as any[])];
+        arr.splice(index, 1);
+        return { ...prev, [key]: arr.length ? arr : [getEmptyItem(key)] };
+      });
+      markDirty();
+    },
+    [],
+  );
 
   // ===== RENDERED HTML =====
   const renderedHtml = useMemo(() => {
-    if (!template) return '';
+    if (!template) return "";
     try {
       const compiled = Handlebars.compile(template.htmlStructure);
       const data = {
-        fullName: deferredCvData.fullName || 'Họ và tên',
-        jobTitle: deferredCvData.jobTitle || 'Vị trí ứng tuyển',
-        objective: deferredCvData.objective || '',
-        cssStyles: '',
+        fullName: deferredCvData.fullName || "Họ và tên",
+        jobTitle: deferredCvData.jobTitle || "Vị trí ứng tuyển",
+        objective: deferredCvData.objective || "",
+        cssStyles: "",
         contact: {
-          address: deferredCvData.contact?.address || '',
-          phone: deferredCvData.contact?.phone || '',
-          email: deferredCvData.contact?.email || '',
-          birthday: deferredCvData.contact?.birthday || '',
+          address: deferredCvData.contact?.address || "",
+          phone: deferredCvData.contact?.phone || "",
+          email: deferredCvData.contact?.email || "",
+          birthday: deferredCvData.contact?.birthday || "",
         },
-        experiences: deferredCvData.experiences.filter((e) => e.company || e.role),
+        experiences: deferredCvData.experiences.filter(
+          (e) => e.company || e.role,
+        ),
         education: deferredCvData.education.filter((e) => e.school),
         projects: deferredCvData.projects.filter((p) => p.name),
         hardSkills: deferredCvData.hardSkills.filter((s) => s.trim()),
@@ -177,12 +232,12 @@ const CvBuilderPage = () => {
       const rawHtml = compiled(data);
       return DOMPurify.sanitize(rawHtml, {
         WHOLE_DOCUMENT: true,
-        ADD_TAGS: ['style', 'link', 'meta', 'script'],
-        ADD_ATTR: ['target', 'rel', 'href', 'src', 'charset'],
+        ADD_TAGS: ["style", "link", "meta", "script"],
+        ADD_ATTR: ["target", "rel", "href", "src", "charset"],
       });
     } catch (err) {
-      console.error('Render template error:', err);
-      return '';
+      console.error("Render template error:", err);
+      return "";
     }
   }, [template, deferredCvData]);
 
@@ -193,8 +248,8 @@ const CvBuilderPage = () => {
       {
         id: savedId || undefined,
         templateId,
-        title: `CV - ${cvData.fullName || 'Chưa đặt tên'}`,
-        cvData: JSON.stringify(cvData),
+        title: `CV - ${cvData.fullName || "Chưa đặt tên"}`,
+        cvData,
         renderedHtml,
       },
       {
@@ -215,12 +270,12 @@ const CvBuilderPage = () => {
         {
           onSuccess: (blob: any) => {
             const url = URL.createObjectURL(blob as Blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
-            a.download = `CV-${cvData.fullName || 'builder'}.pdf`;
+            a.download = `CV-${cvData.fullName || "builder"}.pdf`;
             a.click();
             URL.revokeObjectURL(url);
-            toast.success('Xuất PDF thành công!');
+            toast.success("Xuất PDF thành công!");
           },
         },
       );
@@ -238,8 +293,8 @@ const CvBuilderPage = () => {
     saveMutation.mutate(
       {
         templateId,
-        title: `CV - ${cvData.fullName || 'Chưa đặt tên'}`,
-        cvData: JSON.stringify(cvData),
+        title: `CV - ${cvData.fullName || "Chưa đặt tên"}`,
+        cvData,
         renderedHtml,
       },
       {
@@ -259,7 +314,11 @@ const CvBuilderPage = () => {
         title="Đang tải CV Builder..."
         subtitle="Chuẩn bị mẫu template và trình soạn thảo"
         fullScreen
-        aiSteps={['Tải template CV...', 'Khởi tạo trình soạn thảo...', 'Sẵn sàng chỉnh sửa']}
+        aiSteps={[
+          "Tải template CV...",
+          "Khởi tạo trình soạn thảo...",
+          "Sẵn sàng chỉnh sửa",
+        ]}
       />
     );
   }
@@ -271,10 +330,14 @@ const CvBuilderPage = () => {
           <div className="w-20 h-20 rounded-2xl bg-amber-50 flex items-center justify-center mb-2">
             <AlertCircle className="size-10 text-amber-500" />
           </div>
-          <h2 className="text-xl font-bold text-text-primary">Không tìm thấy template</h2>
-          <p className="text-text-secondary text-sm">Template này có thể đã bị xóa hoặc không tồn tại.</p>
+          <h2 className="text-xl font-bold text-text-primary">
+            Không tìm thấy template
+          </h2>
+          <p className="text-text-secondary text-sm">
+            Template này có thể đã bị xóa hoặc không tồn tại.
+          </p>
           <button
-            onClick={() => router.push('/cv-builder/templates')}
+            onClick={() => router.push("/cv-builder/templates")}
             className="mt-2 px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary-pressed transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
           >
             ← Quay lại chọn mẫu
@@ -286,8 +349,11 @@ const CvBuilderPage = () => {
 
   // ===== MAIN RENDER =====
   return (
-    <MainLayout hideSearch maxWidth="full" className="px-6 lg:px-10 pt-3 pb-12 bg-[#f4f5f7] flex h-[calc(100vh-64px)] overflow-hidden gap-6">
- 
+    <MainLayout
+      hideSearch
+      maxWidth="full"
+      className="px-6 lg:px-10 pt-3 pb-12 bg-[#f4f5f7] flex h-[calc(100vh-64px)] overflow-hidden gap-6"
+    >
       {showTemplates ? (
         <TemplatePanel onClose={() => setShowTemplates(false)} />
       ) : (

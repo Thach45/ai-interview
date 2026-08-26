@@ -34,6 +34,15 @@ import {
 import { AppException } from '../../common/exceptions/AppException';
 import { calculateFinalInterviewResult } from '../../common/utils/scoring.util';
 import { StreamReplyExtractor } from '../../common/utils/stream.util';
+import { validateJsonb } from '../../common/validation/jsonb-validation.util';
+import {
+  ChatInterviewResponseJsonDto,
+  CoreQuestionsResponseJsonDto,
+  CvAnalysisResultJsonDto,
+  CvDataJsonDto,
+  CvOptimizationResultJsonDto,
+  SubmitInterviewResultJsonDto,
+} from '../../common/validation/jsonb.dto';
 
 const AI_MODEL_CONFIG = {
   model: 'gemini-2.5-flash',
@@ -180,8 +189,15 @@ export class AiService {
           .trim();
       }
 
+      const parsed = JSON.parse(content);
+      const validated = await validateJsonb(
+        CvDataJsonDto,
+        parsed,
+        'Kết quả trích xuất CV từ AI',
+      );
+
       console.log('AI Service: Finished CV Extraction');
-      return JSON.parse(content);
+      return validated;
     } catch (error) {
       console.error('Lỗi khi trích xuất thông tin CV (extractCvData):', error);
       throw error;
@@ -227,7 +243,11 @@ export class AiService {
         responseText = response.text;
       }
 
-      return JSON.parse(responseText);
+      return validateJsonb(
+        CvAnalysisResultJsonDto,
+        JSON.parse(responseText),
+        'Kết quả phân tích CV từ AI',
+      );
     } catch (error: any) {
       console.error('AI Service Error:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI.', {
@@ -283,7 +303,11 @@ export class AiService {
         responseText = response.text;
       }
 
-      return JSON.parse(responseText);
+      return validateJsonb(
+        CvOptimizationResultJsonDto,
+        JSON.parse(responseText),
+        'Kết quả tối ưu CV từ AI',
+      );
     } catch (error: any) {
       console.error('AI Service Error:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI (optimizeCV).', {
@@ -333,14 +357,22 @@ export class AiService {
 
       const parsed = JSON.parse(responseText);
       if (parsed && Array.isArray(parsed.questions)) {
-        return parsed.questions.map((q: any) => ({
-          title: q.title || q.topic || 'Chủ đề phỏng vấn',
-          reason:
-            q.reason ||
-            q.explanation ||
-            'Đánh giá năng lực chuyên môn của ứng viên.',
-          criteria: q.criteria || [],
-        })) as { title: string; reason: string; criteria: any[] }[];
+        const normalized = {
+          questions: parsed.questions.map((q: any) => ({
+            title: q.title || q.topic || 'Chủ đề phỏng vấn',
+            reason:
+              q.reason ||
+              q.explanation ||
+              'Đánh giá năng lực chuyên môn của ứng viên.',
+            criteria: q.criteria || [],
+          })),
+        };
+        const validated = await validateJsonb(
+          CoreQuestionsResponseJsonDto,
+          normalized,
+          'Bộ câu hỏi phỏng vấn từ AI',
+        );
+        return validated.questions;
       } else {
         throw new Error(
           'Cấu trúc câu hỏi trả về từ AI không đúng định dạng mong muốn.',
@@ -406,18 +438,11 @@ export class AiService {
         throw new Error('AI không phản hồi dữ liệu hội thoại phỏng vấn.');
       }
 
-      const parsed = JSON.parse(extractor.fullText) as {
-        reply: string;
-        suggestedAction: 'CONTINUE' | 'TRANSITION' | 'FINISH';
-      };
-
-      if (!parsed.reply || !parsed.suggestedAction) {
-        throw new Error(
-          'Cấu trúc phản hồi chat từ AI không đúng định dạng mong muốn.',
-        );
-      }
-
-      return parsed;
+      return validateJsonb(
+        ChatInterviewResponseJsonDto,
+        JSON.parse(extractor.fullText),
+        'Phản hồi hội thoại từ AI',
+      );
     } catch (error: any) {
       console.error('Lỗi khi gọi AI chat phỏng vấn:', error);
       throw new (Error as any)('Lỗi khi kết nối với bộ não AI.', {
@@ -467,39 +492,11 @@ export class AiService {
         responseText = response.text;
       }
 
-      const parsed = JSON.parse(responseText) as {
-        softSkillsEvaluation: {
-          problemSolving: { score: number; reason: string };
-          clarity: { score: number; reason: string };
-          confidence: { score: number; reason: string };
-          relevance: { score: number; reason: string };
-        };
-        recommendation: string;
-        summary: string;
-        strengths: string[];
-        weaknesses: string[];
-        learningPath: string[];
-        questionEvaluations: Array<{
-          questionIndex: number;
-          questionTitle: string;
-          feedback: string;
-          criteriaMatches: Array<{
-            criterionId: string;
-            partialCredit: number;
-            evidence: string;
-          }>;
-        }>;
-      };
-
-      if (
-        !parsed.softSkillsEvaluation ||
-        !parsed.recommendation ||
-        !Array.isArray(parsed.strengths)
-      ) {
-        throw new Error(
-          'Cấu trúc phản hồi phân tích từ AI không đúng định dạng Schema quy định.',
-        );
-      }
+      const parsed = await validateJsonb(
+        SubmitInterviewResultJsonDto,
+        JSON.parse(responseText),
+        'Kết quả chấm phỏng vấn từ AI',
+      );
 
       return calculateFinalInterviewResult(parsed, input.coreQuestions);
     } catch (error: any) {
