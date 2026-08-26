@@ -3,7 +3,7 @@ export type ShowUser = {
   email: string;
   createdAt: Date;
   updatedAt: Date;
-  role: string;
+  roles: string[];
   password: string;
 };
 
@@ -11,7 +11,7 @@ export type UserResponseDTO = {
   id: string;
   email: string;
   fullName: string;
-  role: string;
+  roles: string[];
   avatarUrl?: string | null;
   status: string;
   creditsBalance: number;

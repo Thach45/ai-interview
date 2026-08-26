@@ -7,8 +7,6 @@ import {
   Param,
   Body,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { HasRole } from '../../../common/decorators/has-role.decorator';
 import { CvTemplatesService } from './cv-templates.service';
 import {
   CreateCvTemplateDto,
@@ -16,7 +14,6 @@ import {
 } from './dto/cv-template.dto';
 
 @Controller('admin/cv-templates')
-@HasRole(Role.ADMIN)
 export class AdminCvTemplatesController {
   constructor(private readonly cvTemplatesService: CvTemplatesService) {}
 

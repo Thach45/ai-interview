@@ -7,13 +7,10 @@ import {
   Query,
   Body,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { HasRole } from '../../common/decorators/has-role.decorator';
 import { AdminNotificationService } from './admin-notification.service';
 import { SendNotificationDto } from './dto/notification.dto';
 
 @Controller('admin/notifications')
-@HasRole(Role.ADMIN)
 export class AdminNotificationController {
   constructor(
     private readonly adminNotificationService: AdminNotificationService,

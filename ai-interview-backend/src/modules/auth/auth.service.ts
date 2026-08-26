@@ -37,11 +37,17 @@ export class AuthService {
   }
 
   async findUserByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.prisma.user.findUnique({
+      where: { email },
+      include: { userRoles: { include: { role: true } } },
+    });
   }
 
   async findUserById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: { userRoles: { include: { role: true } } },
+    });
   }
 
   async register(userData: {
@@ -59,7 +65,12 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
-      data: { email, fullName, password: hashedPassword },
+      data: {
+        email,
+        fullName,
+        password: hashedPassword,
+        userRoles: { create: { role: { connect: { code: 'CANDIDATE' } } } },
+      },
     });
 
     await this.sendOtp(email);
@@ -87,7 +98,7 @@ export class AuthService {
     const payload: TokenPayload = {
       id: user.id,
       email: user.email,
-      role: user.role,
+      roles: user.userRoles.map(({ role }) => role.code),
       emailVerifyAt: user.emailVerifiedAt,
       status: user.status,
     };
@@ -113,7 +124,7 @@ export class AuthService {
       const newPayload: TokenPayload = {
         id: user.id,
         email: user.email,
-        role: user.role,
+        roles: user.userRoles.map(({ role }) => role.code),
         emailVerifyAt: user.emailVerifiedAt!,
         status: user.status,
       };

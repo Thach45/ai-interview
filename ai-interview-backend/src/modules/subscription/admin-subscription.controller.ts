@@ -7,13 +7,10 @@ import {
   Param,
   Body,
 } from '@nestjs/common';
-import { HasRole } from '../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 import { SubscriptionService } from './subscription.service';
 import { CreatePackageDto, UpdatePackageDto } from './dto/subscription.dto';
 
 @Controller('admin/packages')
-@HasRole(Role.ADMIN)
 export class AdminSubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 

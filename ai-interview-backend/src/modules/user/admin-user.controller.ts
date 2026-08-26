@@ -8,13 +8,10 @@ import {
   Body,
   Query,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { HasRole } from '../../common/decorators/has-role.decorator';
 import { AdminUserService } from './admin-user.service';
 import { AdminCreateUserDto, AdminUpdateUserDto } from './dto/user.dto';
 
 @Controller('admin/users')
-@HasRole(Role.ADMIN)
 export class AdminUserController {
   constructor(private readonly adminUserService: AdminUserService) {}
 

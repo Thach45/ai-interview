@@ -8,8 +8,6 @@ import {
   Body,
   Query,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { HasRole } from '../../common/decorators/has-role.decorator';
 import { AdminTransactionService } from './admin-transaction.service';
 import {
   ManualTopupDto,
@@ -18,7 +16,6 @@ import {
 } from './dto/transaction.dto';
 
 @Controller('admin/transactions')
-@HasRole(Role.ADMIN)
 export class AdminTransactionController {
   constructor(
     private readonly adminTransactionService: AdminTransactionService,

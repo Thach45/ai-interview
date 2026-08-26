@@ -23,6 +23,7 @@
     "prisma:status": "prisma migrate status",
     "prisma:smoke": "tsx prisma/smoke-test.ts",
     "prisma:seed": "tsx prisma/seed.ts",
+    "permissions:sync": "npm run build && node dist/scripts/sync-permissions.js",
     "seed:template": "tsx prisma/seed-cv-template.ts"
   },
   "dependencies": {

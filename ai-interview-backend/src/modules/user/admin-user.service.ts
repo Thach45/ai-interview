@@ -28,7 +28,7 @@ export class AdminUserService {
           email: true,
           fullName: true,
           avatarUrl: true,
-          role: true,
+          userRoles: { select: { role: { select: { code: true } } } },
           status: true,
           creditsBalance: true,
           emailVerifiedAt: true,
@@ -55,7 +55,7 @@ export class AdminUserService {
       email: true,
       fullName: true,
       avatarUrl: true,
-      role: true,
+      userRoles: { select: { role: { select: { code: true } } } },
       status: true,
       creditsBalance: true,
       emailVerifiedAt: true,
@@ -84,7 +84,11 @@ export class AdminUserService {
         email: data.email,
         fullName: data.fullName,
         password: hashedPassword,
-        role: data.role,
+        userRoles: {
+          create: (data.roleCodes ?? ['CANDIDATE']).map((code) => ({
+            role: { connect: { code } },
+          })),
+        },
         status: data.status,
         creditsBalance: data.creditsBalance ?? 0,
       },
@@ -93,7 +97,7 @@ export class AdminUserService {
         email: true,
         fullName: true,
         avatarUrl: true,
-        role: true,
+        userRoles: { select: { role: { select: { code: true } } } },
         status: true,
         creditsBalance: true,
         emailVerifiedAt: true,
@@ -127,8 +131,13 @@ export class AdminUserService {
     if (data.fullName !== undefined) {
       updateData.fullName = data.fullName;
     }
-    if (data.role !== undefined) {
-      updateData.role = data.role;
+    if (data.roleCodes !== undefined) {
+      updateData.userRoles = {
+        deleteMany: {},
+        create: data.roleCodes.map((code) => ({
+          role: { connect: { code } },
+        })),
+      };
     }
     if (data.status !== undefined) {
       updateData.status = data.status;
@@ -145,7 +154,7 @@ export class AdminUserService {
       email: true,
       fullName: true,
       avatarUrl: true,
-      role: true,
+      userRoles: { select: { role: { select: { code: true } } } },
       status: true,
       creditsBalance: true,
       emailVerifiedAt: true,

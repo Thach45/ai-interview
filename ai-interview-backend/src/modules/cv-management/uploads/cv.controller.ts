@@ -13,11 +13,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { TokenPayload } from '../../../common/types/jwt.type';
 import { CvService } from './cv.service';
-import { HasRole } from '../../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('cvs')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class CvController {
   constructor(private readonly cvService: CvService) {}
 

@@ -7,7 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-import { RolesGuard } from './common/guards/roles.guard';
+import { PermissionGuard } from './common/guards/permission.guard';
 import { JobCategoryModule } from './modules/job-category/job-category.module';
 import { JobTemplateModule } from './modules/job-template/job-template.module';
 import { CvModule } from './modules/cv-management/uploads/cv.module';
@@ -28,6 +28,9 @@ import { AnalysisCvModule } from './modules/cv-management/analysis/analysis-cv.m
 import { QueueModule } from './providers/queue/queue.module';
 import { HealthModule } from './health/health.module';
 import { OperateSystemModule } from './modules/operate-system/operate-system.module';
+import { PermissionModule } from './modules/authorization/permissions/permission.module';
+import { RoleModule } from './modules/authorization/roles/role.module';
+import { RolePermissionModule } from './modules/authorization/role-permissions/role-permission.module';
 import { SentryModule } from '@sentry/nestjs/setup';
 @Module({
   imports: [
@@ -67,13 +70,16 @@ import { SentryModule } from '@sentry/nestjs/setup';
     QueueModule,
     HealthModule,
     OperateSystemModule,
+    PermissionModule,
+    RoleModule,
+    RolePermissionModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     // Global guards — secure by default, bypass with @IsPublic()
     { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: PermissionGuard },
   ],
 })
 export class AppModule {}

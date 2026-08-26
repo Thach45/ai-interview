@@ -1,10 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { CategoryType, Role } from '@prisma/client';
+import { CategoryType } from '@prisma/client';
 import { JobCategoryService } from './job-category.service';
-import { HasRole } from '../../common/decorators/has-role.decorator';
 
 @Controller('categories')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class JobCategoryController {
   constructor(private readonly jobCategoryService: JobCategoryService) {}
 

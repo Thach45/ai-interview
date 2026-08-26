@@ -20,11 +20,8 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { TokenPayload } from '../../common/types/jwt.type';
 import { InterviewAiService } from './interview-ai.service';
 import { SetupInterviewDto, ChatMessageDto, TtsDto } from './dto/interview.dto';
-import { HasRole } from '../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('interview-ai')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class InterviewController {
   constructor(
     private readonly interviewAiService: InterviewAiService,
