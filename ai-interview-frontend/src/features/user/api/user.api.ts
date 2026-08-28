@@ -1,5 +1,14 @@
 import apiClient from '../../../shared/services/apiClient';
-import type { User, UsersResponse, UserFilters } from '../types/user';
+import type { User, UserRole, UsersResponse, UserFilters } from '../types/user';
+
+export interface AdminUserPayload {
+  fullName?: string;
+  email?: string;
+  password?: string;
+  roleCodes?: UserRole[];
+  status?: 'ACTIVE' | 'INACTIVE';
+  creditsBalance?: number;
+}
 
 export const userApi = {
   getUsers: async (filters: UserFilters): Promise<UsersResponse> => {
@@ -21,12 +30,12 @@ export const userApi = {
     return response.data;
   },
 
-  createUser: async (data: Partial<User> & { password?: string }): Promise<User> => {
+  createUser: async (data: AdminUserPayload): Promise<User> => {
     const response = await apiClient.post('/admin/users', data);
     return response.data;
   },
 
-  updateUser: async (id: string, data: Partial<User> & { password?: string }): Promise<User> => {
+  updateUser: async (id: string, data: AdminUserPayload): Promise<User> => {
     const response = await apiClient.patch(`/admin/users/${id}`, data);
     return response.data;
   },

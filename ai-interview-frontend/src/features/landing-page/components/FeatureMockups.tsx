@@ -92,12 +92,12 @@ function ProductMockup({ kind }: { kind: FeatureKind }) {
               <div key={item} className={`rounded-md px-3 py-2 text-xs ${index === 2 ? 'bg-gray-100 font-medium text-gray-950' : 'text-gray-500'}`}>{item}</div>
             ))}
           </div>
-          <button className="mt-8 w-full rounded-md bg-black px-3 py-2.5 text-xs font-medium text-white">Xem trước CV</button>
+          <button className="mt-8 w-full rounded-md bg-primary px-3 py-2.5 text-xs font-medium text-white transition-colors hover:bg-primary-pressed">Xem trước CV</button>
         </div>
         <div className="p-4 sm:p-5">
           <div className="flex items-center justify-between border-b border-gray-200 pb-4">
             <div><p className="text-sm font-medium text-gray-950">Độ phù hợp với JD</p><p className="mt-1 text-xs text-gray-500">Frontend Engineer · Middle</p></div>
-            <span className="rounded-md bg-ai/10 px-2.5 py-1 text-xs font-medium text-ai">82%</span>
+            <span className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">82%</span>
           </div>
           <div className="mt-5 space-y-3">
             <MockRow label="React & TypeScript" value="Phù hợp" positive />
@@ -122,12 +122,12 @@ function ProductMockup({ kind }: { kind: FeatureKind }) {
         </div>
         <div className="mt-5 flex flex-1 flex-col justify-between rounded-md border border-gray-200 bg-gray-50 p-4">
           <div>
-            <div className="flex items-center gap-2"><div className="flex size-7 items-center justify-center rounded-full bg-black text-xs font-medium text-white">AI</div><p className="text-xs font-medium text-gray-950">Arion Interviewer</p></div>
+            <div className="flex items-center gap-2"><div className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">AI</div><p className="text-xs font-medium text-gray-950">Arion Interviewer</p></div>
             <p className="mt-4 max-w-[32ch] text-sm leading-6 text-gray-800">Hãy kể về một lần bạn phải cân bằng giữa deadline gấp và chất lượng kỹ thuật.</p>
           </div>
           <div className="rounded-md border border-gray-200 bg-white p-3">
             <p className="text-xs text-gray-400">Câu trả lời của bạn</p>
-            <div className="mt-4 flex items-center justify-between"><span className="text-xs text-gray-500">Đang lắng nghe...</span><span className="flex size-9 items-center justify-center rounded-full bg-black text-white"><Mic size={15} /></span></div>
+            <div className="mt-4 flex items-center justify-between"><span className="text-xs text-gray-500">Đang lắng nghe...</span><span className="flex size-9 items-center justify-center rounded-full bg-primary text-white"><Mic size={15} /></span></div>
           </div>
         </div>
       </div>
@@ -143,7 +143,7 @@ function ProductMockup({ kind }: { kind: FeatureKind }) {
       <div className="grid flex-1 gap-3 py-5 sm:grid-cols-[0.8fr_1.2fr]">
         <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
           <p className="text-xs text-gray-500">Điểm tổng quan</p><p className="mt-2 text-4xl font-semibold tracking-tight text-gray-950">85<span className="text-base text-gray-400">/100</span></p>
-          <div className="mt-5 h-1.5 rounded-full bg-gray-200"><div className="h-full w-[85%] rounded-full bg-black" /></div>
+          <div className="mt-5 h-1.5 rounded-full bg-gray-200"><div className="h-full w-[85%] rounded-full bg-primary" /></div>
         </div>
         <div className="space-y-3 rounded-md border border-gray-200 p-4">
           <MockRow label="Giao tiếp" value="90" positive />
@@ -152,7 +152,7 @@ function ProductMockup({ kind }: { kind: FeatureKind }) {
           <MockRow label="Tự tin" value="84" positive />
         </div>
       </div>
-      <div className="rounded-md bg-ai/5 p-3 text-xs leading-5 text-ai">Lần tới, hãy lượng hóa kết quả dự án trước khi mô tả cách bạn triển khai.</div>
+      <div className="rounded-md bg-primary/5 p-3 text-xs leading-5 text-primary">Lần tới, hãy lượng hóa kết quả dự án trước khi mô tả cách bạn triển khai.</div>
     </div>
   );
 }
@@ -242,7 +242,7 @@ export function FeatureMockups() {
         return <motion.section key={feature.kind} initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }} className={`feature-snap flex min-h-[100svh] items-start border-b border-gray-200 px-6 py-16 sm:py-20 ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}>
           <div className="mx-auto w-full max-w-6xl">
             <div className="grid items-start gap-8 lg:grid-cols-[0.78fr_1.4fr] lg:gap-10">
-              <div className="flex flex-col justify-center"><div className="inline-flex w-fit items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700"><Icon size={14} className="text-ai" aria-hidden="true" />{feature.eyebrow}</div><h3 className="mt-6 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">{feature.title}</h3><p className="mt-5 text-base leading-7 text-gray-600">{feature.description}</p><Link href={feature.href} className="mt-7 inline-flex min-h-11 w-fit items-center gap-2 rounded-md bg-black px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2">{feature.cta}<ArrowRight size={16} aria-hidden="true" /></Link><VideoCard feature={feature} /></div>
+              <div className="flex flex-col justify-center"><div className="inline-flex w-fit items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700"><Icon size={14} className="text-primary" aria-hidden="true" />{feature.eyebrow}</div><h3 className="mt-6 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">{feature.title}</h3><p className="mt-5 text-base leading-7 text-gray-600">{feature.description}</p><Link href={feature.href} className="mt-7 inline-flex min-h-11 w-fit items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">{feature.cta}<ArrowRight size={16} aria-hidden="true" /></Link><VideoCard feature={feature} /></div>
               <motion.div initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.985 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.5, delay: prefersReducedMotion ? 0 : 0.08, ease: [0.16, 1, 0.3, 1] }}><div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"><ProductMockup kind={feature.kind} /></div><div className="mt-6"><p className="mb-4 text-xs font-medium uppercase tracking-[0.14em] text-gray-500">Người dùng nói gì về tính năng này</p><EvaluationCard feature={feature} /></div></motion.div>
             </div>
           </div>

@@ -1,3 +1,3 @@
 'use client';
-import { AdministratorsPreviewPage } from '@/views/admin/AdminPreviewPages';
-export default function Page() { return <AdministratorsPreviewPage />; }
+import { AdminAuthorizationPage } from '@/views/admin/AdminAuthorizationPage';
+export default function Page() { return <AdminAuthorizationPage />; }

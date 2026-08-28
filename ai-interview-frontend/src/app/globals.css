@@ -35,8 +35,7 @@
 
 @layer components {
   .landing-theme {
-    --color-primary: #111111;
-    --color-primary-pressed: #27272a;
+    /* uses system primary #5645d4 */
   }
 
   .sidebar-link {

@@ -5,7 +5,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: UserRole;
+  userRoles: { role: { code: UserRole } }[];
   status: UserStatus;
   avatarUrl?: string;
   creditsBalance: number;
@@ -14,6 +14,9 @@ export interface User {
   createdAt: string;
   updatedAt: string;
 }
+
+export const getUserRoleCodes = (user: Pick<User, 'userRoles'>): UserRole[] =>
+  user.userRoles.map(({ role }) => role.code);
 
 export interface UserFilters {
   page?: number;

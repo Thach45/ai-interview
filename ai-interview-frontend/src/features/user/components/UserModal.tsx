@@ -3,7 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import type { User } from '../types/user';
+import { getUserRoleCodes } from '../types/user';
 import { useUserActions } from '../hooks/useUsers';
+import type { AdminUserPayload } from '../api/user.api';
 
 const userSchema = z.object({
   fullName: z.string().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
@@ -48,7 +50,7 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
         fullName: user.fullName,
         email: user.email,
         password: '',
-        role: user.role,
+        role: getUserRoleCodes(user)[0] ?? 'CANDIDATE',
         status: user.status,
         creditsBalance: user.creditsBalance,
       });
@@ -68,15 +70,18 @@ export const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, user }) =
 
   const onSubmit = async (data: UserFormData) => {
     try {
+      const { role, ...rest } = data;
+      const payload: AdminUserPayload = { ...rest, roleCodes: [role] };
+
       // Remove empty password if editing
-      if (user && !data.password) {
-        delete data.password;
+      if (user && !payload.password) {
+        delete payload.password;
       }
 
       if (user) {
-        await updateUser({ id: user.id, data });
+        await updateUser({ id: user.id, data: payload });
       } else {
-        await createUser(data as any);
+        await createUser(payload);
       }
       onClose();
     } catch (error) {

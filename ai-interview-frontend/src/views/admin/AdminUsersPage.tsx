@@ -3,6 +3,7 @@ import { AdminLayout } from '../../layouts/AdminLayout';
 import { UserModal } from '../../features/user/components/UserModal';
 import { useUsers, useUserActions } from '../../features/user/hooks/useUsers';
 import type { User } from '../../features/user/types/user';
+import { getUserRoleCodes } from '../../features/user/types/user';
 
 export const AdminUsersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -148,12 +149,17 @@ export const AdminUsersPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase border ${user.role === 'ADMIN' ? 'text-purple-600 bg-purple-50 border-purple-100' :
-                        user.role === 'MODERATOR' ? 'text-blue-600 bg-blue-50 border-blue-100' :
-                          'text-text-secondary bg-bg-surface border-border-hairline'
-                        }`}>
-                        {user.role}
-                      </span>
+                      {getUserRoleCodes(user).map((role) => (
+                        <span
+                          key={role}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase border mr-1 ${role === 'ADMIN' ? 'text-purple-600 bg-purple-50 border-purple-100' :
+                            role === 'MODERATOR' ? 'text-blue-600 bg-blue-50 border-blue-100' :
+                              'text-text-secondary bg-bg-surface border-border-hairline'
+                            }`}
+                        >
+                          {role}
+                        </span>
+                      ))}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5">
