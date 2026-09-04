@@ -3,11 +3,11 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { MailService } from './mail.service';
 
-export interface EmailJobData {
-  email: string;
-  title: string;
-  message: string;
-}
+export type EmailJobData =
+  | { type: 'verifyAccountOtp'; email: string; otp: string }
+  | { type: 'resetPasswordOtp'; email: string; otp: string }
+  | { type: 'notification'; email: string; title: string; message: string }
+  | { type: 'bill'; email: string; title: string; message: string };
 
 @Processor('emailQueue', { concurrency: 50 })
 export class EmailProcessor extends WorkerHost {
@@ -18,17 +18,40 @@ export class EmailProcessor extends WorkerHost {
   }
 
   async process(job: Job<EmailJobData, any, string>): Promise<any> {
-    const { email, title, message } = job.data;
+    const data = job.data;
+    let success: boolean;
 
-    // Gửi email
-    const success = await this.mailService.sendNotificationEmail(
-      email,
-      title,
-      message,
-    );
+    switch (data.type) {
+      case 'verifyAccountOtp':
+        success = await this.mailService.sendVerifyAccountOtp(
+          data.email,
+          data.otp,
+        );
+        break;
+      case 'resetPasswordOtp':
+        success = await this.mailService.sendResetPasswordOtp(
+          data.email,
+          data.otp,
+        );
+        break;
+      case 'notification':
+        success = await this.mailService.sendNotificationEmail(
+          data.email,
+          data.title,
+          data.message,
+        );
+        break;
+      case 'bill':
+        success = await this.mailService.sendBillEmail(
+          data.email,
+          data.title,
+          data.message,
+        );
+        break;
+    }
 
     if (!success) {
-      throw new Error(`Gửi email thất bại cho ${email}`); // Ném lỗi để BullMQ retry
+      throw new Error(`Gửi email thất bại cho ${data.email}`); // Ném lỗi để BullMQ retry
     }
 
     return { success: true };

@@ -18,7 +18,9 @@ export class GroqSttService {
     language: InterviewLanguage,
     prompt?: string,
   ): Promise<string> {
-    const apiKey = this.configService.get<string>('GROQ_API_KEY');
+    const apiKey =
+      this.configService.get<string>('DEEPINFRA_API_KEY') ||
+      this.configService.get<string>('GROQ_API_KEY');
     if (!apiKey) {
       throw new AppException('Chưa cấu hình GROQ_API_KEY', 500);
     }
@@ -28,7 +30,7 @@ export class GroqSttService {
       type: mimeType,
     });
 
-    formData.append('file', audioBlob, 'recording.webm');
+    formData.append('audio', audioBlob, 'recording.webm');
     formData.append(
       'model',
       this.configService.get<string>('GROQ_STT_MODEL') || 'whisper-large-v3',
@@ -43,8 +45,12 @@ export class GroqSttService {
     formData.append('temperature', '0');
     formData.append('response_format', 'json');
 
+    const apiUrl =
+      this.configService.get<string>('GROQ_STT_API_URL') ||
+      'https://api.groq.com/openai/v1/audio/transcriptions';
+
     const response = await axios.post<GroqTranscriptionResponse>(
-      'https://api.groq.com/openai/v1/audio/transcriptions',
+      apiUrl,
       formData,
       {
         headers: {

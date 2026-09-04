@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
-import { MailService } from '../../providers/mail/mail.service';
+import { EmailJobData } from '../../providers/mail/email.processor';
 import {
   BadRequestException,
   UnauthorizedException,
@@ -17,7 +19,7 @@ import { toUserResponseDTO } from '../../common/mappers/user.mapper';
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly mailService: MailService,
+    @InjectQueue('emailQueue') private readonly emailQueue: Queue<EmailJobData>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -147,7 +149,11 @@ export class AuthService {
       data: { email, code: otp, expiresAt },
     });
 
-    await this.mailService.sendVerifyAccountOtp(email, otp);
+    await this.emailQueue.add('verifyAccountOtp', {
+      type: 'verifyAccountOtp',
+      email,
+      otp,
+    });
     return otp;
   }
 
@@ -189,7 +195,11 @@ export class AuthService {
       data: { email, code: otp, expiresAt },
     });
 
-    await this.mailService.sendResetPasswordOtp(email, otp);
+    await this.emailQueue.add('resetPasswordOtp', {
+      type: 'resetPasswordOtp',
+      email,
+      otp,
+    });
     return true;
   }
 
