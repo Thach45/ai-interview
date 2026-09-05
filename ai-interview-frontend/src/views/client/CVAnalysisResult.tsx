@@ -23,7 +23,7 @@ import { SkillsTab } from '../../features/cvs/components/cv-analysis/SkillsTab';
 import { RecommendationsTab } from '../../features/cvs/components/cv-analysis/RecommendationsTab';
 
 export default function CVAnalysisResultPage() {
-  const { id } = useParams(); // analysisId
+  const { id } = useParams<{ id: string }>(); // analysisId
   const router = useRouter();
   const [showDetail, setShowDetail] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'recommendations'>('overview');

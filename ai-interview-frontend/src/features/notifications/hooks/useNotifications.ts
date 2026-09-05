@@ -1,12 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notificationApi } from "../api/notification.api";
 import type { Notification } from "../type/notification.type";
 import { toast } from "sonner";
 import { useBackgroundJobStore } from "../../../store/backgroundJobStore";
+import { useAuthStore } from "../../../store/authStore";
+import { refreshAccessToken } from "../../../shared/services/apiClient";
 
 export const useNotifications = () => {
   const queryClient = useQueryClient();
+  const token = useAuthStore((state) => state.token);
+  const authRetryAttemptedRef = useRef(false);
 
   const query = useQuery({
     queryKey: ["notifications"],
@@ -52,13 +56,17 @@ export const useNotifications = () => {
 
   useEffect(() => {
     // Chỉ kết nối SSE nếu đã đăng nhập (có token)
-    const token = localStorage.getItem("token");
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+    const API_URL =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
     if (!token) return;
 
     // Sử dụng URL SSE
     const sseUrl = `${API_URL}/notifications/stream`;
     const eventSource = new EventSource(`${sseUrl}?token=${token}`);
+
+    eventSource.onopen = () => {
+      authRetryAttemptedRef.current = false;
+    };
 
     eventSource.onmessage = (event) => {
       if (event.data === ":") return; // Bỏ qua keep-alive ping
@@ -67,17 +75,29 @@ export const useNotifications = () => {
         const newNotification: Notification = JSON.parse(event.data);
 
         // --- Logic cập nhật Background Job Widget ---
-        if (newNotification.type === 'AI_PROCESS' || newNotification.title?.includes('Phân tích CV')) {
+        if (
+          newNotification.type === "AI_PROCESS" ||
+          newNotification.title?.includes("Phân tích CV")
+        ) {
           const updateJob = useBackgroundJobStore.getState().updateJob;
           const jobs = useBackgroundJobStore.getState().jobs;
-          
+
           // Tìm job đang chạy gần nhất để cập nhật (vì hệ thống đơn giản chưa map jobId)
-          const latestRunningJob = jobs.find(j => j.status === 'processing');
+          const latestRunningJob = jobs.find((j) => j.status === "processing");
           if (latestRunningJob) {
-            if (newNotification.title?.includes('thất bại') || newNotification.title?.includes('lỗi')) {
-              updateJob(latestRunningJob.id, { status: 'error', errorMessage: newNotification.message });
+            if (
+              newNotification.title?.includes("thất bại") ||
+              newNotification.title?.includes("lỗi")
+            ) {
+              updateJob(latestRunningJob.id, {
+                status: "error",
+                errorMessage: newNotification.message,
+              });
             } else {
-              updateJob(latestRunningJob.id, { status: 'success', resultUrl: newNotification.link });
+              updateJob(latestRunningJob.id, {
+                status: "success",
+                resultUrl: newNotification.link,
+              });
             }
           }
           // Worker đã xử lý xong (trừ/cộng tiền), nên ta cần ép Header gọi lại API profile ngay lúc này!
@@ -109,14 +129,24 @@ export const useNotifications = () => {
       }
     };
 
-    eventSource.onerror = () => {
-      console.log("SSE connection lost, reconnecting automatically...");
+    eventSource.onerror = async () => {
+      if (authRetryAttemptedRef.current) return;
+
+      authRetryAttemptedRef.current = true;
+      eventSource.close();
+
+      try {
+        await refreshAccessToken();
+      } catch {
+        useAuthStore.getState().logout();
+        window.location.href = "/login";
+      }
     };
 
     return () => {
       eventSource.close();
     };
-  }, [queryClient]);
+  }, [queryClient, token]);
 
   return {
     ...query,

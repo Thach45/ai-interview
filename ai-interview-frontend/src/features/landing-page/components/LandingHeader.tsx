@@ -5,7 +5,6 @@ import { useAuthStore } from '../../../store/authStore';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: 'how-it-works', label: 'Cách hoạt động', href: '#how-it-works' },
   { id: 'stats', label: 'Kết quả', href: '#stats' },
   { id: 'features', label: 'Tính năng', href: '#features' },
   { id: 'use-cases', label: 'Dành cho bạn', href: '#use-cases' },

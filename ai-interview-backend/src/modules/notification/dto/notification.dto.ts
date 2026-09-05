@@ -3,6 +3,7 @@ import {
   IsNotEmpty,
   IsEnum,
   IsOptional,
+  IsUUID,
   MinLength,
 } from 'class-validator';
 import { NotificationType } from '@prisma/client';
@@ -27,7 +28,7 @@ export class SendNotificationDto {
   link?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   userId?: string;
 
   @IsEnum(NotificationMode, { message: 'Mode phải là all hoặc individual' })

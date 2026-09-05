@@ -190,7 +190,7 @@ export default function InterviewResultPage() {
         <div className="flex flex-col items-center justify-center h-[calc(100vh-140px)]">
            <AlertTriangle size={48} className="text-amber-500 mb-4" />
            <p className="text-lg font-bold">Thiếu thông tin phiên phỏng vấn</p>
-           <button onClick={() => router.push(-1)} className="mt-4 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
+           <button onClick={() => router.back()} className="mt-4 px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20">Quay lại</button>
         </div>
       </MainLayout>
     );
@@ -220,7 +220,7 @@ export default function InterviewResultPage() {
            <span className="material-symbols-outlined text-red-500 text-6xl mb-4">error</span>
            <p className="text-xl font-semibold text-text-primary">Không thể tải Báo cáo phỏng vấn</p>
            <p className="text-text-secondary mt-2 mb-6">Bạn đã nộp kết quả phỏng vấn chưa?</p>
-           <button onClick={() => router.push(-1)} className="px-6 py-2 bg-bg-surface border border-border-hairline text-text-primary font-medium rounded-md hover:bg-gray-100 transition-colors">Quay lại</button>
+           <button onClick={() => router.back()} className="px-6 py-2 bg-bg-surface border border-border-hairline text-text-primary font-medium rounded-md hover:bg-gray-100 transition-colors">Quay lại</button>
         </div>
       </MainLayout>
     );

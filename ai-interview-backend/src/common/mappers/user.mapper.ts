@@ -1,12 +1,14 @@
 import { User } from '@prisma/client';
 import { UserResponseDTO } from '../types/user';
 
-export const toUserResponseDTO = (user: User): UserResponseDTO => {
+type UserWithRoles = User & { userRoles: { role: { code: string } }[] };
+
+export const toUserResponseDTO = (user: UserWithRoles): UserResponseDTO => {
   return {
     id: user.id,
     email: user.email,
     fullName: user.fullName,
-    role: user.role,
+    roles: user.userRoles.map(({ role }) => role.code),
     avatarUrl: user.avatarUrl,
     status: user.status,
     creditsBalance: user.creditsBalance,

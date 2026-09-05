@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #5645d4;
-  --color-primary-pressed: #4534b3;
-  --color-ai: #5645d4;
+  --color-primary: #191919;
+  --color-primary-pressed: #000000;
+  --color-ai: #f5a623;
+  --color-ai-pressed: #d98c0f;
   --color-on-primary: #ffffff;
 
   --color-text-primary: #1a1a1a;
@@ -35,8 +36,7 @@
 
 @layer components {
   .landing-theme {
-    --color-primary: #111111;
-    --color-primary-pressed: #27272a;
+    /* uses system primary #5645d4 */
   }
 
   .sidebar-link {

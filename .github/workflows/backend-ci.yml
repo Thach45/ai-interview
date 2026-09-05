@@ -21,7 +21,7 @@ jobs:
         working-directory: ai-interview-backend
 
     env:
-      DATABASE_URL: mongodb://localhost:27017/arion_ci
+      DATABASE_URL: postgresql://arion:arion_password@localhost:5432/arion_ci?schema=public
       PUPPETEER_SKIP_DOWNLOAD: "true"
 
     steps:
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: ai-interview-backend/package-lock.json
 

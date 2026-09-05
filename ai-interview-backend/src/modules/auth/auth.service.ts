@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
-import { MailService } from '../../providers/mail/mail.service';
+import { EmailJobData } from '../../providers/mail/email.processor';
 import {
   BadRequestException,
   UnauthorizedException,
@@ -17,7 +19,7 @@ import { toUserResponseDTO } from '../../common/mappers/user.mapper';
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly mailService: MailService,
+    @InjectQueue('emailQueue') private readonly emailQueue: Queue<EmailJobData>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -37,11 +39,17 @@ export class AuthService {
   }
 
   async findUserByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.prisma.user.findUnique({
+      where: { email },
+      include: { userRoles: { include: { role: true } } },
+    });
   }
 
   async findUserById(id: string) {
-    return this.prisma.user.findUnique({ where: { id } });
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: { userRoles: { include: { role: true } } },
+    });
   }
 
   async register(userData: {
@@ -59,7 +67,12 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.user.create({
-      data: { email, fullName, password: hashedPassword },
+      data: {
+        email,
+        fullName,
+        password: hashedPassword,
+        userRoles: { create: { role: { connect: { code: 'CANDIDATE' } } } },
+      },
     });
 
     await this.sendOtp(email);
@@ -87,7 +100,7 @@ export class AuthService {
     const payload: TokenPayload = {
       id: user.id,
       email: user.email,
-      role: user.role,
+      roles: user.userRoles.map(({ role }) => role.code),
       emailVerifyAt: user.emailVerifiedAt,
       status: user.status,
     };
@@ -113,7 +126,7 @@ export class AuthService {
       const newPayload: TokenPayload = {
         id: user.id,
         email: user.email,
-        role: user.role,
+        roles: user.userRoles.map(({ role }) => role.code),
         emailVerifyAt: user.emailVerifiedAt!,
         status: user.status,
       };
@@ -136,7 +149,11 @@ export class AuthService {
       data: { email, code: otp, expiresAt },
     });
 
-    await this.mailService.sendVerifyAccountOtp(email, otp);
+    await this.emailQueue.add('verifyAccountOtp', {
+      type: 'verifyAccountOtp',
+      email,
+      otp,
+    });
     return otp;
   }
 
@@ -178,7 +195,11 @@ export class AuthService {
       data: { email, code: otp, expiresAt },
     });
 
-    await this.mailService.sendResetPasswordOtp(email, otp);
+    await this.emailQueue.add('resetPasswordOtp', {
+      type: 'resetPasswordOtp',
+      email,
+      otp,
+    });
     return true;
   }
 

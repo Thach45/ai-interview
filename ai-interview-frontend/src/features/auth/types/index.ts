@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: string;
+  roles: string[];
   avatarUrl?: string | null;
   createdAt: string;
   creditsBalance?: number;

@@ -17,15 +17,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Observable } from 'rxjs';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { IsPublic } from '../../common/decorators/public.decorator';
 import { TokenPayload } from '../../common/types/jwt.type';
 import { InterviewAiService } from './interview-ai.service';
 import { SetupInterviewDto, ChatMessageDto, TtsDto } from './dto/interview.dto';
-import { HasRole } from '../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('interview-ai')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class InterviewController {
   constructor(
     private readonly interviewAiService: InterviewAiService,
@@ -77,13 +73,13 @@ export class InterviewController {
    */
   @Get(':id/stream')
   @Sse()
-  @IsPublic()
   streamInterviewEvents(
+    @CurrentUser() user: TokenPayload,
     @Param('id') sessionId: string,
   ): Observable<MessageEvent> {
     return new Observable<MessageEvent>((subscriber) => {
-      const eventName = `chat_updated_${sessionId}`;
-      const streamEventName = `chat_stream_${sessionId}`;
+      const eventName = `chat_updated_${user.id}_${sessionId}`;
+      const streamEventName = `chat_stream_${user.id}_${sessionId}`;
 
       // Emit SYNC_SESSION event when new messages arrive
       const onSync = () => {

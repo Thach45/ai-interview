@@ -41,7 +41,7 @@ export class HealthService {
     const startedAt = Date.now();
 
     try {
-      await this.withTimeout(this.prisma.$runCommandRaw({ ping: 1 }), 2000);
+      await this.withTimeout(this.prisma.$queryRaw`SELECT 1`, 2000);
       return { status: 'up', responseTimeMs: Date.now() - startedAt };
     } catch {
       return { status: 'down' };

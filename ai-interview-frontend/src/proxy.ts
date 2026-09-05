@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 interface DecodedToken {
   id: string;
   email: string;
-  role: string;
+  roles: string[];
   exp: number;
 }
 
@@ -25,7 +25,7 @@ const publicPaths = [
 
 const adminPaths = ["/admin"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("token")?.value;
 
@@ -53,7 +53,7 @@ export function middleware(request: NextRequest) {
   if (isAdminPath) {
     try {
       const decoded: DecodedToken = jwtDecode(token);
-      if (decoded.role !== "ADMIN") {
+      if (!decoded.roles?.includes("ADMIN")) {
         return NextResponse.redirect(new URL("/unauthorized", request.url));
       }
     } catch {

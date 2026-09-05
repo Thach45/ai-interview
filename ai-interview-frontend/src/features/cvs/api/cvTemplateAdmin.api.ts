@@ -16,23 +16,23 @@ export type UpdateCvTemplateDto = Partial<CreateCvTemplateDto>;
 
 export const cvTemplateAdminApi = {
   getAll: async (): Promise<CvTemplate[]> => {
-    const data = await apiClient.get<any, CvTemplate[]>("/admin/cv-templates");
-    return data;
+    const response = await apiClient.get<any, { success: boolean; data: CvTemplate[] }>("/admin/cv-templates");
+    return response.data || [];
   },
 
   getById: async (id: string): Promise<CvTemplate> => {
-    const data = await apiClient.get<any, CvTemplate>(`/admin/cv-templates/${id}`);
-    return data;
+    const response = await apiClient.get<any, { success: boolean; data: CvTemplate }>(`/admin/cv-templates/${id}`);
+    return response.data;
   },
 
   create: async (payload: CreateCvTemplateDto): Promise<CvTemplate> => {
-    const data = await apiClient.post<any, CvTemplate>("/admin/cv-templates", payload);
-    return data;
+    const response = await apiClient.post<any, { success: boolean; data: CvTemplate }>("/admin/cv-templates", payload);
+    return response.data;
   },
 
   update: async (id: string, payload: UpdateCvTemplateDto): Promise<CvTemplate> => {
-    const data = await apiClient.put<any, CvTemplate>(`/admin/cv-templates/${id}`, payload);
-    return data;
+    const response = await apiClient.put<any, { success: boolean; data: CvTemplate }>(`/admin/cv-templates/${id}`, payload);
+    return response.data;
   },
 
   delete: async (id: string): Promise<void> => {

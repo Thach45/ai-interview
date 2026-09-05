@@ -4,11 +4,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { TokenPayload } from '../../common/types/jwt.type';
 import { NotificationService } from './notification.service';
-import { HasRole } from '../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('notifications')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class NotificationController {
   constructor(
     private readonly notificationService: NotificationService,

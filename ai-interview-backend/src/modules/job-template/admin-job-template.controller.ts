@@ -8,8 +8,6 @@ import {
   Query,
   Body,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { HasRole } from '../../common/decorators/has-role.decorator';
 import { AdminJobTemplateService } from './admin-job-template.service';
 import {
   CreateJobTemplateDto,
@@ -17,7 +15,6 @@ import {
 } from './dto/job-template.dto';
 
 @Controller('admin/job-templates')
-@HasRole(Role.ADMIN)
 export class AdminJobTemplateController {
   constructor(
     private readonly adminJobTemplateService: AdminJobTemplateService,

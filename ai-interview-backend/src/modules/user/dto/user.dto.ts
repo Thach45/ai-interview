@@ -6,9 +6,11 @@ import {
   IsEmail,
   IsNumber,
   Min,
+  IsArray,
+  ArrayUnique,
   IsEnum,
 } from 'class-validator';
-import { Role, UserStatus } from '@prisma/client';
+import { UserStatus } from '@prisma/client';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -40,8 +42,11 @@ export class AdminCreateUserDto {
   password: string;
 
   @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  roleCodes?: string[];
 
   @IsOptional()
   @IsEnum(UserStatus)
@@ -69,8 +74,10 @@ export class AdminUpdateUserDto {
   password?: string;
 
   @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  roleCodes?: string[];
 
   @IsOptional()
   @IsEnum(UserStatus)

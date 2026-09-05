@@ -4,11 +4,8 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { TokenPayload } from '../../common/types/jwt.type';
 import { SubscriptionService } from './subscription.service';
 import { PurchasePackageDto } from './dto/subscription.dto';
-import { HasRole } from '../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('subscriptions')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 

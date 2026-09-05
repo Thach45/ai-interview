@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { interviewAiApi } from "../api/interview-ai.api";
 import type { SetupInterviewRequest } from "../types/interview-ai.type";
 import { useAuthStore } from "../../../store/authStore";
+import { refreshAccessToken } from "../../../shared/services/apiClient";
 
 export const useInterviewAi = () => {
   const queryClient = useQueryClient();
@@ -15,9 +16,7 @@ export const useInterviewAi = () => {
       toast.success("Setup interview thành công! 🎉");
     },
     onError: (error: any) => {
-      const message =
-        error.message ||
-        "Setup interview thất bại";
+      const message = error.message || "Setup interview thất bại";
       toast.error(message);
     },
   });
@@ -53,9 +52,13 @@ export const useInterviewMessages = (sessionId: string) => {
   });
 };
 
-export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: string, isFinished?: boolean) => void) => {
+export const useInterviewSSE = (
+  sessionId: string,
+  onStreamUpdate?: (text: string, isFinished?: boolean) => void,
+) => {
   const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
+  const authRetryAttemptedRef = useRef(false);
 
   // Lưu callback mới nhất vào ref để không bị trigger useEffect liên tục khi callback thay đổi
   const onStreamUpdateRef = useRef(onStreamUpdate);
@@ -66,12 +69,17 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
   useEffect(() => {
     if (!sessionId || !token) return;
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
-    
+    const API_URL =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+
     // Gắn token vào query string để đi qua auth middleware
     const eventSource = new EventSource(
-      `${API_URL}/interview-ai/${sessionId}/stream?token=${token}`
+      `${API_URL}/interview-ai/${sessionId}/stream?token=${token}`,
     );
+
+    eventSource.onopen = () => {
+      authRetryAttemptedRef.current = false;
+    };
 
     let lastChunkTime = Date.now();
 
@@ -80,17 +88,22 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
         const data = JSON.parse(event.data);
         if (data.type === "SYNC_SESSION") {
           // Bắn sự kiện kết thúc nhưng KHÔNG xóa text để UI tự quyết định (cho TTS Player đọc xong)
-          if (onStreamUpdateRef.current) onStreamUpdateRef.current(data.text || "", true);
+          if (onStreamUpdateRef.current)
+            onStreamUpdateRef.current(data.text || "", true);
           // Invalidate cache -> React Query tự động trigger fetch data mới!
-          queryClient.invalidateQueries({ queryKey: ["interviewMessages", sessionId] });
-          queryClient.invalidateQueries({ queryKey: ["interviewSession", sessionId] }); 
+          queryClient.invalidateQueries({
+            queryKey: ["interviewMessages", sessionId],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["interviewSession", sessionId],
+          });
         } else if (data.type === "STREAM_CHUNK") {
           const now = Date.now();
           const delta = now - lastChunkTime;
           lastChunkTime = now;
-          
+
           // Cập nhật text đang stream
-       
+
           if (onStreamUpdateRef.current) onStreamUpdateRef.current(data.text);
         }
       } catch (error) {
@@ -98,9 +111,19 @@ export const useInterviewSSE = (sessionId: string, onStreamUpdate?: (text: strin
       }
     };
 
-    eventSource.onerror = (error) => {
+    eventSource.onerror = async (error) => {
       console.error("Lỗi kết nối SSE:", error);
+      if (authRetryAttemptedRef.current) return;
+
+      authRetryAttemptedRef.current = true;
       eventSource.close();
+
+      try {
+        await refreshAccessToken();
+      } catch {
+        useAuthStore.getState().logout();
+        window.location.href = "/login";
+      }
     };
 
     return () => {
@@ -113,9 +136,7 @@ export const useStartInterview = (sessionId: string) => {
   return useMutation({
     mutationFn: () => interviewAiApi.startInterview(sessionId),
     onError: (error: any) => {
-      const message =
-        error.message ||
-        "Không thể khởi chạy buổi phỏng vấn";
+      const message = error.message || "Không thể khởi chạy buổi phỏng vấn";
       toast.error(message);
     },
   });
@@ -123,23 +144,20 @@ export const useStartInterview = (sessionId: string) => {
 
 export const useSendChatMessage = (sessionId: string) => {
   return useMutation({
-    mutationFn: (message: string) => interviewAiApi.sendChatMessage(sessionId, message),
+    mutationFn: (message: string) =>
+      interviewAiApi.sendChatMessage(sessionId, message),
     onError: (error: any) => {
-   
       toast.error(error.message);
-    
-      
     },
   });
 };
 
 export const useSendChatAudio = (sessionId: string) => {
   return useMutation({
-    mutationFn: (audioBlob: Blob) => interviewAiApi.sendChatAudio(sessionId, audioBlob),
+    mutationFn: (audioBlob: Blob) =>
+      interviewAiApi.sendChatAudio(sessionId, audioBlob),
     onError: (error: any) => {
-      const message =
-        error.message ||
-        "Không thể xử lý âm thanh";
+      const message = error.message || "Không thể xử lý âm thanh";
       toast.error(message);
     },
   });
@@ -149,9 +167,7 @@ export const useSubmitInterviewResult = (sessionId: string) => {
   return useMutation({
     mutationFn: () => interviewAiApi.submitInterviewResult(sessionId),
     onError: (error: any) => {
-      const message =
-        error.message ||
-        "Không thể nộp kết quả phỏng vấn";
+      const message = error.message || "Không thể nộp kết quả phỏng vấn";
       toast.error(message);
     },
   });

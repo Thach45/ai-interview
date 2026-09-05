@@ -11,11 +11,8 @@ import {
   AnalyzeCvWithExternalJobDto,
 } from './dto/analysis-cv.dto';
 import { OptimizeCvDto, ExportPdfDto } from './dto/cv-optimization.dto';
-import { HasRole } from '../../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('analysis-cv')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class AnalysisCvController {
   constructor(
     private readonly analysisCvService: AnalysisCvService,

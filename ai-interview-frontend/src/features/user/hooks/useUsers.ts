@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { userApi } from '../api/user.api';
+import { userApi, type AdminUserPayload } from '../api/user.api';
 import type { UserFilters } from '../types/user';
 import { toast } from 'sonner';
 
@@ -25,7 +25,7 @@ export const useUserActions = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => userApi.updateUser(id, data),
+    mutationFn: ({ id, data }: { id: string; data: AdminUserPayload }) => userApi.updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Cập nhật người dùng thành công');

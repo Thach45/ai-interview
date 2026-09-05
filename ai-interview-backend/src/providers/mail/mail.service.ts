@@ -1,38 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  verifyAccountTemplate,
-  resetPasswordTemplate,
-  notificationTemplate,
-} from '../../common/utils/mail.template';
+import { Resend } from 'resend';
+import * as React from 'react';
+import { VerifyAccountEmail } from './emails/VerifyAccountEmail';
+import { ResetPasswordEmail } from './emails/ResetPasswordEmail';
+import { NotificationEmail } from './emails/NotificationEmail';
 
 @Injectable()
 export class MailService {
-  private readonly emailApiUrl: string;
+  private readonly resend: Resend;
+  private readonly fromEmail: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.emailApiUrl = this.configService.get<string>('URL_EMAIL') || '';
+    const apiKey = this.configService.get<string>('RESEND_API_KEY') || '';
+    this.resend = new Resend(apiKey);
+    this.fromEmail = this.configService.get<string>('RESEND_FROM_EMAIL') || '';
   }
 
   private async sendEmail(
     recipientEmail: string,
-    content: string,
+    subject: string,
+    react: React.ReactElement,
   ): Promise<boolean> {
     try {
-      const url = `${this.emailApiUrl}/api/email/send`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipientEmail, content }),
+      const { data, error } = await this.resend.emails.send({
+        from: this.fromEmail,
+        to: recipientEmail,
+        subject,
+        react,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('❌ Lỗi khi gửi Email:', errorData);
+      if (error) {
+        console.error('❌ Lỗi khi gửi Email:', error);
         return false;
       }
 
-      const data = await response.json();
       console.log('✅ Đã gửi Email thành công:', data);
       return true;
     } catch (error) {
@@ -43,14 +45,20 @@ export class MailService {
 
   async sendVerifyAccountOtp(email: string, otp: string): Promise<boolean> {
     console.log(`📧 Đang gửi OTP xác thực tài khoản tới ${email}...`);
-    const content = verifyAccountTemplate(otp);
-    return this.sendEmail(email, content);
+    return this.sendEmail(
+      email,
+      'Xác thực tài khoản Arion',
+      React.createElement(VerifyAccountEmail, { otp }),
+    );
   }
 
   async sendResetPasswordOtp(email: string, otp: string): Promise<boolean> {
     console.log(`📧 Đang gửi OTP đặt lại mật khẩu tới ${email}...`);
-    const content = resetPasswordTemplate(otp);
-    return this.sendEmail(email, content);
+    return this.sendEmail(
+      email,
+      'Đặt lại mật khẩu Arion',
+      React.createElement(ResetPasswordEmail, { otp }),
+    );
   }
 
   async sendNotificationEmail(
@@ -59,8 +67,11 @@ export class MailService {
     message: string,
   ): Promise<boolean> {
     console.log(`📧 Đang gửi thông báo tới ${email}...`);
-    const content = notificationTemplate(title, message);
-    return this.sendEmail(email, content);
+    return this.sendEmail(
+      email,
+      title,
+      React.createElement(NotificationEmail, { title, message }),
+    );
   }
 
   async sendBillEmail(
@@ -69,7 +80,10 @@ export class MailService {
     message: string,
   ): Promise<boolean> {
     console.log(`📧 Đang gửi thông báo tới ${email}...`);
-    const content = notificationTemplate(title, message);
-    return this.sendEmail(email, content);
+    return this.sendEmail(
+      email,
+      title,
+      React.createElement(NotificationEmail, { title, message }),
+    );
   }
 }

@@ -10,6 +10,7 @@ import { SaveCvDto } from './dto/cv-builder.dto';
 import { UserCvRepository } from './cv-builder.repository';
 import { CvAnalysisRepository } from '../analysis/cv-analysis.repository';
 import { CvTemplateRepository } from '../templates/cv-template.repository';
+import { toPrismaJson } from '../../../common/validation/jsonb-validation.util';
 
 @Injectable()
 export class CvBuilderService {
@@ -84,7 +85,7 @@ export class CvBuilderService {
         where: { id },
         data: {
           title,
-          cvData: typeof cvData === 'string' ? JSON.parse(cvData) : cvData,
+          cvData: toPrismaJson(cvData),
           renderedHtml,
           templateId,
         },
@@ -97,7 +98,7 @@ export class CvBuilderService {
         userId,
         templateId,
         title,
-        cvData: typeof cvData === 'string' ? JSON.parse(cvData) : cvData,
+        cvData: toPrismaJson(cvData),
         renderedHtml,
       },
     });

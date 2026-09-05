@@ -9,8 +9,6 @@ import {
   Body,
 } from '@nestjs/common';
 import { CategoryType } from '@prisma/client';
-import { Role } from '@prisma/client';
-import { HasRole } from '../../common/decorators/has-role.decorator';
 import { AdminJobCategoryService } from './admin-job-category.service';
 import {
   CreateJobCategoryDto,
@@ -18,7 +16,6 @@ import {
 } from './dto/job-category.dto';
 
 @Controller('admin/categories')
-@HasRole(Role.ADMIN)
 export class AdminJobCategoryController {
   constructor(
     private readonly adminJobCategoryService: AdminJobCategoryService,

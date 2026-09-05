@@ -13,12 +13,9 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { TokenPayload } from '../../../common/types/jwt.type';
 import { CvBuilderService } from './cv-builder.service';
 import { SaveCvDto, ExportPdfDto } from './dto/cv-builder.dto';
-import { HasRole } from '../../../common/decorators/has-role.decorator';
 import { IsPublic } from '../../../common/decorators/public.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('cv-builder')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class CvBuilderController {
   constructor(private readonly cvBuilderService: CvBuilderService) {}
 

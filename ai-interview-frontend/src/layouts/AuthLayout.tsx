@@ -1,84 +1,211 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Check, FileText, MessageSquareText, Sparkles } from 'lucide-react';
+import {
+  Sparkles,
+  Mic,
+  ArrowRight,
+  ShieldCheck,
+  Star,
+  Quote,
+} from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
-  image: string;
-  title: string;
-  subtitle: string;
-  isReverse?: boolean;
 }
 
-const PRODUCT_ITEMS = [
-  { label: 'Arion Interview', icon: MessageSquareText, selected: true },
-  { label: 'Arion CV Optimizer', icon: FileText },
-  { label: 'Arion Coaching', icon: Sparkles },
+const TESTIMONIALS = [
+  {
+    name: 'Minh Trần',
+    role: 'Frontend Engineer tại Momo',
+    quote: 'Phần phỏng vấn follow-up của Arion giúp mình tự tin phản xạ hơn hẳn khi vào vòng phỏng vấn thực tế.',
+  },
+  {
+    name: 'Thu Trang',
+    role: 'Product Owner tại VNG',
+    quote: 'Chỉ sau 3 buổi luyện tập với AI, mình đã nắm chắc cách cấu trúc câu trả lời theo chuẩn STAR.',
+  },
 ];
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const prefersReducedMotion = useReducedMotion();
+  const [activeTestimonial] = useState(0);
 
   return (
-    <main className="min-h-[100svh] bg-white p-0 font-sans selection:bg-black/10 lg:bg-gray-100 lg:p-px">
-      <div className="grid min-h-[100svh] overflow-hidden bg-white lg:grid-cols-[minmax(0,1.7fr)_minmax(430px,1fr)] lg:rounded-[28px]">
-        <section aria-label="Giới thiệu Arion" className="relative hidden overflow-hidden bg-[#050505] px-10 py-9 text-white lg:flex lg:flex-col xl:px-14">
-          <div className="pointer-events-none absolute inset-0 opacity-50 [background-image:radial-gradient(circle_at_70%_45%,rgba(255,255,255,0.12),transparent_0%,transparent_45%),linear-gradient(120deg,transparent_35%,rgba(255,255,255,0.035)_50%,transparent_60%)]" />
-          <div className="absolute -bottom-24 -left-[15%] h-[66%] w-[130%] opacity-30 [background:repeating-radial-gradient(ellipse_at_45%_100%,transparent_0,transparent_18px,rgba(255,255,255,0.25)_19px,transparent_20px)]" />
-          <motion.div
-            aria-hidden="true"
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-            animate={prefersReducedMotion ? undefined : { opacity: [0.86, 1, 0.9], y: [0, -4, 0] }}
-            transition={prefersReducedMotion ? undefined : { duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="pointer-events-none absolute left-[65%] top-[50%] z-[1] aspect-square w-[min(34vw,380px)] -translate-x-1/2 -translate-y-1/2"
-          >
-            <div className="absolute inset-[24%] rounded-full bg-white/20 blur-3xl" />
-            {/* <div className="relative size-full" style={{ WebkitMaskImage: 'linear-gradient(to top, transparent 0%, rgba(0,0,0,0.12) 28%, black 72%, black 100%)', maskImage: 'linear-gradient(to top, transparent 0%, rgba(0,0,0,0.12) 28%, black 72%, black 100%)' }}>
-              <img src="/logo/arion-auth-horse.png" alt="" className="size-full object-contain drop-shadow-[0_0_22px_rgba(255,255,255,0.4)]" />
-            </div> */}
-          </motion.div>
-          <svg aria-hidden="true" viewBox="0 0 520 620" className="pointer-events-none absolute left-[65%] top-[50%] z-[1] h-[min(82vh,780px)] w-auto -translate-x-1/2 -translate-y-1/2 overflow-visible">
-            <path d="M260 22 500 560H20L260 22Z" fill="none" stroke="rgba(255,255,255,0.32)" strokeWidth="1.4" />
-            <path d="M260 135 405 460H115L260 135Z" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2" />
-            <path d="M260 205 340 385H180L260 205Z" fill="none" stroke="rgba(255,255,255,0.32)" strokeWidth="1" />
-            <motion.path d="M260 22 500 560H20L260 22Z" fill="none" stroke="#050505" strokeWidth="3.5" strokeDasharray="110 260" initial={{ strokeDashoffset: 0 }} animate={prefersReducedMotion ? undefined : { strokeDashoffset: [0, -370] }} transition={prefersReducedMotion ? undefined : { duration: 7, repeat: Infinity, ease: 'linear' }} />
-            <motion.path d="M260 135 405 460H115L260 135Z" fill="none" stroke="#050505" strokeWidth="3" strokeDasharray="78 190" initial={{ strokeDashoffset: -90 }} animate={prefersReducedMotion ? undefined : { strokeDashoffset: [-90, -360] }} transition={prefersReducedMotion ? undefined : { duration: 5.5, repeat: Infinity, ease: 'linear' }} />
-          </svg>
-          <div className="relative z-10 flex items-center justify-between">
-            <Link href="/" className="inline-flex"><img src="/logo/logo.png" alt="Arion" className="h-16 w-auto invert" /></Link>
+    <main className="h-screen w-full overflow-hidden bg-white font-sans selection:bg-primary/20">
+      <div className="grid h-full w-full grid-cols-1 overflow-hidden lg:grid-cols-[1.1fr_0.9fr] xl:grid-cols-[1.18fr_0.82fr]">
+        
+        {/* Left Column: Full-bleed Immersive Studio Panel (Zero-scroll) */}
+        <section
+          aria-label="Trải nghiệm Arion AI"
+          className="relative hidden h-full flex-col justify-between overflow-hidden bg-[#080516] p-8 text-white lg:flex xl:p-10"
+        >
+          {/* Ambient Lighting Orbs */}
+          <div className="pointer-events-none absolute -left-32 -top-32 size-[450px] rounded-full bg-primary/30 blur-[130px]" />
+          <div className="pointer-events-none absolute -bottom-32 -right-32 size-[450px] rounded-full bg-[#7c3aed]/25 blur-[140px]" />
+          <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:36px_36px]" />
 
+          {/* Top Bar: Brand Logo & Back to Home */}
+          <div className="relative z-10 flex shrink-0 items-center justify-between">
+            <Link href="/" className="group inline-flex items-center gap-2">
+              <img
+                src="/logo/logo.png"
+                alt="Arion"
+                className="h-12 w-auto invert transition-transform duration-300 group-hover:scale-105"
+              />
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-1 text-xs font-medium text-white/80 backdrop-blur-md transition-all hover:bg-white/10 hover:text-white"
+            >
+              <span>Về trang chủ</span>
+              <ArrowRight size={12} />
+            </Link>
           </div>
 
-          <motion.div initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} className="relative z-10 mt-auto max-w-xl pb-10 xl:pb-16">
+          {/* Middle: Live Native AI Interview Simulation Canvas */}
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            className="relative z-10 my-auto max-w-lg py-2"
+          >
+            {/* Header Eyebrow */}
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/20 px-3 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
+              <Sparkles size={11} className="text-white" />
+              <span>Nền tảng phỏng vấn AI hàng đầu</span>
+            </div>
 
-            <h1 className="mt-8 text-5xl font-semibold leading-[1.06] tracking-tight xl:text-6xl">Chạm gần hơn tới cơ hội.</h1>
-            <p className="mt-7 max-w-[34ch] text-base leading-7 text-white/65">Arion giúp bạn xây CV rõ ràng hơn, luyện phỏng vấn sát thực tế và tiến bộ ở từng bước chuẩn bị.</p>
+            <h1 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-white xl:text-3xl">
+              Luyện phỏng vấn thông minh. Sẵn sàng bứt phá.
+            </h1>
 
-            <div className="mt-10 grid max-w-2xl gap-4 xl:grid-cols-[1.2fr_0.9fr]">
-              <div className="rounded-2xl border border-white/20 bg-white/[0.06] p-4 shadow-2xl shadow-black/40 backdrop-blur-sm">
-                <div className="flex items-center justify-between text-xs"><span className="inline-flex items-center gap-2 font-medium"><span className="flex size-7 items-center justify-center rounded-full border border-white/30"><Sparkles size={13} /></span>Arion Interview</span><span className="text-emerald-300">● Live&nbsp;&nbsp;10:24</span></div>
-                <div className="mt-5 rounded-xl bg-white/[0.09] p-4 text-sm leading-6 text-white/90">Kể về một dự án thử thách mà bạn từng giải quyết.</div>
-                <div className="mt-5 flex h-10 items-center gap-1 overflow-hidden" aria-hidden="true">{Array.from({ length: 45 }, (_, index) => <span key={index} className="w-0.5 flex-1 rounded-full bg-white/70" style={{ height: `${18 + ((index * 17) % 70)}%` }} />)}</div>
+            {/* Hardware Glassmorphic Double-Bezel Card */}
+            <div className="mt-5 rounded-2xl border border-white/15 bg-white/[0.04] p-2 shadow-2xl backdrop-blur-xl">
+              <div className="rounded-xl border border-white/10 bg-[#110c26]/90 p-4">
+                {/* Simulated Header */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-white shadow-xs">
+                      AI
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-white">Arion Senior Interviewer</p>
+                      <p className="text-[10px] text-white/50">Phỏng vấn giả lập chuyên sâu</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10.5px] font-medium text-emerald-300">
+                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Live Voice Session
+                  </div>
+                </div>
+
+                {/* Simulated AI Question */}
+                <div className="mt-2.5 rounded-lg bg-white/[0.04] border border-white/5 p-2.5 text-xs leading-relaxed text-white/90">
+                  <span className="font-semibold text-primary block mb-0.5 text-[11px]">Câu hỏi tình huống:</span>
+                  &quot;Hãy chia sẻ về một lần bạn xử lý xung đột kỹ thuật trong team khi deadline gấp?&quot;
+                </div>
+
+                {/* Audio Equalizer & Mic Feedback */}
+                <div className="mt-2.5 flex items-center justify-between rounded-lg bg-primary/20 border border-primary/30 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-6 items-center justify-center rounded-full bg-primary text-white shadow-sm">
+                      <Mic size={11} />
+                    </span>
+                    <div>
+                      <p className="text-[11px] font-medium text-white">Đang ghi âm câu trả lời</p>
+                      <p className="text-[9.5px] text-white/60">Phân tích độ lưu loát & từ khóa STAR</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {[12, 24, 16, 28, 14, 22, 10, 26, 18, 8].map((h, i) => (
+                      <span
+                        key={i}
+                        className="w-0.5 rounded-full bg-white/90"
+                        style={{ height: `${h}px` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dynamic Stats Row */}
+                <div className="mt-2.5 grid grid-cols-3 gap-2 pt-0.5 text-center">
+                  <div className="rounded-md bg-white/[0.03] p-1.5 border border-white/5">
+                    <p className="text-[9.5px] text-white/50">Độ khớp JD</p>
+                    <p className="text-[11px] font-bold text-emerald-300">92%</p>
+                  </div>
+                  <div className="rounded-md bg-white/[0.03] p-1.5 border border-white/5">
+                    <p className="text-[9.5px] text-white/50">Độ tự tin</p>
+                    <p className="text-[11px] font-bold text-primary">95/100</p>
+                  </div>
+                  <div className="rounded-md bg-white/[0.03] p-1.5 border border-white/5">
+                    <p className="text-[9.5px] text-white/50">Phản hồi</p>
+                    <p className="text-[11px] font-bold text-white">Tức thì</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col justify-center gap-3">
-                {PRODUCT_ITEMS.map(({ icon: Icon, label, selected }) => <div key={label} className={`flex items-center gap-3 rounded-full border px-4 py-3 text-sm ${selected ? 'border-white/40 bg-white/10 text-white' : 'border-white/15 text-white/70'}`}><Icon size={16} aria-hidden="true" /><span className="flex-1">{label}</span>{selected ? <Check size={16} aria-hidden="true" /> : null}</div>)}
+            </div>
+
+            {/* Testimonial Mini Pill */}
+            <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-md">
+              <Quote size={15} className="shrink-0 text-primary mt-0.5" />
+              <div>
+                <p className="text-[11px] italic text-white/80 leading-relaxed line-clamp-2">
+                  &quot;{TESTIMONIALS[activeTestimonial].quote}&quot;
+                </p>
+                <p className="mt-1 text-[10.5px] font-semibold text-white">
+                  {TESTIMONIALS[activeTestimonial].name}{' '}
+                  <span className="font-normal text-white/50">
+                    — {TESTIMONIALS[activeTestimonial].role}
+                  </span>
+                </p>
               </div>
             </div>
           </motion.div>
+
+          {/* Bottom Trust & Security Signals */}
+          <div className="relative z-10 flex shrink-0 items-center justify-between border-t border-white/10 pt-3 text-[11px] text-white/50">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck size={14} className="text-emerald-400" />
+              <span>Bảo mật dữ liệu 100%</span>
+            </div>
+            <span className="text-[11px] text-white/40">Chuẩn hóa theo mô hình STAR</span>
+          </div>
         </section>
 
-        <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-6 py-12 sm:px-10 lg:px-14">
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 opacity-40 [background:repeating-radial-gradient(ellipse_at_45%_120%,transparent_0,transparent_12px,rgba(17,24,39,0.16)_13px,transparent_14px)]" />
-          <motion.div initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: prefersReducedMotion ? 0 : 0.1 }} className="relative z-10 w-full max-w-[430px]">
-            <Link href="/" className="mb-16 inline-flex lg:hidden"><img src="/logo/logo.png" alt="Arion" className="h-14 w-auto" /></Link>
+        {/* Right Column: Full-Height Clean Form Container (Zero-scroll on desktop) */}
+        <section className="relative flex h-full flex-col justify-between overflow-y-auto lg:overflow-hidden bg-white p-6 sm:px-10 lg:px-12 xl:px-14">
+          {/* Mobile Top Brand Header */}
+          <div className="flex shrink-0 items-center justify-between lg:hidden">
+            <Link href="/">
+              <img src="/logo/logo.png" alt="Arion" className="h-10 w-auto" />
+            </Link>
+            <Link href="/" className="text-xs font-semibold text-primary">
+              Về trang chủ
+            </Link>
+          </div>
+
+          {/* Centered Main Form Body */}
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: prefersReducedMotion ? 0 : 0.06 }}
+            className="my-auto w-full max-w-[390px] self-center py-2"
+          >
             {children}
-            <p className="mt-14 text-center text-xs text-gray-400">© {new Date().getFullYear()} Arion. All rights reserved.</p>
           </motion.div>
+
+          {/* Footer Copyright */}
+          <div className="shrink-0 pt-2 text-center text-[11px] text-gray-400">
+            © {new Date().getFullYear()} Arion. All rights reserved.
+          </div>
         </section>
+
       </div>
     </main>
   );
 };
+
+export default AuthLayout;

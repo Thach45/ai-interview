@@ -1,6 +1,4 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { Role } from '@prisma/client';
-import { HasRole } from '../../common/decorators/has-role.decorator';
 import {
   QueueChartBucket,
   QueueJobsQueryDto,
@@ -10,7 +8,6 @@ import { QueueName } from './operate-system.constants';
 import { OperateSystemService } from './operate-system.service';
 
 @Controller('admin/operate-system')
-@HasRole(Role.ADMIN)
 export class OperateSystemController {
   constructor(private readonly operateSystemService: OperateSystemService) {}
 

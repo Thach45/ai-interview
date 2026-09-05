@@ -3,11 +3,8 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { TokenPayload } from '../../common/types/jwt.type';
 import { UserService } from './user.service';
 import { UpdateProfileDto } from './dto/user.dto';
-import { HasRole } from '../../common/decorators/has-role.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('user')
-@HasRole(Role.CANDIDATE, Role.ADMIN)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

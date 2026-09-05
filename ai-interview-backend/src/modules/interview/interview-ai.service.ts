@@ -8,13 +8,28 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { InterviewLanguage, InterviewPersona } from '@prisma/client';
+import {
+  InterviewLanguage,
+  InterviewPersona,
+  QuestionEvaluation,
+} from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../../providers/ai/ai.service';
 import { GoogleTtsService } from '../../providers/ai/google-tts.service';
-import { GroqSttService } from '../../providers/ai/groq-stt.service';
+import { OpenRouterSttService } from '../../providers/ai/openrouter-stt.service';
 import { CreditsService } from '../credits/credits.service';
 import { SetupInterviewDto } from './dto/interview.dto';
+import {
+  toPrismaJson,
+  validateJsonb,
+} from '../../common/validation/jsonb-validation.util';
+import {
+  CoreQuestionJsonDto,
+  CoreQuestionsResponseJsonDto,
+  CriterionMatchesJsonDto,
+  CvDataJsonDto,
+  GeneralEvaluationJsonDto,
+} from '../../common/validation/jsonb.dto';
 
 import { UserCvRepository } from '../cv-management/builder/cv-builder.repository';
 import { JobTemplateRepository } from '../job-template/job-template.repository';
@@ -37,7 +52,7 @@ export class InterviewAiService {
     private readonly interviewMessageRepository: InterviewMessageRepository,
     private readonly interviewResultRepository: InterviewResultRepository,
     private readonly aiService: AiService,
-    private readonly groqSttService: GroqSttService,
+    private readonly openRouterSttService: OpenRouterSttService,
     private readonly googleTtsService: GoogleTtsService,
     private readonly creditsService: CreditsService,
     private readonly eventEmitter: EventEmitter2,
@@ -51,6 +66,28 @@ export class InterviewAiService {
       configService.get<string>('CREDIT_PRICE_PER_INTERVIEW') || '1',
       10,
     );
+  }
+
+  private async getValidatedCoreQuestions(
+    value: unknown,
+  ): Promise<CoreQuestionJsonDto[]> {
+    const validated = await validateJsonb(
+      CoreQuestionsResponseJsonDto,
+      { questions: value },
+      'Bộ câu hỏi phỏng vấn trong database',
+    );
+    return validated.questions;
+  }
+
+  private async getValidatedCvText(value: unknown): Promise<string> {
+    if (!value) return '';
+
+    const validated = await validateJsonb(
+      CvDataJsonDto,
+      value,
+      'Dữ liệu CV trong database',
+    );
+    return JSON.stringify(validated);
   }
 
   /**
@@ -70,7 +107,7 @@ export class InterviewAiService {
 
     // 2. Fetch CV data for AI context
     const cv = await this.userCvRepository.findUnique({
-      where: { id: dto.cvId },
+      where: { id: dto.cvId, userId },
     });
 
     if (!cv) {
@@ -92,8 +129,9 @@ export class InterviewAiService {
     }
 
     // 4. Generate core questions via AI
+    const cvText = await this.getValidatedCvText(cv.cvData);
     const coreQuestions = await this.aiService.createQuestionForInterview({
-      cvText: JSON.stringify(cv.cvData),
+      cvText,
       jdText,
       position: dto.jobTitle,
       companyName: dto.companyName,
@@ -128,7 +166,7 @@ export class InterviewAiService {
             focusSkills: dto.focusSkills || [],
             companyName: dto.companyName || null,
             jobTitle: dto.jobTitle,
-            coreQuestions: coreQuestions,
+            coreQuestions: toPrismaJson(coreQuestions),
           },
         },
         tx,
@@ -150,7 +188,10 @@ export class InterviewAiService {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
 
-    return session;
+    const coreQuestions = await this.getValidatedCoreQuestions(
+      session.coreQuestions,
+    );
+    return { ...session, coreQuestions };
   }
 
   /**
@@ -200,19 +241,10 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = (session as any).cv?.cvData
-      ? JSON.stringify((session as any).cv.cvData)
-      : '';
-    const coreQuestions = session.coreQuestions as Array<{
-      title: string;
-      reason: string;
-    }>;
-
-    if (!coreQuestions || coreQuestions.length === 0) {
-      throw new BadRequestException(
-        'Phiên phỏng vấn chưa được cấu hình câu hỏi cốt lõi',
-      );
-    }
+    const cvText = await this.getValidatedCvText((session as any).cv?.cvData);
+    const coreQuestions = await this.getValidatedCoreQuestions(
+      session.coreQuestions,
+    );
 
     // Generate greeting + first question via AI
     const aiResponse = await this.aiService.chatInterview({
@@ -340,10 +372,9 @@ export class InterviewAiService {
     );
     const currIdx = Math.max(0, aiMainMessages.length - 1);
 
-    const coreQuestions = session.coreQuestions as Array<{
-      title: string;
-      reason: string;
-    }>;
+    const coreQuestions = await this.getValidatedCoreQuestions(
+      session.coreQuestions,
+    );
 
     // Resolve JD text
     let jdText: string;
@@ -356,12 +387,15 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = session.cv?.cvData ? JSON.stringify(session.cv.cvData) : '';
+    const cvText = await this.getValidatedCvText(session.cv?.cvData);
 
     // Stream callback for SSE
     const onStream = enableStream
       ? (chunkText: string) => {
-          this.eventEmitter.emit(`chat_stream_${sessionId}`, chunkText);
+          this.eventEmitter.emit(
+            `chat_stream_${userId}_${sessionId}`,
+            chunkText,
+          );
         }
       : undefined;
 
@@ -424,7 +458,7 @@ export class InterviewAiService {
     }
 
     // 7. Emit SSE update event
-    this.eventEmitter.emit(`chat_updated_${sessionId}`);
+    this.eventEmitter.emit(`chat_updated_${userId}_${sessionId}`);
 
     return {
       message: botMessage,
@@ -457,22 +491,22 @@ export class InterviewAiService {
     const audioSize = audioBuffer.length;
 
     this.logger.log(
-      `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=started language=${language} audioBytes=${audioSize}`,
+      `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=started language=${language} audioBytes=${audioSize}`,
     );
 
     try {
-      text = await this.groqSttService.transcribeAudio(
+      text = await this.openRouterSttService.transcribeAudio(
         audioBuffer,
         mimeType,
         language,
         this.buildSttPrompt(session),
       );
       this.logger.log(
-        `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
+        `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
       );
     } catch (error) {
       this.logger.warn(
-        `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=failed error=${error}`,
+        `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=failed error=${error}`,
       );
     }
 
@@ -589,7 +623,7 @@ export class InterviewAiService {
     );
 
     // 4. Emit update event for SSE
-    this.eventEmitter.emit(`chat_updated_${sessionId}`);
+    this.eventEmitter.emit(`chat_updated_${userId}_${sessionId}`);
 
     return { status: 'EVALUATING' };
   }
@@ -626,7 +660,36 @@ export class InterviewAiService {
       );
     }
 
-    return result;
+    const resultWithDetails = result as typeof result & {
+      session: { coreQuestions: unknown };
+      questionEvaluations: QuestionEvaluation[];
+    };
+
+    const generalEvaluation = await validateJsonb(
+      GeneralEvaluationJsonDto,
+      resultWithDetails.generalEvaluation,
+      'Đánh giá tổng quan trong database',
+    );
+    const coreQuestions = await this.getValidatedCoreQuestions(
+      resultWithDetails.session.coreQuestions,
+    );
+    const questionEvaluations = await Promise.all(
+      resultWithDetails.questionEvaluations.map(async (evaluation) => {
+        const criteriaMatches = await validateJsonb(
+          CriterionMatchesJsonDto,
+          { matches: evaluation.criteriaMatches },
+          'Chi tiết tiêu chí chấm điểm trong database',
+        );
+        return { ...evaluation, criteriaMatches: criteriaMatches.matches };
+      }),
+    );
+
+    return {
+      ...resultWithDetails,
+      generalEvaluation,
+      session: { ...resultWithDetails.session, coreQuestions },
+      questionEvaluations,
+    };
   }
 
   /**
@@ -663,14 +726,10 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = (session as any).cv?.cvData
-      ? JSON.stringify((session as any).cv.cvData)
-      : '';
-    const coreQuestions = session.coreQuestions as Array<{
-      title: string;
-      reason: string;
-      criteria?: any[];
-    }>;
+    const cvText = await this.getValidatedCvText((session as any).cv?.cvData);
+    const coreQuestions = await this.getValidatedCoreQuestions(
+      session.coreQuestions,
+    );
 
     const interviewResult = await this.aiService.submitInterviewResult({
       cvText,
@@ -687,7 +746,7 @@ export class InterviewAiService {
     const savedResult = await this.interviewResultRepository.upsert({
       where: { sessionId },
       update: {
-        generalEvaluation: { set: interviewResult.generalEvaluation },
+        generalEvaluation: interviewResult.generalEvaluation,
         overallScore: interviewResult.generalEvaluation.overall.score,
         recommendation: interviewResult.recommendation,
         summary: interviewResult.summary,

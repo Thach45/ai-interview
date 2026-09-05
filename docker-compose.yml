@@ -1,5 +1,22 @@
 services:
-  # --- 1. REDIS ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai_interview_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-arion}
+      POSTGRES_USER: ${POSTGRES_USER:-arion}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-arion_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     container_name: ai_interview_redis
@@ -9,7 +26,6 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
-  # --- 2. BACKEND ---
   backend:
     build:
       context: ./ai-interview-backend
@@ -18,10 +34,14 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - PORT=3000
-      - REDIS_URL=redis://redis:6379
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://${POSTGRES_USER:-arion}:${POSTGRES_PASSWORD:-arion_password}@postgres:5432/${POSTGRES_DB:-arion}?schema=public
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
     # Đọc thêm các biến môi trường khác từ file .env của backend (nếu có)
     env_file:
@@ -29,4 +49,5 @@ services:
 
 
 volumes:
+  postgres_data:
   redis_data:

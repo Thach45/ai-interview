@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AiService } from '../../../providers/ai/ai.service';
 import { NotFoundException } from '../../../common/exceptions/AppException';
@@ -11,11 +12,22 @@ import { CvAnalysisRepository } from '../analysis/cv-analysis.repository';
 @Injectable()
 export class CvService {
   constructor(
+    private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly aiService: AiService,
     private readonly userCvRepository: UserCvRepository,
     private readonly cvAnalysisRepository: CvAnalysisRepository,
-  ) {}
+  ) {
+    cloudinary.config({
+      cloud_name: this.configService.getOrThrow<string>(
+        'CLOUDINARY_CLOUD_NAME',
+      ),
+      api_key: this.configService.getOrThrow<string>('CLOUDINARY_API_KEY'),
+      api_secret: this.configService.getOrThrow<string>(
+        'CLOUDINARY_API_SECRET',
+      ),
+    });
+  }
 
   /**
    * Tai CV tu file PDF/DOCX
@@ -24,9 +36,15 @@ export class CvService {
     let cvData = null;
 
     if (file.mimetype === 'application/pdf') {
-      const parser = new (PDFParse as any)(file.buffer);
-      const result = await parser.getText();
-      const contentExtracted: string = result.text;
+      const parser = new PDFParse({ data: file.buffer });
+      let contentExtracted = '';
+
+      try {
+        const result = await parser.getText();
+        contentExtracted = result.text;
+      } finally {
+        await parser.destroy();
+      }
 
       if (contentExtracted.trim().length > 0) {
         cvData = await this.aiService.extractCvData(contentExtracted);

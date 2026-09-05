@@ -10,9 +10,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
 };
 
 export default process.env.SENTRY_AUTH_TOKEN

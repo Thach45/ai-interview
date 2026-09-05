@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 interface DecodedToken {
   id: string;
   email: string;
-  role: string;
+  roles: string[];
   exp: number;
 }
 
@@ -36,7 +36,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       const decoded: DecodedToken = jwtDecode(token);
 
       // 3. Kiểm tra phân quyền (Role-based Authorization)
-      if (allowedRoles && !allowedRoles.includes(decoded.role)) {
+      if (allowedRoles && !decoded.roles?.some((role) => allowedRoles.includes(role))) {
         router.replace('/unauthorized');
         return;
       }
@@ -53,7 +53,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   try {
     const decoded: DecodedToken = jwtDecode(token);
 
-    if (allowedRoles && !allowedRoles.includes(decoded.role)) {
+    if (allowedRoles && !decoded.roles?.some((role) => allowedRoles.includes(role))) {
       return null;
     }
 

@@ -8,6 +8,11 @@ import {
   NotFoundException,
 } from '../../../common/exceptions/AppException';
 import { sanitizePrompt } from '../../../common/utils/sanitize.util';
+import {
+  toPrismaJson,
+  validateJsonb,
+} from '../../../common/validation/jsonb-validation.util';
+import { CvDataJsonDto } from '../../../common/validation/jsonb.dto';
 
 import { UserCvRepository } from '../builder/cv-builder.repository';
 import { CvAnalysisRepository } from './cv-analysis.repository';
@@ -63,11 +68,17 @@ export class AnalysisCvService {
     });
     if (!jobTemplate) throw new NotFoundException('Job Template không tồn tại');
 
-    if (!userCv.cvData || Object.keys(userCv.cvData).length === 0) {
+    if (!userCv.cvData) {
       throw new BadRequestException(
         'Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.',
       );
     }
+
+    const cvData = await validateJsonb(
+      CvDataJsonDto,
+      userCv.cvData,
+      'Dữ liệu CV trong database',
+    );
 
     // Gọi AI phân tích
     const analysisResult = await this.runAnalysis(
@@ -75,7 +86,7 @@ export class AnalysisCvService {
       cvId,
       jobTemplateId,
       null,
-      JSON.stringify(userCv.cvData),
+      JSON.stringify(cvData),
       jobTemplate.aiExtractedContext,
       cachedAnalysis?.id,
     );
@@ -104,11 +115,17 @@ export class AnalysisCvService {
     });
     if (!userCv) throw new NotFoundException('CV không tồn tại');
 
-    if (!userCv.cvData || Object.keys(userCv.cvData).length === 0) {
+    if (!userCv.cvData) {
       throw new BadRequestException(
         'Dữ liệu CV gốc đang trống. Xin vui lòng trích xuất dữ liệu CV trước khi phân tích.',
       );
     }
+
+    const cvData = await validateJsonb(
+      CvDataJsonDto,
+      userCv.cvData,
+      'Dữ liệu CV trong database',
+    );
 
     // Tìm bản phân tích cũ có cùng externalJobDescription
     const cachedAnalysis = await this.cvAnalysisRepository.findFirst({
@@ -121,7 +138,7 @@ export class AnalysisCvService {
       cvId,
       null,
       sanitizedDescription,
-      JSON.stringify(userCv.cvData),
+      JSON.stringify(cvData),
       sanitizedDescription,
       cachedAnalysis?.id,
     );
@@ -162,13 +179,15 @@ export class AnalysisCvService {
         externalJobDescription,
         matchScore: analysisResult.matchScore,
         summary: analysisResult.summary,
-        scoringDetails: analysisResult.scoringDetails,
+        scoringDetails: toPrismaJson(analysisResult.scoringDetails),
         strengths: analysisResult.strengths,
         weaknesses: analysisResult.weaknesses,
-        skillsAnalysis: analysisResult.skillsAnalysis,
+        skillsAnalysis: toPrismaJson(analysisResult.skillsAnalysis),
         foundKeywords: analysisResult.foundKeywords,
         missingKeywords: analysisResult.missingKeywords,
-        improvementSuggestions: analysisResult.improvementSuggestions,
+        improvementSuggestions: toPrismaJson(
+          analysisResult.improvementSuggestions,
+        ),
       };
 
       if (existingAnalysisId) {

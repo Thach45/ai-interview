@@ -53,7 +53,7 @@ export class InterviewAnalysisProcessor extends WorkerHost {
       }
 
       // Bắn event thông báo qua SSE để Frontend cập nhật sang COMPLETED
-      this.eventEmitter.emit(`chat_updated_${sessionId}`);
+      this.eventEmitter.emit(`chat_updated_${userId}_${sessionId}`);
 
       return { success: true, sessionId };
     } catch (error) {
