@@ -10,13 +10,11 @@ import {
   ChevronRight, Trash2, Plus,
    Rocket, Zap, ChevronDown, Upload,
   Smile, GraduationCap, Medal, Star, ShieldCheck, Trophy, Volume2,
-  Check,
-  Video,
-  MessageSquare
+  Check
 } from 'lucide-react';
 import { cn } from '../../shared/utils/cn';
 import { useCvs } from '../../features/cvs/hooks/useCvs';
-import { ExperienceLevel, InterviewLanguage, InterviewMode, InterviewPersona } from '../../shared/types/interview';
+import { ExperienceLevel, InterviewLanguage, InterviewPersona } from '../../shared/types/interview';
 import { useInterviewAi } from '../../features/interviews/hooks/useInterviewAI';
 import { PERSONA_DETAILS } from '../../shared/constants/personas';
 import { LoadingIndicator } from '../../shared/components/LoadingIndicator';
@@ -58,7 +56,6 @@ const InterviewSetupPage: React.FC = () => {
     persona: InterviewPersona.PROFESSIONAL,
     duration: 30,
     difficulty: 3,
-    mode: InterviewMode.VIDEO,
     skills: [] as string[],
     newSkill: ''
   });
@@ -160,15 +157,13 @@ const InterviewSetupPage: React.FC = () => {
         companyName: formData.companyName || null,
         level: formData.level,
         language: formData.language,
-        mode: formData.mode,
         duration: formData.duration,
         difficulty: formData.difficulty,
         persona: formData.persona,
         focusSkills: formData.skills,
       }, {
         onSuccess: (res: any) => {
-          const targetRoute = formData.mode === InterviewMode.VIDEO ? '/interview/video' : '/interview/chat';
-          router.push(`${targetRoute}?sessionId=${res.id}`);
+          router.push(`/interview/video?sessionId=${res.id}`);
         }
       });
     }
@@ -440,48 +435,7 @@ const InterviewSetupPage: React.FC = () => {
                 {/* Step 3: Parameters */}
                 {step === 3 && (
                   <div className="space-y-10">
-                    <div className="space-y-6">
-                      <h3 className="text-xl font-bold text-gray-900">Hình thức phỏng vấn</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {[
-                          { id: InterviewMode.VIDEO, name: 'Video Call', desc: 'Giao diện gọi video, hội thoại trực tiếp bằng giọng nói.', icon: Video },
-                          { id: InterviewMode.TEXT, name: 'Nhắn tin', desc: 'Giao diện chat, trả lời bằng văn bản.', icon: MessageSquare },
-                        ].map((m) => {
-                          const isActive = formData.mode === m.id;
-                          const Icon = m.icon;
-                          return (
-                            <button
-                              key={m.id}
-                              onClick={() => setFormData({ ...formData, mode: m.id as any })}
-                              className={cn(
-                                "flex items-start gap-4 p-6 rounded-2xl border-2 transition-all relative group",
-                                isActive
-                                  ? "border-primary bg-primary/[0.02] shadow-lg shadow-primary/5"
-                                  : "border-gray-50 bg-gray-50/50 hover:border-gray-100 hover:bg-white"
-                              )}
-                            >
-                              <div className={cn(
-                                "w-12 h-12 rounded-xl flex items-center justify-center transition-all group-hover:scale-110",
-                                isActive ? "bg-primary text-white" : "bg-gray-100 text-gray-400"
-                              )}>
-                                <Icon size={24} />
-                              </div>
-                              <div className="text-left flex-1">
-                                <h4 className="text-base font-bold text-gray-900 mb-1">{m.name}</h4>
-                                <p className="text-[11px] text-gray-400 leading-relaxed">{m.desc}</p>
-                              </div>
-                              {isActive && (
-                                <div className="absolute top-4 right-4 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center">
-                                  <Check size={12} />
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-t border-gray-50 pt-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                       <div className="space-y-6">
                         <h3 className="text-lg font-bold text-gray-900">Độ khó hội thoại</h3>
                         <div className="grid grid-cols-5 gap-2">

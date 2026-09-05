@@ -29,10 +29,6 @@ export type DashboardStatsResponse = {
     date: string;
     score: number;
   }[];
-  interviewStats: {
-    voice: number;
-    text: number;
-  };
   tokenChart?: {
     date: string;
     input: number;

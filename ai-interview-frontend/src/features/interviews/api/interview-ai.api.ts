@@ -35,18 +35,6 @@ export const interviewAiApi = {
   },
 
   /**
-   * Gửi tin nhắn của ứng viên và nhận phản hồi AI
-   */
-  sendChatMessage: async (sessionId: string, message: string): Promise<{
-    message: { id: string; role: string; content: string; questionIndex: number | null; isFollowUp: boolean; createdAt: string };
-    currentQuestionIndex: number;
-    status: string;
-  }> => {
-    const response = await apiClient.post<any, { success: boolean; data: any }>(`/interview-ai/${sessionId}/chat`, { message });
-    return response.data;
-  },
-
-  /**
    * Gửi tin nhắn của ứng viên qua file ghi âm âm thanh (Voice-to-Voice)
    */
   sendChatAudio: async (sessionId: string, audioBlob: Blob): Promise<any> => {

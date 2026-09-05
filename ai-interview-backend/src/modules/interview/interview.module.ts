@@ -3,6 +3,8 @@ import { NotificationModule } from '../notification/notification.module';
 import { BullModule } from '@nestjs/bullmq';
 import { InterviewController } from './interview.controller';
 import { InterviewAiService } from './interview-ai.service';
+import { AudioChatService } from './audio-chat.service';
+import { InterviewContextService } from './interview-context.service';
 import { InterviewAnalysisProcessor } from './interview-analysis.processor';
 import { InterviewTimerProcessor } from './interview-timer.processor';
 import { UserCvRepository } from '../cv-management/builder/cv-builder.repository';
@@ -22,6 +24,8 @@ import { InterviewResultRepository } from './repositories/interview-result.repos
   controllers: [InterviewController],
   providers: [
     InterviewAiService,
+    AudioChatService,
+    InterviewContextService,
     InterviewAnalysisProcessor,
     InterviewTimerProcessor,
     UserCvRepository,

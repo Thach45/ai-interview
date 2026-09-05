@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { 
   Mic, MicOff, Video as VideoIcon, VideoOff, 
@@ -10,6 +10,7 @@ import { cn } from '../../shared/utils/cn';
 import { InterviewProgressCard } from '../../features/interviews/components/InterviewProgressCard';
 import { useInterviewSession, useStartInterview, useSendChatAudio, useSubmitInterviewResult, useInterviewSSE } from '../../features/interviews/hooks/useInterviewAI';
 import { useTTSPlayer } from '../../features/interviews/hooks/useTTSPlayer';
+import { useVoiceActivityDetection } from '../../features/interviews/hooks/useVoiceActivityDetection';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LoadingIndicator } from '../../shared/components/LoadingIndicator';
 import { PERSONA_DETAILS } from '../../shared/constants/personas';
@@ -48,7 +49,6 @@ const InterviewRoomVideoPage: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(true);
-  const [isRecording, setIsRecording] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProgressSidebarOpen, setIsProgressSidebarOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState(sessionResponse?.duration);
@@ -114,12 +114,47 @@ const InterviewRoomVideoPage: React.FC = () => {
   const [messages, setMessages] = useState<any[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  
-  // Refs cho Media Recorder & Stream
+
+  // Refs cho Stream video (mic riêng cho VAD do useVoiceActivityDetection tự quản)
   const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<BlobPart[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+
+  // Giữ raw text mới nhất trong ref để callback VAD (khởi tạo 1 lần) luôn đọc được giá trị hiện tại
+  const rawStreamTextRef = useRef(rawStreamText);
+  useEffect(() => {
+    rawStreamTextRef.current = rawStreamText;
+  }, [rawStreamText]);
+
+  const handleSpeechEnd = useCallback((audioBlob: Blob) => {
+    // Chuyển câu AI vừa nói vào lịch sử chat trước khi ứng viên trả lời
+    if (rawStreamTextRef.current) {
+      setMessages(prev => [...prev, {
+        role: 'bot',
+        content: rawStreamTextRef.current,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }]);
+      setRawStreamText("");
+    }
+
+    sendChatAudioMutation.mutate(audioBlob, {
+      onSuccess: (res: any) => {
+        const data = res.data || res;
+        if (data) {
+          if (data.status) {
+            setCurrentStatus(data.status);
+          }
+
+          setMessages(prev => [...prev, {
+            role: 'user',
+            content: data.userText,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            questionIndex: data.message?.questionIndex || 0
+          }]);
+        }
+      }
+    });
+  }, [sendChatAudioMutation]);
+
 
   // Mở luồng Media khi Component mount hoặc isVideoOn thay đổi
   useEffect(() => {
@@ -127,7 +162,12 @@ const InterviewRoomVideoPage: React.FC = () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
-          audio: true, // Lấy luôn Audio để ghi âm
+          // echoCancellation lọc bớt tiếng loa AI vọng lại vào mic
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
         });
         streamRef.current = stream;
         if (videoRef.current) {
@@ -169,84 +209,6 @@ const InterviewRoomVideoPage: React.FC = () => {
     }
   }, [isVideoOn]);
 
-  // Xử lý Ghi âm khi isRecording thay đổi
-  useEffect(() => {
-    if (isRecording && streamRef.current) {
-      // Lấy riêng track âm thanh để ghi âm (tránh lỗi NotSupportedError do dính track video)
-      const audioTrack = streamRef.current.getAudioTracks()[0];
-      if (!audioTrack) {
-        console.error("Không tìm thấy micro!");
-        setIsRecording(false);
-        return;
-      }
-      
-      const audioStream = new MediaStream([audioTrack]);
-
-      // Bắt đầu ghi âm
-      audioChunksRef.current = [];
-      
-      // Để trống options để trình duyệt tự quyết định định dạng tối ưu nhất cho audio-only
-      const recorder = new MediaRecorder(audioStream);
-      
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.onstop = () => {
-        // Lấy đúng mimeType mà trình duyệt đã dùng để encode
-        const mimeType = recorder.mimeType || 'audio/webm';
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        
-        // Gọi Mutation gửi Audio lên Backend
-        sendChatAudioMutation.mutate(audioBlob, {
-          onSuccess: (res: any) => {
-            const data = res.data || res;
-            if (data) {
-              // Cập nhật trạng thái của buổi phỏng vấn dựa trên AI trả về
-              if (data.status) {
-                setCurrentStatus(data.status);
-              }
-
-              // Thêm tin nhắn của User
-              const userMsg = {
-                role: 'user',
-                content: data.userText,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                questionIndex: data.message?.questionIndex || 0
-              };
-              
-              setMessages(prev => [...prev, userMsg]);
-            }
-          }
-        });
-      };
-
-      mediaRecorderRef.current = recorder;
-      
-      // Chuyển giao: Bế câu nói vừa rồi của AI vào Lịch sử Chat trước khi xóa
-      if (rawStreamText) {
-        const aiHistoryMsg = {
-          role: 'bot',
-          content: rawStreamText,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        };
-        setMessages(prev => [...prev, aiHistoryMsg]);
-      }
-
-      // Xóa chữ màn hình khi ứng viên bắt đầu nói
-      setRawStreamText("");
-      
-      recorder.start();
-    } else {
-      // Dừng ghi âm
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.stop();
-      }
-    }
-  }, [isRecording]);
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -270,6 +232,14 @@ const InterviewRoomVideoPage: React.FC = () => {
       setIsLobbyMode(false);
     }
   }, [sessionData?.status]);
+
+  // VAD tạm dừng nghe khi AI đang nói, sảnh chờ, hoặc đang kết thúc — tránh bắt tiếng vọng loa
+  const vadPaused = isLobbyMode || isFinishing || isSpeaking || isMuted || currentStatus !== 'IN_PROGRESS';
+
+  const { isUserSpeaking } = useVoiceActivityDetection({
+    paused: vadPaused,
+    onSpeechEnd: handleSpeechEnd,
+  });
 
   const startInterview = () => {
     if (sessionData.id && !startInterviewMutation.isPending && !startInterviewMutation.isSuccess) {
@@ -604,6 +574,7 @@ const InterviewRoomVideoPage: React.FC = () => {
                        </p>
                     </div>
                   )}
+
                </div>
 
                <div className={cn(
@@ -647,17 +618,19 @@ const InterviewRoomVideoPage: React.FC = () => {
             
             <div className={cn("w-px h-8 mx-2", isDarkMode ? "bg-white/10" : "bg-gray-200")} />
 
-            <button 
-              onClick={() => setIsRecording(!isRecording)}
+            <button
+              onClick={() => setIsMuted(!isMuted)}
               className={cn(
                 "flex items-center gap-3 px-6 h-12 rounded-2xl transition-all border shadow-sm font-bold text-[11px] uppercase",
-                isRecording 
-                  ? "bg-rose-50 border-rose-200 text-rose-500 animate-pulse" 
-                  : (isDarkMode ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100")
+                isMuted
+                  ? "bg-gray-100 border-gray-200 text-gray-400"
+                  : isUserSpeaking
+                    ? "bg-rose-50 border-rose-200 text-rose-500 animate-pulse"
+                    : (isDarkMode ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100")
               )}
             >
-              <Circle size={16} fill={isRecording ? "currentColor" : "none"} />
-              {isRecording ? 'Đang ghi âm...' : 'Bắt đầu ghi âm'}
+              {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
+              {isMuted ? 'Đã tắt mic' : isUserSpeaking ? 'Đang nghe...' : 'Sẵn sàng nghe'}
             </button>
 
             <div className={cn("w-px h-8 mx-2", isDarkMode ? "bg-white/10" : "bg-gray-200")} />

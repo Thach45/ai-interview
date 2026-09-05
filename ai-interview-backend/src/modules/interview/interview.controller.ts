@@ -4,27 +4,29 @@ import {
   Get,
   Param,
   Body,
-  UseInterceptors,
-  UploadedFile,
   Sse,
   MessageEvent,
+  UseInterceptors,
+  UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Observable } from 'rxjs';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { TokenPayload } from '../../common/types/jwt.type';
 import { InterviewAiService } from './interview-ai.service';
-import { SetupInterviewDto, ChatMessageDto, TtsDto } from './dto/interview.dto';
+import { AudioChatService } from './audio-chat.service';
+import { SetupInterviewDto, TtsDto } from './dto/interview.dto';
 
 @Controller('interview-ai')
 export class InterviewController {
   constructor(
     private readonly interviewAiService: InterviewAiService,
+    private readonly audioChatService: AudioChatService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -128,54 +130,31 @@ export class InterviewController {
   }
 
   /**
-   * POST /interview-ai/:id/chat
-   * Send a chat message and get AI response.
-   */
-  @Post(':id/chat')
-  @Throttle({ default: { limit: 3, ttl: 10000 } })
-  async sendChatMessage(
-    @CurrentUser() user: TokenPayload,
-    @Param('id') id: string,
-    @Body() dto: ChatMessageDto,
-  ) {
-    const result = await this.interviewAiService.sendChatMessage(
-      id,
-      user.id,
-      dto.message,
-    );
-    return result;
-  }
-
-  /**
    * POST /interview-ai/:id/chat-audio
-   * Send an audio message for transcription + AI response.
+   * Nhận file audio ghi âm trọn lượt nói, transcribe qua OpenRouter Whisper
+   * rồi trả về phản hồi AI.
    */
   @Post(':id/chat-audio')
   @UseInterceptors(FileInterceptor('audio'))
-  @Throttle({ default: { limit: 3, ttl: 10000 } })
-  async sendChatAudio(
+  async chatAudio(
     @CurrentUser() user: TokenPayload,
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          new FileTypeValidator({
-            fileType: /^(audio\/|video\/)/,
-          }),
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new FileTypeValidator({ fileType: /^(audio\/|video\/)/ }),
         ],
-        fileIsRequired: true,
       }),
     )
-    file: Express.Multer.File,
+    audio: Express.Multer.File,
   ) {
-    const result = await this.interviewAiService.sendChatMessageWithTTS(
+    return this.audioChatService.processAudio(
       id,
       user.id,
-      file.buffer,
-      file.mimetype,
+      audio.buffer,
+      audio.mimetype,
     );
-    return result;
   }
 
   /**

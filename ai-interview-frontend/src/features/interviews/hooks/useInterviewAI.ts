@@ -142,16 +142,6 @@ export const useStartInterview = (sessionId: string) => {
   });
 };
 
-export const useSendChatMessage = (sessionId: string) => {
-  return useMutation({
-    mutationFn: (message: string) =>
-      interviewAiApi.sendChatMessage(sessionId, message),
-    onError: (error: any) => {
-      toast.error(error.message);
-    },
-  });
-};
-
 export const useSendChatAudio = (sessionId: string) => {
   return useMutation({
     mutationFn: (audioBlob: Blob) =>

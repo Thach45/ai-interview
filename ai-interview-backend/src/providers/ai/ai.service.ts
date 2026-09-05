@@ -1,7 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
-import { InterviewLanguage } from '@prisma/client';
 import {
   CV_ANALYSIS_RESPONSE_SCHEMA,
   CV_ANALYSIS_SYSTEM_PROMPT,
@@ -31,7 +30,6 @@ import {
   getSubmitInterviewResultUserPrompt,
   SUBMIT_INTERVIEW_RESULT_RESPONSE_SCHEMA,
 } from '../../prompts/submit-interview-result.prompt';
-import { AppException } from '../../common/exceptions/AppException';
 import { calculateFinalInterviewResult } from '../../common/utils/scoring.util';
 import { StreamReplyExtractor } from '../../common/utils/stream.util';
 import { validateJsonb } from '../../common/validation/jsonb-validation.util';
@@ -127,44 +125,6 @@ export class AiService {
       response_format: { type: 'json_object' },
       stream: true,
     });
-  }
-
-  async transcribeAudio(
-    audioBuffer: Buffer,
-    mimeType: string,
-    language: InterviewLanguage = InterviewLanguage.VIETNAMESE,
-  ): Promise<string> {
-    const langStr =
-      language === InterviewLanguage.ENGLISH ? 'Tiếng Anh' : 'Tiếng Việt';
-    try {
-      const response = await this.gemini.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {
-                inlineData: {
-                  data: audioBuffer.toString('base64'),
-                  mimeType,
-                },
-              },
-              {
-                text: `Bạn là một chuyên gia nhận diện giọng nói. Ngôn ngữ của đoạn hội thoại này là: ${langStr}. Hãy chuyển đổi đoạn âm thanh này thành văn bản một cách chính xác nhất. Chỉ trả về văn bản được nói, không thêm bất kỳ nhận xét, chú thích hay văn bản nào khác. Nếu không nghe rõ, hãy trả về rỗng.`,
-              },
-            ],
-          },
-        ],
-        config: {
-          temperature: 0.1,
-        },
-      });
-
-      return response.text?.trim() || '';
-    } catch (error) {
-      console.error('Lỗi khi transcribe audio với Gemini:', error);
-      throw new AppException('Lỗi chuyển đổi giọng nói thành văn bản', 500);
-    }
   }
 
   /**

@@ -8,11 +8,6 @@ export const enum ExperienceLevel {
   DIRECTOR = 'DIRECTOR',
 }
 
-export const enum InterviewMode {
-  VIDEO = 'VIDEO',
-  TEXT = 'TEXT',
-}
-
 export const enum InterviewLanguage {
   VIETNAMESE = 'VIETNAMESE',
   ENGLISH = 'ENGLISH',

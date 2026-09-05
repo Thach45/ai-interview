@@ -125,30 +125,10 @@ export class DashboardService {
     ]);
     const sessionsTrend = this.calculateTrend(currentSessions, prevSessions);
 
-    // 4. Chi phi AI (Uoc tinh: Text = 500d, Video = 2000d)
-    const [currentCompletedSessionsList, prevCompletedSessionsList] =
-      await Promise.all([
-        this.interviewSessionRepository.findMany({
-          where: { status: 'COMPLETED', createdAt: { gte: start, lte: end } },
-          select: { mode: true },
-        }),
-        this.interviewSessionRepository.findMany({
-          where: {
-            status: 'COMPLETED',
-            createdAt: { gte: prevStart, lte: prevEnd },
-          },
-          select: { mode: true },
-        }),
-      ]);
-
-    const calculateAICost = (sessions: { mode: string }[]) => {
-      return sessions.reduce((total, session) => {
-        return total + (session.mode === 'VIDEO' ? 2000 : 500);
-      }, 0);
-    };
-
-    const currentAICost = calculateAICost(currentCompletedSessionsList);
-    const prevAICost = calculateAICost(prevCompletedSessionsList);
+    // 4. Chi phi AI (Uoc tinh: 2000d / phien)
+    const AI_COST_PER_SESSION = 2000;
+    const currentAICost = currentSessions * AI_COST_PER_SESSION;
+    const prevAICost = prevSessions * AI_COST_PER_SESSION;
     const aiCostTrend = this.calculateTrend(currentAICost, prevAICost);
 
     // 5. Bieu do doanh thu (Nhom theo ngay)
@@ -188,15 +168,7 @@ export class DashboardService {
       },
     });
 
-    // 7. Thong ke ty le Voice/Text
-    const totalVoice = currentCompletedSessionsList.filter(
-      (s) => s.mode === 'VIDEO',
-    ).length;
-    const totalText = currentCompletedSessionsList.filter(
-      (s) => s.mode === 'TEXT',
-    ).length;
-
-    // 8. Phien phong van gan day
+    // 7. Phien phong van gan day
     const recentInterviews = await this.interviewSessionRepository.findMany({
       where: { status: 'COMPLETED' },
       orderBy: { createdAt: 'desc' },
@@ -207,7 +179,7 @@ export class DashboardService {
       },
     });
 
-    // 9. Tinh toan Token Chart
+    // 8. Tinh toan Token Chart
     const messages = await this.interviewMessageRepository.findMany({
       where: {
         createdAt: { gte: start, lte: end },
@@ -273,10 +245,6 @@ export class DashboardService {
         date: dayjs(session.createdAt).format('HH:mm DD/MM/YYYY'),
         score: (session as any).result?.overallScore || 0,
       })),
-      interviewStats: {
-        voice: totalVoice,
-        text: totalText,
-      },
       tokenChart,
     };
   }

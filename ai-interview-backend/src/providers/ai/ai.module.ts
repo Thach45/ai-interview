@@ -5,6 +5,7 @@ import { GoogleGenAI } from '@google/genai';
 import { AiService } from './ai.service';
 import { GoogleTtsService } from './google-tts.service';
 import { OpenRouterSttService } from './openrouter-stt.service';
+import { GroqSttService } from './groq-stt.service';
 
 @Global()
 @Module({
@@ -12,6 +13,7 @@ import { OpenRouterSttService } from './openrouter-stt.service';
     AiService,
     GoogleTtsService,
     OpenRouterSttService,
+    GroqSttService,
     {
       provide: 'DEEPSEEK_CLIENT',
       useFactory: (configService: ConfigService) => {
@@ -36,6 +38,7 @@ import { OpenRouterSttService } from './openrouter-stt.service';
     AiService,
     GoogleTtsService,
     OpenRouterSttService,
+    GroqSttService,
     'DEEPSEEK_CLIENT',
     'GEMINI_CLIENT',
   ],

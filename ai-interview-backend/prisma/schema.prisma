@@ -69,13 +69,6 @@ enum UserStatus {
   @@map("user_status")
 }
 
-enum InterviewMode {
-  VIDEO
-  TEXT
-
-  @@map("interview_mode")
-}
-
 enum InterviewLanguage {
   VIETNAMESE
   ENGLISH
@@ -286,7 +279,6 @@ model InterviewSession {
   id              String             @id(map: "pk_interview_sessions") @default(uuid()) @db.Uuid
   userId          String             @map("user_id") @db.Uuid
   status          SessionStatus      @default(PENDING)
-  mode            InterviewMode      @default(VIDEO)
   level           ExperienceLevel    @default(JUNIOR)
   persona         InterviewPersona   @default(PROFESSIONAL)
   language        InterviewLanguage  @default(VIETNAMESE)

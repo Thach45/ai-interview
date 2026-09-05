@@ -1,5 +1,5 @@
 
-import { ExperienceLevel, InterviewLanguage, InterviewMode, InterviewPersona } from "../../../shared/types/interview";
+import { ExperienceLevel, InterviewLanguage, InterviewPersona } from "../../../shared/types/interview";
 
 
 export type SetupInterviewRequest = {
@@ -10,7 +10,6 @@ export type SetupInterviewRequest = {
   companyName?: string | null;
   level: ExperienceLevel;
   language: InterviewLanguage;
-  mode: InterviewMode;
   duration: number;
   difficulty: number;
   persona: InterviewPersona;

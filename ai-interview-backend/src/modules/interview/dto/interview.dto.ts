@@ -11,7 +11,6 @@ import {
   MaxLength,
 } from 'class-validator';
 import {
-  InterviewMode,
   ExperienceLevel,
   InterviewPersona,
   InterviewLanguage,
@@ -46,9 +45,6 @@ export class SetupInterviewDto {
   @IsEnum(InterviewLanguage)
   language: InterviewLanguage;
 
-  @IsEnum(InterviewMode)
-  mode: InterviewMode;
-
   @IsEnum(InterviewPersona)
   persona: InterviewPersona;
 
@@ -66,13 +62,6 @@ export class SetupInterviewDto {
   @IsArray()
   @IsString({ each: true })
   focusSkills?: string[];
-}
-
-export class ChatMessageDto {
-  @IsString()
-  @MinLength(1)
-  @MaxLength(1000)
-  message: string;
 }
 
 export class TtsDto {

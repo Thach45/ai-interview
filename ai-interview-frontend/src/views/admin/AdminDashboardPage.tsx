@@ -4,7 +4,6 @@ import { useDashboardStats } from '../../features/dashboard/hooks/useDashboardSt
 import { StatCard } from '../../features/dashboard/components/admin/StatCard';
 import { FilterBar } from '../../features/dashboard/components/admin/FilterBar';
 import { RevenueChart } from '../../features/dashboard/components/admin/RevenueChart';
-import { InterviewChart } from '../../features/dashboard/components/admin/InterviewChart';
 import { TokenChart } from '../../features/dashboard/components/admin/TokenChart';
 import { RecentTransactions, RecentInterviews } from '../../features/dashboard/components/admin/RecentActivities';
 
@@ -47,8 +46,7 @@ export const AdminDashboardPage = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <InterviewChart voice={stats?.interviewStats?.voice} text={stats?.interviewStats?.text} isLoading={isLoading} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <TokenChart data={stats?.tokenChart} isLoading={isLoading} />
           <RecentInterviews
             interviews={stats?.recentInterviews?.map((i: any) => ({

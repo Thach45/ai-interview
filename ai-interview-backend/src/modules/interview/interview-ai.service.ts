@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -16,7 +11,6 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../../providers/ai/ai.service';
 import { GoogleTtsService } from '../../providers/ai/google-tts.service';
-import { OpenRouterSttService } from '../../providers/ai/openrouter-stt.service';
 import { CreditsService } from '../credits/credits.service';
 import { SetupInterviewDto } from './dto/interview.dto';
 import {
@@ -24,10 +18,7 @@ import {
   validateJsonb,
 } from '../../common/validation/jsonb-validation.util';
 import {
-  CoreQuestionJsonDto,
-  CoreQuestionsResponseJsonDto,
   CriterionMatchesJsonDto,
-  CvDataJsonDto,
   GeneralEvaluationJsonDto,
 } from '../../common/validation/jsonb.dto';
 
@@ -36,8 +27,7 @@ import { JobTemplateRepository } from '../job-template/job-template.repository';
 import { InterviewSessionRepository } from './repositories/interview-session.repository';
 import { InterviewMessageRepository } from './repositories/interview-message.repository';
 import { InterviewResultRepository } from './repositories/interview-result.repository';
-
-const CHAT_HISTORY_WINDOW_SIZE = 8;
+import { InterviewContextService } from './interview-context.service';
 
 @Injectable()
 export class InterviewAiService {
@@ -52,10 +42,10 @@ export class InterviewAiService {
     private readonly interviewMessageRepository: InterviewMessageRepository,
     private readonly interviewResultRepository: InterviewResultRepository,
     private readonly aiService: AiService,
-    private readonly openRouterSttService: OpenRouterSttService,
     private readonly googleTtsService: GoogleTtsService,
     private readonly creditsService: CreditsService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly interviewContextService: InterviewContextService,
     configService: ConfigService,
     @InjectQueue('interviewTimerQueue')
     private readonly interviewTimerQueue: Queue,
@@ -66,28 +56,6 @@ export class InterviewAiService {
       configService.get<string>('CREDIT_PRICE_PER_INTERVIEW') || '1',
       10,
     );
-  }
-
-  private async getValidatedCoreQuestions(
-    value: unknown,
-  ): Promise<CoreQuestionJsonDto[]> {
-    const validated = await validateJsonb(
-      CoreQuestionsResponseJsonDto,
-      { questions: value },
-      'Bộ câu hỏi phỏng vấn trong database',
-    );
-    return validated.questions;
-  }
-
-  private async getValidatedCvText(value: unknown): Promise<string> {
-    if (!value) return '';
-
-    const validated = await validateJsonb(
-      CvDataJsonDto,
-      value,
-      'Dữ liệu CV trong database',
-    );
-    return JSON.stringify(validated);
   }
 
   /**
@@ -129,7 +97,9 @@ export class InterviewAiService {
     }
 
     // 4. Generate core questions via AI
-    const cvText = await this.getValidatedCvText(cv.cvData);
+    const cvText = await this.interviewContextService.getValidatedCvText(
+      cv.cvData,
+    );
     const coreQuestions = await this.aiService.createQuestionForInterview({
       cvText,
       jdText,
@@ -157,7 +127,6 @@ export class InterviewAiService {
             cvId: dto.cvId,
             jobTemplateId: dto.jobTemplateId || null,
             customJdText: dto.customJdText || null,
-            mode: dto.mode,
             level: dto.level,
             persona: dto.persona,
             language: dto.language,
@@ -188,9 +157,10 @@ export class InterviewAiService {
       throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
     }
 
-    const coreQuestions = await this.getValidatedCoreQuestions(
-      session.coreQuestions,
-    );
+    const coreQuestions =
+      await this.interviewContextService.getValidatedCoreQuestions(
+        session.coreQuestions,
+      );
     return { ...session, coreQuestions };
   }
 
@@ -241,10 +211,13 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = await this.getValidatedCvText((session as any).cv?.cvData);
-    const coreQuestions = await this.getValidatedCoreQuestions(
-      session.coreQuestions,
+    const cvText = await this.interviewContextService.getValidatedCvText(
+      (session as any).cv?.cvData,
     );
+    const coreQuestions =
+      await this.interviewContextService.getValidatedCoreQuestions(
+        session.coreQuestions,
+      );
 
     // Generate greeting + first question via AI
     const aiResponse = await this.aiService.chatInterview({
@@ -295,281 +268,6 @@ export class InterviewAiService {
     );
 
     return [welcomeMessage];
-  }
-
-  /**
-   * Process a user chat message, get AI response with sliding window context.
-   */
-  async sendChatMessage(
-    sessionId: string,
-    userId: string,
-    messageContent: string,
-    enableStream: boolean = true,
-  ) {
-    const session = await this.interviewSessionRepository.findFirst({
-      where: { id: sessionId, userId },
-      include: { cv: true },
-    });
-
-    if (!session) {
-      throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
-    }
-
-    return this.generateMessage(userId, session, messageContent, enableStream);
-  }
-
-  /**
-   * Core message generation logic shared by text chat and audio chat.
-   * 1. Save user message
-   * 2. Build sliding window chat history (last 8 messages)
-   * 3. Call AI with streaming callback for SSE
-   * 4. Determine next question index / status transition
-   * 5. Save AI response
-   * 6. Update session status if transitioning
-   * 7. Emit SSE events
-   */
-  private async generateMessage(
-    userId: string,
-    session: any,
-    messageContent: string,
-    enableStream: boolean = true,
-  ) {
-    const sessionId = session.id;
-
-    if (session.status !== 'IN_PROGRESS') {
-      throw new BadRequestException(
-        'Phiên phỏng vấn hiện không trong trạng thái hoạt động',
-      );
-    }
-
-    // 1. Save user message
-    await this.interviewMessageRepository.create({
-      data: {
-        sessionId,
-        role: 'USER',
-        content: messageContent,
-      },
-    });
-
-    // 2. Get full message history for sliding window
-    const allMessages = await this.interviewMessageRepository.findMany({
-      where: { sessionId },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    // Sliding window: last 8 messages excluding the current user message
-    const chatHistory = allMessages
-      .slice(0, -1)
-      .slice(-CHAT_HISTORY_WINDOW_SIZE)
-      .map((msg: any) => ({
-        role: msg.role === 'AI' ? ('bot' as const) : ('user' as const),
-        content: msg.content,
-      }));
-
-    // Determine current question index
-    const aiMainMessages = allMessages.filter(
-      (m: any) => m.role === 'AI' && !m.isFollowUp,
-    );
-    const currIdx = Math.max(0, aiMainMessages.length - 1);
-
-    const coreQuestions = await this.getValidatedCoreQuestions(
-      session.coreQuestions,
-    );
-
-    // Resolve JD text
-    let jdText: string;
-    if (session.jobTemplateId) {
-      const template = await this.jobTemplateRepository.findUnique({
-        where: { id: session.jobTemplateId },
-      });
-      jdText = template?.aiExtractedContext || '';
-    } else {
-      jdText = session.customJdText || '';
-    }
-
-    const cvText = await this.getValidatedCvText(session.cv?.cvData);
-
-    // Stream callback for SSE
-    const onStream = enableStream
-      ? (chunkText: string) => {
-          this.eventEmitter.emit(
-            `chat_stream_${userId}_${sessionId}`,
-            chunkText,
-          );
-        }
-      : undefined;
-
-    // 3. Call AI for response
-    const aiResponse = await this.aiService.chatInterview(
-      {
-        cvText,
-        jdText,
-        position: session.jobTitle,
-        level: session.level,
-        language: session.language,
-        persona: session.persona,
-        currentQuestion: coreQuestions[currIdx],
-        nextQuestion: coreQuestions[currIdx + 1] || null,
-        currentQuestionIndex: currIdx + 1,
-        totalQuestions: coreQuestions.length,
-        chatHistory,
-        userResponse: messageContent,
-      },
-      onStream,
-    );
-
-    // 4. Calculate next question index and status
-    let nextQuestionIndex = currIdx;
-    let nextIsFollowUp = true;
-    let newStatus = session.status;
-
-    if (aiResponse.suggestedAction === 'TRANSITION') {
-      if (currIdx + 1 < coreQuestions.length) {
-        nextQuestionIndex = currIdx + 1;
-        nextIsFollowUp = false;
-      } else {
-        newStatus = 'EVALUATING';
-      }
-    } else if (aiResponse.suggestedAction === 'FINISH') {
-      newStatus = 'EVALUATING';
-    }
-
-    // 5. Save AI message
-    const botMessage = await this.interviewMessageRepository.create({
-      data: {
-        sessionId,
-        role: 'AI',
-        content: aiResponse.reply,
-        questionIndex: nextQuestionIndex,
-        isFollowUp: nextIsFollowUp,
-      },
-    });
-
-    // 6. Update session status if changed
-    if (newStatus !== session.status) {
-      if (newStatus === 'EVALUATING') {
-        await this.initiateInterviewEvaluation(userId, sessionId);
-      } else {
-        await this.interviewSessionRepository.update({
-          where: { id: sessionId },
-          data: { status: newStatus },
-        });
-      }
-    }
-
-    // 7. Emit SSE update event
-    this.eventEmitter.emit(`chat_updated_${userId}_${sessionId}`);
-
-    return {
-      message: botMessage,
-      currentQuestionIndex: nextQuestionIndex,
-      status: newStatus,
-    };
-  }
-
-  /**
-   * Process audio chat: transcribe audio -> chat -> return response with user transcript.
-   */
-  async sendChatMessageWithTTS(
-    sessionId: string,
-    userId: string,
-    audioBuffer: Buffer,
-    mimeType: string,
-  ) {
-    const session = await this.interviewSessionRepository.findFirst({
-      where: { id: sessionId, userId },
-    });
-
-    if (!session) {
-      throw new NotFoundException('Không tìm thấy phiên phỏng vấn');
-    }
-
-    const language = session.language || InterviewLanguage.VIETNAMESE;
-
-    // 1. Transcribe audio to text
-    let text = '';
-    const audioSize = audioBuffer.length;
-
-    this.logger.log(
-      `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=started language=${language} audioBytes=${audioSize}`,
-    );
-
-    try {
-      text = await this.openRouterSttService.transcribeAudio(
-        audioBuffer,
-        mimeType,
-        language,
-        this.buildSttPrompt(session),
-      );
-      this.logger.log(
-        `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
-      );
-    } catch (error) {
-      this.logger.warn(
-        `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=failed error=${error}`,
-      );
-    }
-
-    if (!text) {
-      this.logger.log(
-        `[STT] session=${sessionId} provider=gemini status=started language=${language} audioBytes=${audioSize}`,
-      );
-      text = await this.aiService.transcribeAudio(
-        audioBuffer,
-        mimeType,
-        language,
-      );
-      this.logger.log(
-        `[STT] session=${sessionId} provider=gemini status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
-      );
-    }
-
-    if (!text) {
-      throw new BadRequestException('Không nhận diện được nội dung giọng nói');
-    }
-
-    // 2. Generate AI response with streaming
-    const responseAI = await this.generateMessage(userId, session, text, true);
-
-    // Return user transcript alongside the AI response
-    return {
-      ...responseAI,
-      userText: text,
-    };
-  }
-
-  private buildSttPrompt(session: {
-    jobTitle: string;
-    focusSkills: string[];
-    coreQuestions: unknown;
-  }): string {
-    const questionTitles = Array.isArray(session.coreQuestions)
-      ? session.coreQuestions
-          .map((question) =>
-            typeof question === 'object' &&
-            question !== null &&
-            'title' in question
-              ? String(question.title)
-              : '',
-          )
-          .filter(Boolean)
-      : [];
-
-    const context = [
-      `Interview role: ${session.jobTitle}.`,
-      session.focusSkills.length
-        ? `Focus skills: ${session.focusSkills.join(', ')}.`
-        : '',
-      questionTitles.length
-        ? `Question topics: ${questionTitles.join('; ')}.`
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    return context.slice(0, 600);
   }
 
   /**
@@ -670,9 +368,10 @@ export class InterviewAiService {
       resultWithDetails.generalEvaluation,
       'Đánh giá tổng quan trong database',
     );
-    const coreQuestions = await this.getValidatedCoreQuestions(
-      resultWithDetails.session.coreQuestions,
-    );
+    const coreQuestions =
+      await this.interviewContextService.getValidatedCoreQuestions(
+        resultWithDetails.session.coreQuestions,
+      );
     const questionEvaluations = await Promise.all(
       resultWithDetails.questionEvaluations.map(async (evaluation) => {
         const criteriaMatches = await validateJsonb(
@@ -726,10 +425,13 @@ export class InterviewAiService {
       jdText = session.customJdText || '';
     }
 
-    const cvText = await this.getValidatedCvText((session as any).cv?.cvData);
-    const coreQuestions = await this.getValidatedCoreQuestions(
-      session.coreQuestions,
+    const cvText = await this.interviewContextService.getValidatedCvText(
+      (session as any).cv?.cvData,
     );
+    const coreQuestions =
+      await this.interviewContextService.getValidatedCoreQuestions(
+        session.coreQuestions,
+      );
 
     const interviewResult = await this.aiService.submitInterviewResult({
       cvText,
@@ -796,6 +498,8 @@ export class InterviewAiService {
    * Synthesize TTS audio for a given text.
    */
   async synthesizeTTS(sessionId: string, text: string) {
+    const t0 = Date.now();
+
     const session = await this.interviewSessionRepository.findFirst({
       where: { id: sessionId },
     });
@@ -811,6 +515,10 @@ export class InterviewAiService {
       text,
       language,
       persona,
+    );
+
+    this.logger.log(
+      `[TIMING] session=${sessionId} tts=${Date.now() - t0}ms chars=${text.length}`,
     );
 
     return {
