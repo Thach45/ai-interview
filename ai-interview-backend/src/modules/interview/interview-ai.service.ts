@@ -16,7 +16,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AiService } from '../../providers/ai/ai.service';
 import { GoogleTtsService } from '../../providers/ai/google-tts.service';
-import { GroqSttService } from '../../providers/ai/groq-stt.service';
+import { OpenRouterSttService } from '../../providers/ai/openrouter-stt.service';
 import { CreditsService } from '../credits/credits.service';
 import { SetupInterviewDto } from './dto/interview.dto';
 import {
@@ -52,7 +52,7 @@ export class InterviewAiService {
     private readonly interviewMessageRepository: InterviewMessageRepository,
     private readonly interviewResultRepository: InterviewResultRepository,
     private readonly aiService: AiService,
-    private readonly groqSttService: GroqSttService,
+    private readonly openRouterSttService: OpenRouterSttService,
     private readonly googleTtsService: GoogleTtsService,
     private readonly creditsService: CreditsService,
     private readonly eventEmitter: EventEmitter2,
@@ -491,22 +491,22 @@ export class InterviewAiService {
     const audioSize = audioBuffer.length;
 
     this.logger.log(
-      `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=started language=${language} audioBytes=${audioSize}`,
+      `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=started language=${language} audioBytes=${audioSize}`,
     );
 
     try {
-      text = await this.groqSttService.transcribeAudio(
+      text = await this.openRouterSttService.transcribeAudio(
         audioBuffer,
         mimeType,
         language,
         this.buildSttPrompt(session),
       );
       this.logger.log(
-        `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
+        `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=${text ? 'success' : 'empty'} transcript=${JSON.stringify(text)}`,
       );
     } catch (error) {
       this.logger.warn(
-        `[STT] session=${sessionId} provider=groq-whisper-large-v3 status=failed error=${error}`,
+        `[STT] session=${sessionId} provider=openrouter-whisper-large-v3-turbo status=failed error=${error}`,
       );
     }
 
